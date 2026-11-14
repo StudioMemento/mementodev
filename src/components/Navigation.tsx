@@ -119,7 +119,8 @@ export function ScrollProgress() {
       const progress =
         total > 0 ? Math.max(0, Math.min(1, scrollY / total)) : 0;
       if (ref.current) {
-        ref.current.style.transform = `scaleY(${progress})`;
+        // Keep a visible leading mark at the top, then fill the actual travel.
+        ref.current.style.transform = `scaleY(${Math.max(24 / innerHeight, progress)})`;
         ref.current.dataset.progress = progress.toFixed(4);
       }
     };

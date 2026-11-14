@@ -24,36 +24,11 @@
     "sha256": "4f4e3cd95e89f3a0e1b6f12afd1a81fcc6ac49fd0001480024ef84dd49997fb7",
     "small": "assets/community/matteo-4f4e3cd9-768.webp"
   },
-  "assets/community/giovanni-0869e547.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 137836,
-    "sha256": "0869e54702b808fa09a7575be1cc247b0aaed160475d9b3036d546267fc34f1a"
-  },
-  "assets/community/gretabeta-45a37be8.webp": {
-    "width": 1360,
-    "height": 613,
-    "bytes": 123942,
-    "sha256": "45a37be826fbc4915ab7ab6c4318d859bb3edc93ee78985e81de76fd2c1d0cd4",
-    "small": "assets/community/gretabeta-45a37be8-768.webp"
-  },
-  "assets/community/pietro-82612084.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 122166,
-    "sha256": "82612084615b82d0fca7203f08cb814a427102f5cf063abe90f7fedd03aac7b7"
-  },
   "assets/community/tomaz-a3e72513.webp": {
     "width": 574,
     "height": 1020,
     "bytes": 113532,
     "sha256": "a3e72513eede4f81ea6f74edbff39007877aad2765858782ba0bdf74e936407e"
-  },
-  "assets/community/marcella-8781a883.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 108822,
-    "sha256": "8781a883382441d17bed2e5efe996cffb7e62fa87056786a1c4c5b3a61106f7d"
   },
   "assets/community/fabio-9e64d53d.webp": {
     "width": 1360,
@@ -62,32 +37,12 @@
     "sha256": "9e64d53dd01b612f7aa8638b2f2031906de69dab97da8ab6d008a532d5a530c9",
     "small": "assets/community/fabio-9e64d53d-768.webp"
   },
-  "assets/community/bostjan-e488dc29.webp": {
-    "width": 945,
-    "height": 1020,
-    "bytes": 144410,
-    "sha256": "e488dc296483e2a66c53626401be243581a7623e39335d2fdb9edfdd6ac9918a",
-    "small": "assets/community/bostjan-e488dc29-768.webp"
-  },
   "assets/community/david-a1ea9444.webp": {
     "width": 1020,
     "height": 1020,
     "bytes": 114676,
     "sha256": "a1ea9444dff9af01a9c68b8978d683f5aab80868d305627a192f4126a7ef5e7f",
     "small": "assets/community/david-a1ea9444-768.webp"
-  },
-  "assets/community/dominik-4804d9ab.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 172042,
-    "sha256": "4804d9ab80a87b7415d2a4261b57d943942f1f918b1145f5317a64b135e33ddf"
-  },
-  "assets/community/gretabeta-663170c5.webp": {
-    "width": 1360,
-    "height": 613,
-    "bytes": 103478,
-    "sha256": "663170c5282ff2cfab53fea5b135e92a143100ae57f6ce644cd722c9abe3c963",
-    "small": "assets/community/gretabeta-663170c5-768.webp"
   },
   "assets/community/erika-5f6313c1.webp": {
     "width": 1360,
@@ -102,31 +57,12 @@
     "bytes": 177244,
     "sha256": "f9dc1207244834ab48890b99c5c79c3e4c5f8784403e4bcdf2fc81e7c2c5d518"
   },
-  "assets/community/cicilia-493c6ab4.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 145052,
-    "sha256": "493c6ab4460f67f33c92928c03ffb07fe8a631a0cf27d9fdeddbf4e39c3c1022"
-  },
-  "assets/community/david-59ffcd7a.webp": {
-    "width": 1020,
-    "height": 1020,
-    "bytes": 133596,
-    "sha256": "59ffcd7a2843f337c230ac01839ad04bf9d6762eb66fcc4e3e384a9ea37d3a36",
-    "small": "assets/community/david-59ffcd7a-768.webp"
-  },
   "assets/community/tomaz-96f3508e.webp": {
     "width": 1360,
     "height": 765,
     "bytes": 182674,
     "sha256": "96f3508ed40b99661809c5a64e52919c99141a39132438bb4dbd4d3d81f8877a",
     "small": "assets/community/tomaz-96f3508e-768.webp"
-  },
-  "assets/community/richard-a0bd5019.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 130594,
-    "sha256": "a0bd5019470a4cb02f0e00888ca11ba5e2fac63a37969ef5f93c1b9edc921bb2"
   },
   "assets/community/silvia-85ad0cf5.webp": {
     "width": 1080,
@@ -135,37 +71,11 @@
     "sha256": "85ad0cf53c2b0103d0b917fd57d4ea5e101a828e952587e047ef866022bd1813",
     "small": "assets/community/silvia-85ad0cf5-768.webp"
   },
-  "assets/community/tomaz-420fe57f.webp": {
-    "width": 574,
-    "height": 1020,
-    "bytes": 95220,
-    "sha256": "420fe57f2a47246b02fcf2d1076bd44318214879faf1f852854fe9dbaa31f4b5"
-  },
-  "assets/community/steven-bff0f36c.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 135662,
-    "sha256": "bff0f36cc24ccd39a1402a7f4a6f162e998fca29f5d905b73784470c894a73ab"
-  },
   "assets/community/carina-5a23f980.webp": {
     "width": 765,
     "height": 1020,
     "bytes": 84648,
     "sha256": "5a23f980be70adf2770b0dbb0ef4f4322f4991400b0f04c65d5f62db53125bb1"
-  },
-  "assets/community/fabio-d55c6bde.webp": {
-    "width": 1360,
-    "height": 1020,
-    "bytes": 232412,
-    "sha256": "d55c6bde05131b1b3c25869cfb1e19adac2e041db10f98fb16d8ff5292afc1b2",
-    "small": "assets/community/fabio-d55c6bde-768.webp"
-  },
-  "assets/community/erika-7f3209a1.webp": {
-    "width": 1360,
-    "height": 1020,
-    "bytes": 243406,
-    "sha256": "7f3209a1395679893b613ba6c7a028a3992f240902158a066d763248917cdaa7",
-    "small": "assets/community/erika-7f3209a1-768.webp"
   },
   "assets/community/carina-30dddd1c.webp": {
     "width": 765,
@@ -185,18 +95,6 @@
     "bytes": 211404,
     "sha256": "c356f761711fd46ba8cd6d68d2268c43e0a45c461ebaf76a3387e4f5a57cd585",
     "small": "assets/community/erika-c356f761-768.webp"
-  },
-  "assets/community/gennaro-a4bad54c.webp": {
-    "width": 574,
-    "height": 1020,
-    "bytes": 83122,
-    "sha256": "a4bad54c80901e29192981faba27a1e8706976c700ff5ca35184c060922479ac"
-  },
-  "assets/community/paola-500461c8.webp": {
-    "width": 460,
-    "height": 1020,
-    "bytes": 82446,
-    "sha256": "500461c8f7f5951fb56513cb52ab3f8a738f9081e04114f7bb10d023235439e3"
   },
   "assets/menu/stuzzicherie.webp": {
     "width": 2048,

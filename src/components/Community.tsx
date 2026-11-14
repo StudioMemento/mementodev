@@ -49,6 +49,7 @@ export default function Community() {
         gap={14}
         className="community-bento vr-bento"
         glowColor="#C6AB70"
+        spotlightRadius={180}
         textAutoHide={false}
         enableTilt={false}
         enableMagnetism={false}

@@ -1,4 +1,4 @@
-// V18 social section retained: same hierarchy, copy, links and review sources.
+// Original social card hierarchy and sources retained; obsolete sharing copy removed.
 import { useI18n, Copy } from "../i18n";
 import ReviewTicker from "./ReviewTicker";
 function SentenceCopy({ value }: { value: string }) {

@@ -80,10 +80,10 @@ try {
     .locator(".review-runner")
     .evaluate((e) => e.style.transform);
   await page.waitForTimeout(300);
-  assert.notEqual(
+  assert.equal(
     await page.locator(".review-runner").evaluate((e) => e.style.transform),
     moving,
-    "Visible social ticker stopped",
+    "Review content moved without input",
   );
   await position(page, "#cat-audaci");
   await page.waitForTimeout(100);

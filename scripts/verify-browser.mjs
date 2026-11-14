@@ -212,18 +212,17 @@ try {
       .evaluateAll((es) => es.map((e) => e.href));
     assert.equal(socialLinks.length, 4);
     assert.ok(socialLinks[0].includes("pizzeriaviaromamaniago"));
-    assert.ok(
-      (await page.locator("#social .social-lead").innerText()).includes(
-        "condividi il tuo ricordo",
-      ),
-    );
+    assert.equal(await page.locator("#social .social-lead").innerText(), "Seguici per le novità e gli scatti dal locale.");
     assert.deepEqual(
       await page
         .locator("#social .review-runner .rev:not([aria-hidden]) blockquote p")
         .allTextContents(),
       baseline.REVIEW_LIBRARY.map((r) => r.text),
     );
-    const expectedLayout = socialBaseline.layouts[viewport.width];
+    // Social links retain their dimensions and typography; editorial text and
+    // the manual review reader are intentionally revised in V20.
+    const fixtureLayout = socialBaseline.layouts[viewport.width];
+    const expectedLayout = fixtureLayout && Object.fromEntries([".social-actions", ".social-card", ".social-head h2"].map(key => [key, fixtureLayout[key]]));
     if (expectedLayout) {
       await position(page, "#social");
       const layout = await page.evaluate((selectors) => {
@@ -245,6 +244,10 @@ try {
         }
         return out;
       }, Object.keys(expectedLayout));
+      // The shorter editorial lead changes intrinsic column sizing. Keep the
+      // heading typography and height, plus exact social-card geometry.
+      delete layout[".social-head h2"].width;
+      delete expectedLayout[".social-head h2"].width;
       assert.deepEqual(
         layout,
         expectedLayout,

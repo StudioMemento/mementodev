@@ -43,20 +43,23 @@ function Album({ album }: { album: (typeof albumOrder)[number] }) {
           data-album={album}
           data-index={index}
         >
-          {[-3, -2, -1, 0, 1, 2, 3].map((offset) => {
-            const logical = wrap(index + offset, photos.length);
+          {photos.map((src, logical) => {
+            const offset = wrap(logical - index + Math.floor(photos.length / 2), photos.length) - Math.floor(photos.length / 2);
+            const depth = Math.min(3, Math.abs(offset));
             return (
               <button
-                className={`gallery-card depth-${Math.abs(offset)} ${offset === 0 ? "is-current" : ""}`}
+                className={`gallery-card depth-${depth} ${offset === 0 ? "is-current" : ""}`}
                 key={logical}
+                data-side={offset < 0 ? "left" : offset > 0 ? "right" : "center"}
                 type="button"
                 aria-hidden={offset !== 0}
                 tabIndex={offset === 0 ? 0 : -1}
                 aria-label={`${copy.expand}: ${title}, ${logical + 1} / ${photos.length}`}
                 style={
                   {
-                    "--shift": shifts[Math.abs(offset)] * Math.sign(offset),
-                    "--scale": scales[Math.abs(offset)],
+                    "--shift": shifts[depth] * Math.sign(offset),
+                    "--scale": scales[depth],
+                    visibility: Math.abs(offset) > 3 ? "hidden" : undefined,
                     zIndex: 10 - Math.abs(offset),
                   } as CSSProperties
                 }
@@ -74,7 +77,7 @@ function Album({ album }: { album: (typeof albumOrder)[number] }) {
                 }}
               >
                 <Photo
-                  src={photos[logical]}
+                  src={src}
                   alt={offset === 0 ? `${title} · Via Roma` : ""}
                 />
                 {offset === 0 && (

@@ -30,6 +30,8 @@ const additions = {
     photoSelection: "Altri scatti",
     privacy: "Privacy",
     cookies: "Cookie",
+    menuHelp: "Prezzi in euro · Tocca i numeri per consultare gli allergeni.",
+    reviews: "Recensioni",
   },
   en: {
     previous: "Previous",
@@ -52,6 +54,8 @@ const additions = {
     photoSelection: "More photos",
     privacy: "Privacy",
     cookies: "Cookies",
+    menuHelp: "Prices in euros · Tap the numbers for allergen information.",
+    reviews: "Reviews",
   },
   de: {
     previous: "Zurück",
@@ -74,6 +78,8 @@ const additions = {
     photoSelection: "Weitere Fotos",
     privacy: "Datenschutz",
     cookies: "Cookies",
+    menuHelp: "Preise in Euro · Die Zahlen öffnen die Allergeninformationen.",
+    reviews: "Bewertungen",
   },
   fr: {
     previous: "Précédente",
@@ -96,6 +102,8 @@ const additions = {
     photoSelection: "Autres photos",
     privacy: "Confidentialité",
     cookies: "Cookies",
+    menuHelp: "Prix en euros · Touchez les numéros pour consulter les allergènes.",
+    reviews: "Avis",
   },
 };
 const LanguageContext = createContext({

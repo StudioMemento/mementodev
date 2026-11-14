@@ -3,6 +3,7 @@ import {
   type PointerEvent,
   type MouseEvent,
   type KeyboardEvent,
+  type DragEvent,
 } from "react";
 /** Preserve vertical touch scrolling. Capture only after horizontal intent is clear. */
 export function useDrag(onStep: (direction: number) => void) {
@@ -20,6 +21,9 @@ export function useDrag(onStep: (direction: number) => void) {
     state.current = null;
   };
   return {
+    onDragStart(e: DragEvent<HTMLElement>) {
+      e.preventDefault();
+    },
     onPointerDown(e: PointerEvent<HTMLElement>) {
       if (
         e.button !== 0 ||
@@ -53,7 +57,7 @@ export function useDrag(onStep: (direction: number) => void) {
       if (s.active)
         e.currentTarget.style.setProperty(
           "--drag-x",
-          `${Math.max(-75, Math.min(75, dx * 0.25))}px`,
+          `${Math.max(-160, Math.min(160, dx * 0.65))}px`,
         );
     },
     onPointerUp(e: PointerEvent<HTMLElement>) {
@@ -68,7 +72,13 @@ export function useDrag(onStep: (direction: number) => void) {
       reset(e.currentTarget);
     },
     onPointerCancel(e: PointerEvent<HTMLElement>) {
+      suppress.current = false;
       reset(e.currentTarget);
+    },
+    onLostPointerCapture(e: PointerEvent<HTMLElement>) {
+      // Touch starts with implicit capture on the child image/button. Its loss
+      // bubbles when the carousel takes capture; that is not a cancelled drag.
+      if (e.target === e.currentTarget && state.current) reset(e.currentTarget);
     },
     onClickCapture(e: MouseEvent<HTMLElement>) {
       if (suppress.current) {

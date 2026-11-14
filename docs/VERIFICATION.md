@@ -1,35 +1,51 @@
-# Verifiche V19
+# Via Roma V20 — verifica del polish
 
-Data: 14 novembre 2026. Base di confronto: contenuti e risorse della V18 acquisiti direttamente dal sito pubblico. Nessuna pubblicazione e nessuna modifica a repository remote.
+14 novembre 2026. Sorgente: pacchetto React V19, confrontato con il sito originale `pizzeriaviaroma.vercel.app` e la prova `mementodev.vercel.app`. Consegna sorgente per Vercel; nessun push e nessuna pubblicazione eseguiti.
 
-Verifica di ripresa: corretto un ripristino intermittente del focus alla chiusura dei popup. Il focus torna al comando di apertura nello stesso aggiornamento che chiude il pannello, senza attendere un frame di animazione. Il controllo copre Escape, X e click sullo sfondo, sia desktop sia mobile.
+## I sette criteri
 
-## Ambito verificato
-
-| Verifica | Copertura |
+| Criterio | Risultato e prova |
 | --- | --- |
-| Build | TypeScript strict, Vite client e prerender HTML statico, risorse locali e budget dei moduli |
-| Menù | Dati V18, 61 piatti principali, prezzi, descrizioni, aggiunte, bevande e quattro lingue; SHA-256 delle otto immagini del cartaceo |
-| Allergeni | Legenda originale in quattro lingue, mapping effettivamente mostrato confrontato con la funzione V18, 15 righe nel popup incluso `*` |
-| Slideshow | Frecce e drag sopra immagini di pizza/categorie, swipe touch, cinque album, indicatori, foto corretta nel lightbox e cambio foto |
-| Popup legali | Tutti e tre i testi; apertura, click interno, selezione, Escape, X, backdrop, ripristino scroll e focus; desktop e mobile |
-| Social | Quattro link, testi e recensioni preservati; confronto di undici blocchi con la V18 a 1440, 900 e 390 px: dimensioni, font, pesi, colori, tracking e colonne coincidono |
-| Responsive | Flussi completi a 1440×900, 900×1200, 390×844 e 320×700; overflow e numeri nei contatti anche a 768, 1100 e 1920 px |
-| Scroll | Indicatore destro 2 px, 0% in cima e 100% in fondo; scrollbar nativa della pagina nascosta; scorrimento verticale touch disponibile |
-| Movimento | Preferenza reduced-motion, ticker fermo fuori schermo, loop degli effetti sospesi fuori viewport; nessun aggiornamento continuo dello stato React durante lo scroll |
-| Risorse | 90 immagini originali conservate e relativi derivati responsive; 40 foto dei cinque ambienti, 28 scatti community selezionati visivamente senza volti |
-| Distribuzione | Archivio completo e confronto SHA-256 di ogni file contenuto con il sorgente; esclusi video del walkthrough, dipendenze installate, configurazioni private e cartelle generate |
+| Hero | Logo e slogan originali, nero/oro e Jost. Effetti discreti, CTA solo testo e chevron: fondo trasparente, bordo 0, raggio 0. Controllo visivo a 1440, 900, 390 e 320 px. |
+| Menù | Conservati prezzi, ricette, descrizioni, aggiunte, bevande, quattro lingue e dati degli allergeni. Le otto immagini del cartaceo coincidono con gli SHA-256 originali. Il testo è già nell'HTML iniziale. |
+| Navbar | Quattro elementi indipendenti, con spazi misurati tra le icone e nessun fondo comune. Etichette più leggibili; area delle icone almeno 48 × 48 px. |
+| Cinque slideshow | Esterno, Bancone, Sala sinistra, Sala destra, Via Roma: 40 fotografie originali. Centro dominante e laterali sfumate, composizione ripetuta in tutti gli album. Verificati frecce, drag sulle immagini, swipe touch, tastiera e foto corretta nel lightbox. |
+| Community | Dodici originali selezionati visivamente senza volti. Rimossi gli inviti a condividere immagini in tutte e quattro le lingue, inclusi i testi inutilizzati che potevano ricomparire. Quattro recensioni originali con attribuzione, lettura manuale e nessuno scorrimento automatico. |
+| Contatti | Mappa e informazioni nella disposizione esistente; informazioni prima della mappa su mobile. Card Magic Bento ad angoli retti, luce oro locale di 200 px. Nessun testo troncato in 7 larghezze × 4 lingue. |
+| Indicatore scroll | Bordo destro largo esattamente 2 CSS px. A 1440 × 900: tratto visibile di 24 px in cima, 450 px a metà, 900 px in fondo. Non intercetta input. |
 
-Il confronto social normalizza soltanto la scrollbar della V18, per isolare la modifica globale richiesta: nasconderla libera i 15 px del suo gutter, senza modificare le regole del social.
+Le schermate reali sono in [previews](previews/), comprese le viste dei cinque ambienti su desktop e mobile. I risultati numerici della prova finale sono in `polish-evidence.json`.
 
-## Misure della build
+## Difetti corretti rispetto alla V19
 
-- JavaScript di tutti i moduli: circa **115 KiB gzip**, inclusi i moduli separati di popup e sfondo.
-- CSS distribuito dopo pulizia: circa **22 KiB gzip**.
-- Il menù è incluso nell'HTML iniziale. Font, icone e immagini sono locali.
-- Nessun errore JavaScript, errore di hydration o risposta HTTP di errore rilevato durante i flussi verificati.
+- Il tratto di avanzamento era invisibile in cima alla pagina.
+- Gli slider pizza/categorie cambiavano posizione senza una transizione continua e seguivano poco il gesto.
+- La perdita della cattura implicita touch dell'immagine poteva cancellare il trascinamento dello slider: ora viene distinta dalla perdita della cattura del contenitore.
+- Alcune regole CSS precedenti imponevano ancora padding alla nuova gallery; ora il centro e le sfumature hanno lo spazio previsto.
+- Restavano inviti alla condivisione nei testi social. Sono stati rimossi anche dalle varianti di lingua.
+- Le recensioni scorrevano automaticamente e venivano duplicate. Ora le quattro recensioni si leggono con frecce, drag/swipe o tastiera; due visibili sui desktop ampi, una sugli schermi più piccoli.
+- Font troppo piccoli nei comandi e nei contatti. Corrette dimensioni e leggibilità mantenendo la grafica del progetto.
 
-Le misure sono della build locale. Non costituiscono una misura Lighthouse o una garanzia di frame rate su qualsiasi dispositivo.
+## Copertura dei controlli
+
+- Flussi completi: **1440 × 900**, **900 × 1200**, **390 × 844**, **320 × 700**.
+- Overflow e contatti: larghezze **320, 390, 768, 900, 1100, 1440, 1920 px**; contatti verificati in IT/EN/DE/FR.
+- Touch emulato: cinque album, slider pizza, slider categorie e recensioni; resta disponibile lo scroll verticale nativo.
+- Menu e allergeni: confronto con fixture originali, voci e prezzi visualizzati nelle quattro lingue, popup con 15 righe incluso `*`.
+- Popup: privacy, cookie e note legali, chiusura con Escape/X/sfondo, selezione testo e ripristino del focus su desktop/mobile.
+- Movimento ridotto: sfondo statico, transizioni eliminate, contenuti ancora utilizzabili. Effetti fuori schermo sospesi.
+- Rilevamento di errori JavaScript, hydration, console e risposte HTTP di errore durante i flussi.
+- Quattro link social e geometria delle card preservati; il copy e il lettore recensioni seguono la nuova richiesta.
+
+## Peso e struttura
+
+- Tutti i moduli JavaScript: **circa 113 KiB gzip**; CSS dopo rimozione dei selettori inutilizzati: **circa 22 KiB gzip**.
+- 74 immagini originali indicizzate, con derivati responsive dove disponibili; nessun ritocco delle immagini originali conservate.
+- Font, icone e immagini locali; popup e campo di punti caricati in moduli separati.
+- Nessun video del vecchio walkthrough, widget social esterno, API key o database.
+- Nessuna pubblicazione remota. Il sito temporaneo mantiene `noindex, nofollow` e `Disallow: /`.
+
+Queste sono misure e prove della build locale, non un punteggio Lighthouse né una garanzia di 60 fps. Browser utilizzato: Chromium headless 153.0.8010.0, Node 24.22.1. Viewport e input touch sono emulati; Safari, Firefox e dispositivi fisici non sono stati verificati in questa sessione.
 
 ## Riproduzione
 
@@ -38,12 +54,17 @@ npm ci
 npm run check
 npx playwright install chromium
 npm test
+node scripts/capture-polish.mjs
 ```
 
-I controlli sono in `scripts/verify-*.mjs` e usano fixture V18 in `tests/fixtures/`. Il confronto dell'archivio, quando lo ZIP si trova accanto alla cartella del progetto, si esegue con `node scripts/verify-package.mjs`.
+Per un Chromium già installato usare `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. I test non inviano messaggi e non attivano chiamate, WhatsApp o collegamenti social esterni. Il confronto dello ZIP con ogni sorgente si esegue con `node scripts/verify-package.mjs`, quando lo ZIP è accanto alla cartella del progetto.
 
-I test di questa consegna sono stati eseguiti con Node 24 e Chromium headless 153, con viewport e input touch emulati. Safari, Firefox e dispositivi fisici non sono stati testati in questa sessione. Il pacchetto è preparato per una prova su una nuova repository; nessun deploy remoto è stato eseguito.
+## Distribuzione verificata
 
-## Contenuti da finalizzare prima della produzione
+Lo ZIP è stato estratto in una cartella pulita, seguito da `npm ci` e `npm run check`: i **139 file di produzione** risultano identici byte per byte alla build verificata. Il controllo del pacchetto confronta ogni file dello ZIP con il sorgente ed esclude dipendenze installate, directory generate, video e configurazioni private.
 
-Privacy, cookie e note legali restano le bozze V18, con i campi del gestore da completare. Il sito di prova è predisposto con `noindex`. I dati del menù e degli allergeni rimangono quelli forniti nella V18.
+È stato verificato anche il controllo di regressione dei contenuti: una modifica intenzionale al riferimento di un asset del cartaceo, in una copia separata, viene correttamente rifiutata. La copia è stata poi ripristinata.
+
+## Dati da completare prima della produzione
+
+Privacy, cookie e note legali restano le bozze fornite, con i campi del gestore ancora da completare. Non sono stati inventati dati societari. Prezzi, ricette, orari e allergeni sono quelli ricevuti: le verifiche certificano la loro conservazione nella build, non una nuova validazione del ristorante.

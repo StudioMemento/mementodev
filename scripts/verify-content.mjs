@@ -8,15 +8,24 @@ assert.deepEqual(
   (await json("tests/fixtures/v18-allergens.json")).legend,
   "Allergen legend differs from V18",
 );
-for (const file of ["menu", "translations", "reviews"])
+for (const file of ["menu", "reviews"])
   for (const [key, value] of Object.entries(
     await json(`src/data/${file}.json`),
   ))
     assert.deepEqual(value, original[key], `${key} differs from V18`);
+const editorial = await json("tests/fixtures/v20-editorial-fields.json");
+const translations = await json("src/data/translations.json");
+for (const [group, languages] of Object.entries(translations))
+  for (const [language, fields] of Object.entries(languages)) {
+    assert.deepEqual(Object.keys(fields).sort(), Object.keys(original[group][language]).sort());
+    for (const [key, value] of Object.entries(fields))
+      if (!editorial[group]?.includes(key)) assert.deepEqual(value, original[group][language][key], `Unapproved editorial change: ${group}.${language}.${key}`);
+  }
 const photos = await json("src/data/photos.json");
 assert.deepEqual(photos.GALLERY_ALBUMS, original.GALLERY_ALBUMS);
 assert.equal(Object.values(photos.GALLERY_ALBUMS).flat().length, 40);
-assert.equal(photos.CUSTOMER.length, 28);
+assert.equal(photos.CUSTOMER.length, 12);
+assert.deepEqual(photos.CUSTOMER, await json("tests/fixtures/community-selected.json"));
 const excluded = new Set(
   [
     0, 1, 11, 12, 13, 14, 19, 20, 21, 23, 26, 29, 31, 33, 34, 36, 37, 38, 40,
@@ -57,5 +66,5 @@ assert.ok(
 for (const file of files)
   assert.ok(!excluded.has(file), "Excluded community photo shipped");
 console.log(
-  "CONTENT_PARITY_OK — V18 menu, 4 languages, 4 reviews, 8 printed banners; 40 gallery + 28 selected community images.",
+  "CONTENT_PARITY_OK — original menu, 4 languages (explicit editorial exceptions), 4 reviews, 8 printed banners; 40 gallery + 12 reviewed community images.",
 );

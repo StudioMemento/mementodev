@@ -153,6 +153,7 @@ export default function Contacts() {
           gap={12}
           radius={0}
           glowColor="#C6AB70"
+          spotlightRadius={200}
           className="contacts-bento vr-bento"
           textAutoHide={false}
           enableTilt={false}

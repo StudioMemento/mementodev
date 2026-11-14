@@ -153,7 +153,7 @@ function Drinks() {
   );
 }
 export default function Menu() {
-  const { t } = useI18n();
+  const { t, copy } = useI18n();
   const [active, setActive] = useState<string>("classiche");
   const chips = useRef<HTMLElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -205,6 +205,7 @@ export default function Menu() {
       <div className="menu-head fx on">
         <p className="k-s">{t.m_eyebrow}</p>
         <h2>{t.m_title}</h2>
+        <p className="menu-utility">{copy.menuHelp}</p>
       </div>
       <div className="chipbar">
         <GradualBlur
@@ -218,7 +219,7 @@ export default function Menu() {
         <div className="chipbar-inner" ref={wrap}>
           <button
             className="chipchev l"
-            aria-label="←"
+            aria-label={copy.previous}
             onClick={() =>
               chips.current?.scrollBy({ left: -220, behavior: "smooth" })
             }
@@ -227,7 +228,7 @@ export default function Menu() {
           </button>
           <button
             className="chipchev r"
-            aria-label="→"
+            aria-label={copy.next}
             onClick={() =>
               chips.current?.scrollBy({ left: 220, behavior: "smooth" })
             }

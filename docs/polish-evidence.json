@@ -1,0 +1,59 @@
+{
+  "browser": "153.0.8010.0",
+  "progress": [
+    {
+      "progress": 0,
+      "width": 2,
+      "height": 24,
+      "right": 1440,
+      "viewport": 1440,
+      "pointer": "none"
+    },
+    {
+      "progress": 0.5,
+      "width": 2,
+      "height": 450,
+      "right": 1440,
+      "viewport": 1440,
+      "pointer": "none"
+    },
+    {
+      "progress": 1,
+      "width": 2,
+      "height": 900,
+      "right": 1440,
+      "viewport": 1440,
+      "pointer": "none"
+    }
+  ],
+  "touch": [
+    "esterno",
+    "bancone",
+    "sala_sinistra",
+    "sala_destra",
+    "via_roma",
+    "pizza",
+    "categories",
+    "reviews"
+  ],
+  "reviews": [
+    426,
+    851
+  ],
+  "contacts": [
+    320,
+    390,
+    768,
+    900,
+    1100,
+    1440,
+    1920
+  ],
+  "glow": {
+    "x": "46.0px",
+    "y": "46.0px",
+    "hot": 0.98,
+    "radius": "0px",
+    "spot": "200px"
+  }
+}
