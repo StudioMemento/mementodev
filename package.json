@@ -1,10 +1,10 @@
 {
   "name": "pizzeria-via-roma-react-polish",
-  "version": "21.0.0",
+  "version": "22.0.0",
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.12.0"
+    "node": "^22.13.0 || >=24.0.0"
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -12,8 +12,7 @@
     "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "check": "npm run typecheck && npm run build && node scripts/check-build.mjs",
-    "test": "node scripts/verify-v21.mjs",
-    "test:legacy": "node scripts/verify-polish.mjs && node scripts/verify-browser.mjs && node scripts/verify-dialogs.mjs && node scripts/verify-performance.mjs && node scripts/verify-polish-ui.mjs"
+    "test": "node scripts/verify-v22.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

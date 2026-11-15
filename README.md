@@ -1,17 +1,17 @@
-# Pizzeria Via Roma — V21
+# Pizzeria Via Roma — V22
 
-Nuova revisione React del polish: hero a tutto schermo, slider continui, cornicioni illustrati, gallery React Bits, navigazione e menù più leggibili. Il pacchetto contiene sorgenti, fotografie, menù originale e configurazione Vercel. I deploy esistenti non vengono modificati da questi file.
+Revisione del sito con hero, slider, gallery, social e contatti rielaborati. La V21 è il riferimento immutabile per il menù cartaceo: componenti, testi, prezzi, allergeni, fotografie, artwork e tutti i fogli CSS preesistenti sono conservati. Il pacchetto include sorgenti, risorse locali e configurazione di build; non modifica i deploy esistenti.
 
-## Avvio e build
+## Avvio e verifica
 
-Richiede Node.js 22.12 o superiore.
+Usa Node.js 24, indicato in `.nvmrc`. È supportato anche Node.js 22 dalla versione 22.13: il test del controller di navigazione usa l’API nativa `stripTypeScriptTypes` disponibile da quella versione.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Per la versione di produzione:
+Per verificare e servire la build di produzione:
 
 ```bash
 npm run check
@@ -19,50 +19,47 @@ npm test
 npm run preview
 ```
 
-`check` esegue TypeScript, build Vite, prerender dell’HTML e controllo delle risorse. `test` esegue le verifiche V21 sui dati e sulla composizione. Le prove visive e interattive, con i limiti del dispositivo utilizzato, sono documentate in `docs/QA_V21.md`. I vecchi script `test:legacy` sono conservati come riferimento storico: includono aspettative V20 superate, come le recensioni e la precedente gallery.
+`check` esegue TypeScript, build Vite, prerender e controllo di asset e dimensioni. `test` verifica il contratto V22, incluso il confronto esatto del menù HTML con V21. Per il solo controllo dei sorgenti, senza generare la build:
 
-## Vercel
+```bash
+node scripts/verify-v22.mjs --source-only
+```
 
-1. Estrai lo ZIP e copia il contenuto della cartella nella root della repository di prova: `package.json`, `vercel.json`, `src/` e `public/` devono essere allo stesso livello.
-2. Importa la repository in un progetto Vercel di prova.
-3. Framework: **Vite**. Installazione: `npm ci`. Build: `npm run build`. Output: `dist`.
-4. Non servono variabili d’ambiente, chiavi API, backend o database.
+Le prove del controller di navigazione usano il codice reale in un ambiente DOM simulato. I controlli di integrità includono modifiche intenzionali su copie temporanee per verificare che il test sappia rilevare regressioni. I vecchi verificatori sono riferimenti storici e non vengono eseguiti da `npm test`.
 
-`vercel.json` contiene già questi comandi. Escludi `node_modules`, `.ssr` e `.env` dalla repository. La cartella `dist/` si rigenera con la build.
+## Cosa cambia in V22
 
-La configurazione conserva `noindex, nofollow` e `Disallow: /` per il deploy di prova. Prima della pubblicazione definitiva occorre aggiornare consapevolmente l’indicizzazione e completare i campi originali ancora presenti nelle pagine legali. I collegamenti esterni di telefono, WhatsApp, social e Google Maps puntano ai riferimenti già presenti nella V20.
+- Hero con logo e slogan originali, nero profondo e campo di luce oro; effetti React Bits attivati solo quando utili e con supporto al movimento ridotto.
+- Caricamento progressivo delle immagini degli slider; motori delle gallery e GSAP caricati vicino alla rispettiva sezione, mantenendo lo spazio già riservato nella pagina.
+- Un solo gestore passivo dello scroll per dock e indicatore di avanzamento, con letture della geometria memorizzate e aggiornate quando il layout cambia.
+- Quattro livelli di sfocatura per ciascun bordo globale anziché otto. La barra locale delle categorie conserva i suoi otto livelli e il suo aspetto V21.
+- Social e contatti rielaborati, senza recensioni. I contatti usano un layout HTML/CSS nativo, mantenendo mappa, orari, telefono, WhatsApp e dialoghi legali.
 
-## Cosa cambia
+IT, EN, DE e FR restano disponibili. Il menù rimane presente nell’HTML generato, prima dell’avvio di JavaScript. Le nuove regole CSS riguardano esclusivamente le sezioni autorizzate; non ridefiniscono la tipografia, le righe o i banner del menù.
 
-- Hero alta quanto la viewport, slogan e logo originali con effetti coordinati al nero e oro Via Roma.
-- Slider delle pizze e categorie con trascinamento continuo, autoplay lento, comandi manuali e rispetto del movimento ridotto.
-- Tre proposte illustrate per il cornicione: ricotta, brie, gorgonzola dolce, ciascuna con aggiunta di **3,00 €**, come nel menù originale.
-- Header, selettore lingua e contenuti sulla stessa griglia di padding; navigazione con icone indipendenti e sfocatura progressiva ai bordi.
-- Menù più compatto e bevande con intestazioni condivise per i formati, per confrontare facilmente i prezzi.
-- Allergeni in tre colonne: codice, nome e descrizione. Popup con sfondo sfocato, chiusura esterna/Escape e ritorno del focus.
-- Cinque ambienti con Accordion Gallery; foto della community con Circular Gallery piatta, immagini quadrate e bordi sfumati.
-- Social a tutto schermo con Instagram e Facebook. Rimossi recensioni e collegamenti alle piattaforme di recensioni.
-- Info a tutto schermo con mappa, orari, telefono e WhatsApp; l’indicatore aperto/chiuso usa il fuso `Europe/Rome`.
+## Preparazione dello ZIP e deploy di prova
 
-## Dati preservati
+1. Estrai lo ZIP e copia il contenuto della cartella nella root della repository di prova: `package.json`, `vercel.json`, `src/` e `public/` devono trovarsi allo stesso livello.
+2. Importa quella repository in un progetto Vercel di prova.
+3. Framework **Vite**; installazione `npm ci`; build `npm run build`; output `dist`.
+4. Non sono richieste variabili d’ambiente, chiavi API, backend o database.
 
-Prezzi, ingredienti, menù, allergeni, immagini del cartaceo, foto del locale/community, numero di telefono, WhatsApp e orari provengono dai sorgenti V20. Il menù resta presente nell’HTML prodotto dalla build. Non sono state inventate ricette o indicazioni alimentari. Le quattro lingue IT/EN/DE/FR sono mantenute.
+`vercel.json` contiene già questi comandi. Non includere `node_modules`, `.ssr` o file `.env` nella repository o in uno ZIP dei sorgenti. `dist` è rigenerabile e non è necessario per la consegna dei sorgenti.
 
-Font, icone e immagini sono locali. Le nuove illustrazioni dei cornicioni sono vettoriali e illustrative. Le integrazioni React Bits e le modifiche specifiche sono documentate in `docs/VFX_V21.md` e `docs/INTERACTIONS_V21.md`; le licenze originali sono in `licenses/`.
+Il progetto mantiene `noindex, nofollow` e `Disallow: /` per lo staging. Prima di una pubblicazione definitiva, aggiorna l’indicizzazione e completa i campi originali ancora presenti nelle pagine legali. I collegamenti telefono, WhatsApp, social e Google Maps conservano i riferimenti esistenti. Nessun deploy viene effettuato automaticamente dai comandi di verifica.
 
-## Dove intervenire
+## Struttura
 
-| Contenuto | Percorso |
+| Ambito | Percorso |
 |---|---|
-| Piatti, prezzi, aggiunte e bevande | `src/data/menu.json` |
-| Traduzioni originali | `src/data/translations.json` |
-| Testi brevi del sito | `src/i18n.tsx` |
-| Foto locale e community | `src/data/photos.json` |
-| Layout e responsive | `src/styles/design-v21.css` |
+| Menù e allergeni congelati | `src/components/Menu.tsx`, `src/components/Dialogs.tsx`, `src/data/` |
+| Header, dock e avanzamento | `src/components/Navigation.tsx` |
+| Immagini responsive | `src/components/Photo.tsx` |
 | Slider e gallery | `src/components/IntroSliders.tsx`, `Gallery.tsx`, `Community.tsx` |
-| Interazioni | `src/styles/interactions-v21.css`, `src/hooks/useCarousel.ts` |
-| Atmosfere e hero | `src/components/effects/`, `src/styles/effects-v21.css` |
-| Popup legali | `src/data/privacy.html`, `cookie.html`, `note-legali.html` |
-| Pagine legali autonome | I corrispondenti file in `public/` |
+| Hero e atmosfere | `src/components/Hero.tsx`, `src/components/effects/` |
+| Nuovi stili | `src/styles/effects-v22.css`, `interactions-v22.css`, `design-v22.css` |
+| Verifica di integrità | `scripts/verify-v22.mjs`, `tests/v22/` |
+| Integrazione e costi misurati | `docs/INTEGRATION_V22.md` |
+| Evidenze visive e limiti del test | `docs/QA_V22.md` |
 
-Le regole CSS originali sono la base; i fogli V21 si caricano dopo, nell’ordine effetti → interazioni → design. Modificando i testi legali, aggiorna sia il frammento React sia la pagina HTML autonoma. Le recensioni rimangono archiviate nei dati storici ma non sono caricate nel sito.
+I fogli V22 vengono caricati dopo quelli V21 nell’ordine effetti → interazioni → design. Non modificare i file congelati per una correzione di una sezione V22: usa le classi specifiche della sezione. Le implementazioni React Bits e gli adattamenti sono documentati in `docs/VFX_V22.md` e `docs/INTERACTIONS_V22.md`, con attribuzioni in `licenses/`.

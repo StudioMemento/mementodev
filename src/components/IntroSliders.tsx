@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
 import data from "../data/menu.json";
 import { useI18n, translateDescription, translateName, type Language } from "../i18n";
 import { useCarousel } from "../hooks/useCarousel";
@@ -47,7 +47,7 @@ function Oven() {
         {data.FORNO.map(([src, name, description], logical) => {
           const offset = ((logical + data.FORNO.length / 2) % data.FORNO.length) - data.FORNO.length / 2;
           return <figure key={src} className={`vr-pizza-card${logical === carousel.index ? " is-current" : ""}`} data-carousel-card data-forno-index={logical} aria-hidden={logical !== carousel.index} style={{ "--slide-x": `${offset * 340}px`, "--slide-distance": Math.abs(offset) } as CSSProperties}>
-            <div className="vr-pizza-image"><Photo src={src} alt={logical === carousel.index ? translateName(name, language) : ""} eager sizes="(max-width: 700px) 74vw, 25vw" /></div>
+            <div className="vr-pizza-image"><Photo src={src} alt={logical === carousel.index ? translateName(name, language) : ""} enabled={carousel.isLoaded(logical)} eager sizes="(max-width: 700px) 74vw, 25vw" /></div>
             <figcaption>{translateName(name, language)}</figcaption>
             <p className="vr-pizza-ingredients">{translateDescription(description, language)}</p>
           </figure>;
@@ -90,6 +90,12 @@ function Cornicione() {
 function Categories() {
   const { t, copy, language } = useI18n();
   const carousel = useCarousel(categoryOrder.length, 8200);
+  useEffect(() => {
+    const stage = carousel.stageRef.current;
+    const focused = document.activeElement;
+    if (!stage || focused === stage || !stage.contains(focused)) return;
+    stage.querySelectorAll<HTMLElement>('[data-carousel-card]')[carousel.index]?.querySelector<HTMLAnchorElement>('a')?.focus({ preventScroll: true });
+  }, [carousel.index, carousel.stageRef]);
   return <section id="catshow" className="vr-category-carousel" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.m_title}>
     <SectionAtmosphere variant="categories" />
     <div className="vr-category-stage" id="showrail" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.m_title}>
@@ -99,7 +105,7 @@ function Categories() {
         return <article className={`vr-category-slide${active ? " is-current" : ""}`} key={id} data-cat={id} data-carousel-card aria-hidden={!active} style={{ "--slide-x": `${offset * 1000}px`, "--slide-distance": Math.abs(offset) } as CSSProperties}>
           <header className="vr-category-heading"><h2>{t.cats[id][0]}</h2></header>
           <a className="vr-category-image" href={`#cat-${id}`} draggable={false} tabIndex={active ? 0 : -1} aria-label={`${copy.menu}: ${t.cats[id][0]}`}>
-            <Photo src={data.MENU_ART[id]} alt={active ? t.cats[id][0] : ""} eager sizes="(max-width: 700px) 90vw, 64vw" />
+            <Photo src={data.MENU_ART[id]} alt={active ? t.cats[id][0] : ""} enabled={carousel.isLoaded(logical)} eager sizes="(max-width: 700px) 90vw, 64vw" />
             <span className="vr-category-link">{interactionCopy[language].discover}<Chevron direction="right" /></span>
           </a>
           <p className="vr-category-description">{t.cats[id][1] || "\u00a0"}</p>

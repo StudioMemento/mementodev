@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
+import { readFile, writeFile, rm, readdir } from "node:fs/promises";
 import { PurgeCSS } from "purgecss";
 import { render } from "../.ssr/entry-server.js";
 const path = "dist/index.html";
@@ -28,8 +28,12 @@ const result = await new PurgeCSS().purge({
       "active",
     ],
     deep: [
-      // V21 component states are also applied by animation and pointer handlers.
+      // Component states are also applied by animation and pointer handlers.
       /^v21-ready$/,
+      /^v22-ready$/,
+      /^v22-/,
+      /^vr22-/,
+      /^particles/,
       /^vr-/,
       /^ag-/,
       /^accordion-gallery/,

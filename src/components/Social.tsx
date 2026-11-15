@@ -1,80 +1,42 @@
-// Social profiles only: reviews are intentionally omitted in V21.
 import { useI18n, Copy } from "../i18n";
+import { Icon } from "./Icon";
 import SectionAtmosphere from "./effects/SectionAtmosphere";
-function SentenceCopy({ value }: { value: string }) {
-  const clean = value
-    .replace(/<[^>]+>/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  return (
-    <>
-      {(clean.match(/[^.!?]+(?:[.!?]+|$)/g) || [clean])
-        .filter(Boolean)
-        .map((part, i) => (
-          <span className="sentence-unit" key={i}>
-            {part.trim()}
-          </span>
-        ))}
-    </>
-  );
-}
+
 export default function Social() {
   const { t, ui } = useI18n();
+  const profiles = [
+    {
+      name: "Instagram", handle: "@pizzeriaviaromamaniago",
+      href: "https://www.instagram.com/pizzeriaviaromamaniago/",
+      icon: "instagram-logo", action: ui.so_instagram,
+    },
+    {
+      name: "Facebook", handle: "Via Roma Maniago",
+      href: "https://www.facebook.com/people/Pizzeria-Via-Roma/61562436140782/",
+      icon: "facebook-logo", action: ui.so_facebook,
+    },
+  ];
   return (
-    <section id="social" className="vr-social">
+    <section id="social" className="vr-social v22-social" aria-labelledby="social-title">
       <SectionAtmosphere variant="social" />
-      <div className="social-shell">
-        <header className="social-head fx">
-          <p className="k-s">
-            <Copy value={t.so_eyebrow} />
-          </p>
-          <h2>
-            <Copy value={ui.so_title} />
-          </h2>
-          <p className="social-lead sentence-flow">
-            <SentenceCopy value={ui.so_lead} />
-          </p>
+      <div className="v22-social-shell">
+        <header className="v22-social-heading">
+          <p className="v22-eyebrow"><Copy value={t.so_eyebrow} /></p>
+          <h2 id="social-title"><Copy value={ui.so_title} /></h2>
+          <p className="v22-social-lead"><Copy value={ui.so_lead} /></p>
         </header>
-
-        <div className="social-actions fx">
-          <a
-            className="social-card social-card-primary"
-            href="https://www.instagram.com/pizzeriaviaromamaniago/"
-            target="_blank"
-            rel="noopener"
-          >
-            <span className="social-icon">
-              <i className="ph-thin ph-instagram-logo"></i>
-            </span>
-            <span className="social-copy">
-              <small>Instagram</small>
-              <strong>@pizzeriaviaromamaniago</strong>
-              <em>
-                <Copy value={ui.so_instagram} />
-              </em>
-            </span>
-            <i className="ph-thin ph-arrow-up-right social-arrow"></i>
-          </a>
-          <a
-            className="social-card"
-            href="https://www.facebook.com/people/Pizzeria-Via-Roma/61562436140782/"
-            target="_blank"
-            rel="noopener"
-          >
-            <span className="social-icon">
-              <i className="ph-thin ph-facebook-logo"></i>
-            </span>
-            <span className="social-copy">
-              <small>Facebook</small>
-              <strong>Via Roma Maniago</strong>
-              <em>
-                <Copy value={ui.so_facebook} />
-              </em>
-            </span>
-            <i className="ph-thin ph-arrow-up-right social-arrow"></i>
-          </a>
+        <div className="v22-social-links">
+          {profiles.map((profile) => (
+            <a className="v22-social-link" href={profile.href} key={profile.name} target="_blank" rel="noopener noreferrer">
+              <span className="v22-social-link-main">
+                <span className="v22-social-platform"><Icon name={profile.icon} />{profile.name}</span>
+                <span className="v22-social-handle">{profile.handle}</span>
+                <span className="v22-social-action"><Copy value={profile.action} /></span>
+              </span>
+              <span className="v22-link-arrow" aria-hidden="true"><Icon name="arrow-up-right" /></span>
+            </a>
+          ))}
         </div>
-
       </div>
     </section>
   );

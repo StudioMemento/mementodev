@@ -8,22 +8,25 @@ export function Photo({
   alt,
   className = "",
   eager = false,
+  enabled = true,
   sizes = "(max-width: 700px) 90vw, 55vw",
 }: {
   src: string;
   alt: string;
   className?: string;
   eager?: boolean;
+  /** Non-menu carousels can defer a resource without replacing its image element. */
+  enabled?: boolean;
   sizes?: string;
 }) {
   const meta = images[src];
   return (
     <img
-      src={`/${src}`}
+      src={enabled ? `/${src}` : undefined}
       srcSet={
-        meta?.small ? `/${meta.small} 768w, /${src} ${meta.width}w` : undefined
+        enabled && meta?.small ? `/${meta.small} 768w, /${src} ${meta.width}w` : undefined
       }
-      sizes={meta?.small ? sizes : undefined}
+      sizes={enabled && meta?.small ? sizes : undefined}
       alt={alt}
       width={meta?.width}
       height={meta?.height}

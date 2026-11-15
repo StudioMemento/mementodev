@@ -64,7 +64,7 @@ type Settings = {
   dpr?: number;
 };
 
-type TextureEntry = { texture: WebGLTexture | null; aspect: number; ready: number; loaded: boolean };
+type TextureEntry = { texture: WebGLTexture | null; aspect: number; ready: number; loaded: boolean; image?: HTMLImageElement };
 
 type Point = { x: number; y: number };
 
@@ -149,20 +149,8 @@ const CLASSES = {
   hidden: 'circular-gallery-hidden'
 };
 const STEPS: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
-const DEFAULT_ITEMS: GalleryItem[] = [
-  { image: 'https://picsum.photos/seed/1/800/600', text: 'Bridge' },
-  { image: 'https://picsum.photos/seed/2/800/600', text: 'Desk Setup' },
-  { image: 'https://picsum.photos/seed/3/800/600', text: 'Waterfall' },
-  { image: 'https://picsum.photos/seed/4/800/600', text: 'Strawberries' },
-  { image: 'https://picsum.photos/seed/5/800/600', text: 'Deep Diving' },
-  { image: 'https://picsum.photos/seed/16/800/600', text: 'Train Track' },
-  { image: 'https://picsum.photos/seed/17/800/600', text: 'Santorini' },
-  { image: 'https://picsum.photos/seed/8/800/600', text: 'Blurry Lights' },
-  { image: 'https://picsum.photos/seed/9/800/600', text: 'New York' },
-  { image: 'https://picsum.photos/seed/10/800/600', text: 'Good Boy' },
-  { image: 'https://picsum.photos/seed/21/800/600', text: 'Coastline' },
-  { image: 'https://picsum.photos/seed/12/800/600', text: 'Palm Trees' }
-];
+// The application supplies its own photographs; no demo images ship in the bundle.
+const DEFAULT_ITEMS: GalleryItem[] = [];
 
 const VERTEX = `#version 300 es
 in vec2 aPosition;
@@ -334,7 +322,12 @@ const link = (gl: WebGL2RenderingContext): Program | null => {
   const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
   const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
   const program = gl.createProgram();
-  if (!vertex || !fragment || !program) return null;
+  if (!vertex || !fragment || !program) {
+    if (vertex) gl.deleteShader(vertex);
+    if (fragment) gl.deleteShader(fragment);
+    if (program) gl.deleteProgram(program);
+    return null;
+  }
   gl.attachShader(program, vertex);
   gl.attachShader(program, fragment);
   gl.bindAttribLocation(program, 0, 'aPosition');
@@ -392,6 +385,9 @@ const CircularGallery = ({
   const [active, setActive] = useState(0);
   const [open, setOpen] = useState(false);
   const [gpuReady, setGpuReady] = useState(false);
+  const [activated, setActivated] = useState(false);
+  const [gpuUnavailable, setGpuUnavailable] = useState(false);
+  const [contextRevision, setContextRevision] = useState(0);
   const list = Array.isArray(items) && items.length ? items : DEFAULT_ITEMS;
   const settings: Settings = {
     items: list,
@@ -432,7 +428,22 @@ const CircularGallery = ({
     };
   }, [font, fontUrl]);
 
+  // Keep the full SSR geometry, but don't create a GPU context or request photos below the fold.
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const near = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      setActivated(true);
+      near.disconnect();
+    }, { rootMargin: '360px 0px' });
+    near.observe(container);
+    return () => near.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!activated || !settingsRef.current.items.length) return;
+    setGpuReady(false);
     const container = containerRef.current;
     const canvas = canvasRef.current;
     const labelLayer = labelsRef.current;
@@ -444,23 +455,29 @@ const CircularGallery = ({
       depth: false,
       stencil: false
     });
-    if (!container || !canvas || !labelLayer || !caption || !gl) return undefined;
+    if (!container || !canvas || !labelLayer || !caption) return undefined;
+    if (!gl) { setGpuUnavailable(true); return undefined; }
 
     const program = link(gl);
-    if (!program) return undefined;
+    if (!program) { setGpuUnavailable(true); return undefined; }
     const u = program.uniforms;
     let disposed = false;
+    let failed = false;
+    let readyAnnounced = false;
 
+    // The requested flat, wave-free preset needs two triangles per photo, not 1,536.
+    const segmentsX = settingsRef.current.wave === 0 ? 1 : SEGMENTS_X;
+    const segmentsY = settingsRef.current.wave === 0 ? 1 : SEGMENTS_Y;
     const vertices: number[] = [];
-    for (let y = 0; y <= SEGMENTS_Y; y++) {
-      for (let x = 0; x <= SEGMENTS_X; x++) vertices.push(x / SEGMENTS_X - 0.5, y / SEGMENTS_Y - 0.5);
+    for (let y = 0; y <= segmentsY; y++) {
+      for (let x = 0; x <= segmentsX; x++) vertices.push(x / segmentsX - 0.5, y / segmentsY - 0.5);
     }
     const indices: number[] = [];
-    for (let y = 0; y < SEGMENTS_Y; y++) {
-      for (let x = 0; x < SEGMENTS_X; x++) {
-        const a = y * (SEGMENTS_X + 1) + x;
+    for (let y = 0; y < segmentsY; y++) {
+      for (let x = 0; x < segmentsX; x++) {
+        const a = y * (segmentsX + 1) + x;
         const b = a + 1;
-        const c = a + SEGMENTS_X + 1;
+        const c = a + segmentsX + 1;
         const d = c + 1;
         indices.push(a, b, d, a, d, c);
       }
@@ -527,10 +544,13 @@ const CircularGallery = ({
     let pool: LabelSlot[] = [];
     let raf = 0;
     let last = 0;
-    let visible = true;
+    let visible = false;
+    let contextLost = false;
+    let idleTimer = 0;
     let snapTimer = 0;
     let lastItems: GalleryItem[] | null = null;
     let typing = false;
+    let pointerInside = false;
 
     const textureFor = (url: string): TextureEntry => {
       const existing = textures.get(url);
@@ -542,28 +562,42 @@ const CircularGallery = ({
       image.decoding = 'async';
       image.onload = () => {
         if (disposed || !textures.has(url)) return;
-        const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        if (anisotropy) {
-          const max = gl.getParameter(anisotropy.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-          gl.texParameterf(gl.TEXTURE_2D, anisotropy.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, max));
-        }
-        entry.texture = texture;
         entry.aspect = image.naturalWidth / Math.max(1, image.naturalHeight);
-        entry.loaded = true;
-        if (url === settingsRef.current.items[0]?.image) setGpuReady(true);
+        entry.image = image;
+        // Upload only from a visible frame, never from an offscreen network callback.
         wake();
+      };
+      image.onerror = () => {
+        if (disposed) return;
+        if (url === settingsRef.current.items[0]?.image) {
+          failed = true; stop(); setGpuUnavailable(true);
+        }
       };
       image.src = url;
       return entry;
+    };
+
+    const upload = (entry: TextureEntry) => {
+      const image = entry.image;
+      if (!image) return;
+      const texture = gl.createTexture();
+      if (!texture) return;
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      if (anisotropy) {
+        const max = gl.getParameter(anisotropy.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        gl.texParameterf(gl.TEXTURE_2D, anisotropy.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(4, max));
+      }
+      entry.texture = texture;
+      entry.loaded = true;
+      entry.image = undefined;
     };
 
     const prune = (list: GalleryItem[]) => {
@@ -697,7 +731,7 @@ const CircularGallery = ({
       gl.uniform1f(u.uRingGap, 5 * ratio);
       gl.activeTexture(gl.TEXTURE0);
       gl.uniform1i(u.uTexture, 0);
-      const count = SEGMENTS_X * SEGMENTS_Y * 6;
+      const count = indices.length;
       const blur = Math.max(10, metrics.h * 0.09) * ratio;
       const place = (card: Card) => {
         gl.uniform2f(u.uCenter, card.x * ratio, card.y * ratio);
@@ -815,18 +849,17 @@ const CircularGallery = ({
 
     const frame = (now: number) => {
       raf = 0;
+      if (disposed || failed || contextLost || !visible || document.hidden) { last = 0; return; }
       if (resizePending) {
         resizePending = false;
         applyResize();
       }
-      if (!visible || document.hidden) return;
       const s = settingsRef.current;
       const dt = last ? clamp((now - last) / 1000, 0.0005, 0.05) : 1 / 60;
       last = now;
       if (s.items !== lastItems) {
         lastItems = s.items;
         prune(s.items);
-        s.items.forEach(item => textureFor(item.image));
       }
       const idle = now - state.lastInput > 1800;
       const auto =
@@ -835,7 +868,9 @@ const CircularGallery = ({
         !state.drag &&
         state.open < 0.01 &&
         state.hovered === null &&
+        !pointerInside &&
         !state.keyboard &&
+        !container.contains(document.activeElement) &&
         idle;
       if (auto) state.target += s.autoScroll * state.spacing * 0.25 * dt;
       const follow = reduce ? 1 : 1 - Math.pow(1 - s.scrollEase, dt * 60);
@@ -843,19 +878,20 @@ const CircularGallery = ({
       state.scroll += (state.target - state.scroll) * follow;
       if (Math.abs(state.target - state.scroll) < 0.05) state.scroll = state.target;
       const velocity = (state.scroll - before) / dt;
-      state.velocity += (velocity - state.velocity) * (1 - Math.exp(-dt / 0.08));
+      state.velocity = reduce ? 0 : state.velocity + (velocity - state.velocity) * (1 - Math.exp(-dt / 0.08));
       if (Math.abs(state.velocity) < 0.5) state.velocity = 0;
       state.waveTime += dt * 2.4;
       const openFollow = reduce ? 1 : 1 - Math.exp(-dt / 0.14);
       state.open += (state.openTarget - state.open) * openFollow;
       if (Math.abs(state.openTarget - state.open) < 0.001) state.open = state.openTarget;
-      state.ring += ((state.keyboard ? 1 : 0) - state.ring) * (1 - Math.exp(-dt / 0.1));
+      state.ring = reduce ? (state.keyboard ? 1 : 0) : state.ring + ((state.keyboard ? 1 : 0) - state.ring) * (1 - Math.exp(-dt / 0.1));
       if (Math.abs((state.keyboard ? 1 : 0) - state.ring) < 0.002) state.ring = state.keyboard ? 1 : 0;
-      if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);
+      if (reduce) state.intro = 1;
+      else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);
       let settling = false;
       state.hover.forEach((value, slot) => {
         const goal = slot === state.hovered ? 1 : 0;
-        const next = value + (goal - value) * (1 - Math.exp(-dt / 0.12));
+        const next = reduce ? goal : value + (goal - value) * (1 - Math.exp(-dt / 0.12));
         if (Math.abs(goal - next) < 0.002) {
           if (goal === 0) state.hover.delete(slot);
           else state.hover.set(slot, 1);
@@ -876,7 +912,12 @@ const CircularGallery = ({
           settling = true;
         }
       });
+      let uploadBudget = 1;
       textures.forEach(entry => {
+        if (entry.image) {
+          if (uploadBudget > 0) { upload(entry); uploadBudget--; }
+          else settling = true;
+        }
         if (!entry.loaded || entry.ready >= 1) return;
         entry.ready = reduce ? 1 : Math.min(1, entry.ready + dt / 0.45);
         settling = true;
@@ -891,20 +932,37 @@ const CircularGallery = ({
       const metrics = layout();
       draw(metrics);
       placeLabels(metrics);
+      if (!readyAnnounced && textures.get(s.items[0]?.image)?.loaded) {
+        readyAnnounced = true; setGpuReady(true); setGpuUnavailable(false);
+      }
       const moving =
-        (s.autoScroll && !reduce) ||
+        auto ||
         state.scroll !== state.target ||
         state.velocity !== 0 ||
         state.open !== state.openTarget ||
         state.intro < 1 ||
         (state.ring !== 0 && state.ring !== 1) ||
         settling;
+      const animating = String(!!moving);
+      if (container.dataset.galleryAnimating !== animating) container.dataset.galleryAnimating = animating;
       if (moving) raf = requestAnimationFrame(frame);
-      else last = 0;
+      else {
+        last = 0;
+        // A pause must be idle. The next eligibility deadline wakes exactly once.
+        if (s.autoScroll && !reduce && !state.drag && !state.keyboard && state.hovered === null && !pointerInside && !container.contains(document.activeElement) && !idle) {
+          idleTimer = window.setTimeout(wake, Math.max(16, 1801 - (now - state.lastInput)));
+        }
+      }
     };
 
+    function stop() {
+      cancelAnimationFrame(raf); raf = 0; last = 0;
+      clearTimeout(idleTimer); clearTimeout(snapTimer);
+      if (container) container.dataset.galleryAnimating = 'false';
+    }
     function wake() {
-      if (!disposed && !raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
+      clearTimeout(idleTimer);
+      if (!disposed && !failed && !contextLost && !raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
     }
 
     let resizePending = false;
@@ -913,8 +971,10 @@ const CircularGallery = ({
       view.width = Math.max(1, container.clientWidth);
       view.height = Math.max(1, container.clientHeight);
       view.ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);
-      canvas.width = Math.max(1, Math.round(view.width * view.ratio));
-      canvas.height = Math.max(1, Math.round(view.height * view.ratio));
+      const width = Math.max(1, Math.round(view.width * view.ratio));
+      const height = Math.max(1, Math.round(view.height * view.ratio));
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
       const before = state.spacing;
       const { spacing } = measure();
       if (before > 1 && spacing !== before) {
@@ -1050,8 +1110,16 @@ const CircularGallery = ({
       }
     };
 
+    const onPointerEnter = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') return;
+      pointerInside = true;
+      wake();
+    };
     const onPointerLeave = () => {
+      pointerInside = false;
+      state.lastInput = performance.now();
       setPointer(null);
+      wake();
     };
 
     const onWheel = (event: WheelEvent) => {
@@ -1087,6 +1155,8 @@ const CircularGallery = ({
         event.preventDefault();
         const base = nearest() - wrap(nearest(), s.items.length);
         setSlot(event.key === 'Home' ? base : base + s.items.length - 1);
+        const index = wrap(state.active, s.items.length);
+        if (container.contains(document.activeElement)) buttonsRef.current[index]?.focus({ preventScroll: true });
         return;
       }
       if (event.key === 'Escape' && state.openTarget > 0) {
@@ -1113,13 +1183,20 @@ const CircularGallery = ({
     const onFocusOut = (event: FocusEvent) => {
       if (container.contains(event.relatedTarget as Node | null)) return;
       state.keyboard = false;
+      state.lastInput = performance.now();
       wake();
     };
 
     const onVisibility = () => {
       last = 0;
-      wake();
+      if (document.hidden) stop(); else wake();
     };
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      contextLost = true; stop();
+      setGpuReady(false); setGpuUnavailable(true);
+    };
+    const onContextRestored = () => { setContextRevision(revision => revision + 1); };
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
@@ -1128,13 +1205,14 @@ const CircularGallery = ({
       if (visible) {
         last = 0;
         wake();
-      }
+      } else stop();
     });
     intersection.observe(container);
     container.addEventListener('pointerdown', onPointerDown);
     container.addEventListener('pointermove', onPointerMove);
     container.addEventListener('pointerup', onPointerUp);
     container.addEventListener('pointercancel', onPointerCancel);
+    container.addEventListener('pointerenter', onPointerEnter);
     container.addEventListener('pointerleave', onPointerLeave);
     container.addEventListener('wheel', onWheel, { passive: false });
     container.addEventListener('keydown', onKeyDown);
@@ -1144,8 +1222,9 @@ const CircularGallery = ({
     motionQuery.addEventListener('change', onMotionChange);
     document.addEventListener('keydown', onAnyKey, true);
     document.addEventListener('pointerdown', onAnyPointer, true);
+    canvas.addEventListener('webglcontextlost', onContextLost);
+    canvas.addEventListener('webglcontextrestored', onContextRestored);
     lastItems = settingsRef.current.items;
-    lastItems.forEach(item => textureFor(item.image));
     resize();
 
     const slotFor = (index: number) => {
@@ -1166,8 +1245,7 @@ const CircularGallery = ({
 
     return () => {
       disposed = true;
-      cancelAnimationFrame(raf);
-      clearTimeout(snapTimer);
+      stop();
       engineRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
@@ -1175,6 +1253,7 @@ const CircularGallery = ({
       container.removeEventListener('pointermove', onPointerMove);
       container.removeEventListener('pointerup', onPointerUp);
       container.removeEventListener('pointercancel', onPointerCancel);
+      container.removeEventListener('pointerenter', onPointerEnter);
       container.removeEventListener('pointerleave', onPointerLeave);
       container.removeEventListener('wheel', onWheel);
       container.removeEventListener('keydown', onKeyDown);
@@ -1184,8 +1263,13 @@ const CircularGallery = ({
       motionQuery.removeEventListener('change', onMotionChange);
       document.removeEventListener('keydown', onAnyKey, true);
       document.removeEventListener('pointerdown', onAnyPointer, true);
+      canvas.removeEventListener('webglcontextlost', onContextLost);
+      canvas.removeEventListener('webglcontextrestored', onContextRestored);
       labelLayer.replaceChildren();
-      textures.forEach(entry => entry.texture && gl.deleteTexture(entry.texture));
+      textures.forEach(entry => {
+        if (entry.image) { entry.image.onload = null; entry.image.onerror = null; }
+        if (entry.texture) gl.deleteTexture(entry.texture);
+      });
       textures.clear();
       gl.deleteTexture(blank);
       gl.deleteProgram(program.program);
@@ -1194,21 +1278,22 @@ const CircularGallery = ({
       gl.deleteVertexArray(vao);
       if (!canvas.isConnected) gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, []);
+  }, [activated, contextRevision, list.length > 0]);
 
   useEffect(() => {
     engineRef.current?.wake();
   });
 
   const count = list.length;
-  const current = list[active % count] || list[0];
+  const current = count ? list[active % count] || list[0] : undefined;
 
   return (
     <div
       ref={containerRef}
       className={`${CLASSES.root}${className ? ` ${className}` : ''}`}
       style={{ color: textColor, ...style }}
-      data-gallery-ready={gpuReady ? 'true' : 'false'}
+      data-gallery-ready={gpuReady && count > 0 ? 'true' : 'false'}
+      data-gallery-engine={!activated ? 'deferred' : gpuUnavailable ? 'fallback' : 'webgl'}
       role="region"
       aria-roledescription="carousel"
       aria-label="Image gallery"
@@ -1232,7 +1317,7 @@ const CircularGallery = ({
           <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       </button>
-      {!gpuReady && <FlatGalleryFallback items={list} autoScroll={autoScroll} showTitles={showTitles} onItemClick={onItemClick} onActiveChange={onActiveChange} label={rest["aria-label"]} />}
+      {!gpuReady && count > 0 && <FlatGalleryFallback items={list} enabled={gpuUnavailable} autoScroll={gpuUnavailable ? autoScroll : 0} showTitles={showTitles} onItemClick={onItemClick} onActiveChange={onActiveChange} label={rest["aria-label"]} />}
       <ul className={CLASSES.hidden} hidden={!gpuReady} data-gallery-list="">
         {list.map((item, index) => (
           <li key={`${item.image}-${index}`}>

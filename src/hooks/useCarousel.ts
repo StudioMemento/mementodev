@@ -8,7 +8,9 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [reduced, setReduced] = useState(false);
-  const state = useRef({ position: 0, target: 0, step: 300, frame: 0, last: 0, nextAuto: 0, visible: false, hovered: false, focused: false, paused: false, reduced: false, index: 0, suppress: false });
+  const loaded = useRef(new Set<number>());
+  const [, setLoadVersion] = useState(0);
+  const state = useRef({ position: 0, target: 0, step: 300, width: 0, near: false, frame: 0, last: 0, nextAuto: 0, visible: false, hovered: false, focused: false, paused: false, reduced: false, index: 0, suppress: false });
   const pointer = useRef<{ id: number; x: number; y: number; start: number; dx: number; active: boolean; lastX: number; time: number; velocity: number } | null>(null);
   const wakeRef = useRef<() => void>(() => {});
   const move = useCallback((amount: number) => {
@@ -39,18 +41,32 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
     const cards = Array.from(stage.querySelectorAll<HTMLElement>("[data-carousel-card]"));
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const render = () => {
+      // Keep the DOM stable, but don't animate or promote cards beyond the clipped stage.
+      const edge = s.width / Math.max(1, s.step) / 2 + .75;
+      let newImages = false;
       cards.forEach((card, logical) => {
         const offset = wrap(logical - s.position + count / 2, count) - count / 2;
-        card.style.setProperty("--slide-x", `${offset * s.step}px`);
-        card.style.setProperty("--slide-distance", String(Math.abs(offset)));
-        card.style.zIndex = String(20 - Math.round(Math.abs(offset) * 2));
+        const distance = Math.abs(offset);
+        const visible = distance <= edge;
+        const visibility = String(visible);
+        if (card.dataset.carouselVisible !== visibility) card.dataset.carouselVisible = visibility;
+        if (s.near && distance <= edge + 1.5 && !loaded.current.has(logical)) {
+          loaded.current.add(logical);
+          newImages = true;
+        }
+        if (!visible) return;
+        card.style.setProperty("--slide-x", `${(offset * s.step).toFixed(2)}px`);
+        card.style.setProperty("--slide-distance", distance.toFixed(4));
+        const z = String(20 - Math.round(distance * 2));
+        if (card.style.zIndex !== z) card.style.zIndex = z;
       });
+      if (newImages) setLoadVersion(version => version + 1);
       const active = wrap(Math.round(s.position), count);
       if (active !== s.index) {
         s.index = active;
         setIndex(active);
       }
-      stage.dataset.index = String(active);
+      if (stage.dataset.index !== String(active)) stage.dataset.index = String(active);
     };
     const updateMotion = () => {
       s.reduced = media.matches;
@@ -62,6 +78,7 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
       if (!card) return;
       const gap = Number.parseFloat(getComputedStyle(stage).getPropertyValue("--carousel-gap")) || 0;
       s.step = card.offsetWidth + gap;
+      s.width = stage.clientWidth;
       render();
       wake();
     };
@@ -82,7 +99,10 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
         if (Math.abs(s.target - s.position) < .0005) s.position = s.target;
       }
       render();
-      if (Math.abs(s.target - s.position) > .0005 || pointer.current?.active) s.frame = requestAnimationFrame(frame);
+      const moving = Math.abs(s.target - s.position) > .0005;
+      const motion = String(moving || !!pointer.current?.active);
+      if (stage.dataset.carouselMoving !== motion) stage.dataset.carouselMoving = motion;
+      if (moving) s.frame = requestAnimationFrame(frame);
       else {
         s.last = 0;
         // No perpetual animation loop while still: wake at the next autoplay deadline.
@@ -96,16 +116,31 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
     }
     wakeRef.current = wake;
     s.nextAuto = performance.now() + interval;
+    const preload = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      s.near = true;
+      render();
+      preload.disconnect();
+    }, { rootMargin: "360px 0px" });
+    preload.observe(stage);
+    const stop = () => {
+      cancelAnimationFrame(s.frame); s.frame = 0; s.last = 0;
+      window.clearTimeout(idleTimer);
+      stage.dataset.carouselMoving = "false";
+    };
     const observer = new IntersectionObserver(entries => {
       s.visible = entries.some(e => e.isIntersecting);
       if (s.visible) { s.nextAuto = performance.now() + interval; wake(); }
-      else { cancelAnimationFrame(s.frame); s.frame = 0; s.last = 0; window.clearTimeout(idleTimer); }
-    }, { threshold: .1 });
-    observer.observe(root);
+      else stop();
+    }, { threshold: .01 });
+    observer.observe(stage);
     const resize = new ResizeObserver(measure);
     resize.observe(stage);
     if (cards[0]) resize.observe(cards[0]);
-    const visible = () => { s.last = 0; s.nextAuto = performance.now() + interval; wake(); };
+    const visible = () => {
+      s.last = 0; s.nextAuto = performance.now() + interval;
+      if (document.hidden) stop(); else wake();
+    };
     document.addEventListener("visibilitychange", visible);
     document.addEventListener("close", visible, true);
     media.addEventListener("change", updateMotion);
@@ -114,7 +149,7 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
     return () => {
       cancelAnimationFrame(s.frame); s.frame = 0;
       window.clearTimeout(idleTimer);
-      observer.disconnect(); resize.disconnect();
+      observer.disconnect(); preload.disconnect(); resize.disconnect();
       document.removeEventListener("visibilitychange", visible);
       document.removeEventListener("close", visible, true);
       media.removeEventListener("change", updateMotion);
@@ -186,5 +221,5 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
   };
   const { onPointerEnter, onPointerLeave, onFocusCapture, onBlurCapture, ...stageBind } = bind;
   const rootBind = { onPointerEnter, onPointerLeave, onFocusCapture, onBlurCapture };
-  return { rootRef, stageRef, index, move, select, paused, setPaused, reduced, bind: stageBind, rootBind };
+  return { rootRef, stageRef, index, move, select, paused, setPaused, reduced, isLoaded: (logical: number) => loaded.current.has(logical), bind: stageBind, rootBind };
 }

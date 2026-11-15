@@ -2,13 +2,17 @@
 // React Bits Accordion Gallery, David Haz, MIT + Commons Clause.
 // Via Roma: controlled selection, keyboard focus, photo callback and responsive CSS.
 
-import { useRef, useEffect, useState, useCallback, CSSProperties, KeyboardEvent, MouseEvent } from 'react';
-import { gsap } from 'gsap';
+import { useRef, useEffect, useLayoutEffect, useState, useCallback, CSSProperties, KeyboardEvent, MouseEvent } from 'react';
+import type { gsap } from 'gsap';
 
 import './AccordionGallery.css';
 
+const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 export interface AccordionGalleryItem {
   image: string;
+  srcSet?: string;
+  sizes?: string;
   label?: string;
   link?: string;
   alt?: string;
@@ -40,13 +44,8 @@ export interface AccordionGalleryProps {
   className?: string;
 }
 
-const DEFAULT_ITEMS: AccordionGalleryItem[] = [
-  { image: 'https://picsum.photos/id/1015/900/1200', label: 'Canyon', link: '#' },
-  { image: 'https://picsum.photos/id/1018/900/1200', label: 'Ridgeline', link: '#' },
-  { image: 'https://picsum.photos/id/1039/900/1200', label: 'Falls', link: '#' },
-  { image: 'https://picsum.photos/id/1043/900/1200', label: 'Harbour', link: '#' },
-  { image: 'https://picsum.photos/id/1044/900/1200', label: 'Skyline', link: '#' }
-];
+// The application supplies all venue albums; no demo images ship in the bundle.
+const DEFAULT_ITEMS: AccordionGalleryItem[] = [];
 
 const AccordionGallery = ({
   items = DEFAULT_ITEMS,
@@ -80,32 +79,41 @@ const AccordionGallery = ({
   const textRefs = useRef<(HTMLElement | null)[]>([]);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const firstRunRef = useRef(true);
+  const gsapRef = useRef<typeof import('gsap').gsap | null>(null);
+  const visibleRef = useRef(false);
+  const [ready, setReady] = useState(false);
+  const [prefersReduced, setPrefersReduced] = useState(false);
   const pointerStart = useRef<number | null>(null);
   const mediaSizeRef = useRef(320);
 
   const vertical = orientation === 'vertical';
   const count = items.length;
-  const [localActive, setLocalActive] = useState(Math.min(Math.max(defaultIndex, 0), count - 1));
+  const [localActive, setLocalActive] = useState(Math.min(Math.max(defaultIndex, 0), Math.max(0, count - 1)));
   const active = activeIndex ?? localActive;
   const setActive = (index: number) => { setLocalActive(index); onActiveChange?.(index); };
-
-  const prefersReduced =
-    typeof window !== 'undefined' && window.matchMedia
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false;
 
   const applyLayout = useCallback(
     (animate: boolean) => {
       const panels = panelRefs.current;
-      if (!panels.length) return;
+      const gsap = gsapRef.current;
+      if (!panels.length || !gsap) return;
 
       const r = Math.min(Math.max(expandRatio, 0.2), 0.9);
       const grow = count > 1 ? (r * (count - 1)) / (1 - r) : 1;
       const mediaSize = mediaSizeRef.current;
 
       tlRef.current?.kill();
-      const dur = animate && !prefersReduced ? duration : 0;
-      const tl = gsap.timeline();
+      const dur = animate && visibleRef.current && !document.hidden && !prefersReduced ? duration : 0;
+      const root = rootRef.current;
+      if (root) root.dataset.animating = String(dur > 0);
+      const tl = dur > 0 ? gsap.timeline({ onComplete: () => { if (root) root.dataset.animating = 'false'; } }) : null;
+      const animateTo = (target: gsap.TweenTarget, vars: gsap.TweenVars, at = 0) => {
+        if (tl) tl.to(target, vars, at);
+        else {
+          const { duration: _duration, ease: _ease, stagger: _stagger, ...values } = vars;
+          gsap.set(target, values);
+        }
+      };
 
       panels.forEach((panel, i) => {
         if (!panel) return;
@@ -117,13 +125,13 @@ const AccordionGallery = ({
         const rot = isActive ? 0 : i < active ? tilt : -tilt;
         const rotProp = vertical ? { rotateX: -rot } : { rotateY: rot };
 
-        tl.to(panel, { flexGrow: isActive ? grow : 1, ...rotProp, duration: dur, ease }, 0);
+        animateTo(panel, { flexGrow: isActive ? grow : 1, ...rotProp, duration: dur, ease }, 0);
 
         if (media) {
           const drift = Math.max(-1.5, Math.min(1.5, active - i));
           const shift = drift * parallax * mediaSize * 0.06;
           const gray = grayscale ? (isActive ? 0 : 1) : 0;
-          tl.to(
+          animateTo(
             media,
             {
               xPercent: -50,
@@ -141,9 +149,9 @@ const AccordionGallery = ({
 
         if (showLabels && bar && text) {
           if (isActive) {
-            tl.to([bar, text], { opacity: 1, x: 0, duration: dur, ease, stagger: prefersReduced ? 0 : stagger }, 0);
+            animateTo([bar, text], { opacity: 1, x: 0, duration: dur, ease, stagger: prefersReduced ? 0 : stagger }, 0);
           } else {
-            tl.to([bar, text], { opacity: 0, x: -14, duration: dur * 0.6, ease }, 0);
+            animateTo([bar, text], { opacity: 0, x: -14, duration: dur * 0.6, ease }, 0);
           }
         }
       });
@@ -166,37 +174,79 @@ const AccordionGallery = ({
     ]
   );
 
+  const layoutRef = useRef(applyLayout);
+  layoutRef.current = applyLayout;
+
+  // Subscribe once. A selection must not recreate observers or start two timelines.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || !count) return;
+    let alive = true;
+    let loading = false;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMotion = () => {
+      setPrefersReduced(media.matches);
+      if (media.matches) { tlRef.current?.progress(1); tlRef.current?.kill(); el.dataset.animating = 'false'; }
+    };
+    const stop = () => {
+      tlRef.current?.progress(1);
+      tlRef.current?.kill();
+      el.dataset.animating = 'false';
+    };
+    const activate = () => {
+      if (loading) return;
+      loading = true;
+      void import('gsap').then(module => {
+        if (!alive) return;
+        gsapRef.current = module.gsap;
+        setReady(true);
+      });
+    };
+    const near = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      activate(); near.disconnect();
+    }, { rootMargin: '360px 0px' });
+    const visible = new IntersectionObserver(entries => {
+      visibleRef.current = entries.some(entry => entry.isIntersecting);
+      el.dataset.visible = String(visibleRef.current);
+      if (!visibleRef.current) stop();
+    });
+    const onVisibility = () => { if (document.hidden) stop(); };
+    near.observe(el); visible.observe(el);
+    media.addEventListener('change', updateMotion);
+    document.addEventListener('visibilitychange', onVisibility);
+    updateMotion();
+    return () => {
+      alive = false; stop(); near.disconnect(); visible.disconnect();
+      media.removeEventListener('change', updateMotion);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [count > 0]);
+
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
-
     const measure = () => {
-      const rect = el.getBoundingClientRect();
-      const total = vertical ? rect.height : rect.width;
+      const total = vertical ? el.clientHeight : el.clientWidth;
       const usable = Math.max(total - gap * (count - 1), 120);
       const size = Math.max(140, usable * Math.min(Math.max(expandRatio, 0.2), 0.9) * 1.22);
+      if (Math.abs(size - mediaSizeRef.current) < .5) return;
       mediaSizeRef.current = size;
       el.style.setProperty('--ag-media-size', `${size}px`);
-      applyLayout(!firstRunRef.current);
+      layoutRef.current(false);
     };
-
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [applyLayout, gap, count, expandRatio, vertical]);
+  }, [gap, count, expandRatio, vertical]);
 
-  useEffect(() => {
+  useClientLayoutEffect(() => {
+    if (!ready) return;
     applyLayout(!firstRunRef.current);
     firstRunRef.current = false;
-  }, [applyLayout]);
-
-  useEffect(
-    () => () => {
-      tlRef.current?.kill();
-    },
-    []
-  );
+    return () => { tlRef.current?.kill(); };
+  }, [applyLayout, ready]);
 
   const handleEnter = (i: number) => {
     if (trigger === 'hover') setActive(i);
@@ -210,6 +260,7 @@ const AccordionGallery = ({
   };
 
   const handleKeyDown = (i: number, e: KeyboardEvent) => {
+    if (!count) return;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
       const next = (i + 1) % count; setActive(next); panelRefs.current[next]?.focus({ preventScroll: true });
@@ -233,6 +284,7 @@ const AccordionGallery = ({
       ref={rootRef}
       className={`accordion-gallery${vertical ? ' accordion-gallery--vertical' : ''}${className ? ` ${className}` : ''}`}
       style={rootStyle}
+      data-gallery-active={ready}
       role="group"
       aria-label={ariaLabel}
     >
@@ -246,7 +298,7 @@ const AccordionGallery = ({
               panelRefs.current[i] = el;
             }}
             className={`ag-panel${isActive ? ' ag-panel--active' : ''}`}
-            style={{ borderRadius: `${radius}px` }}
+            style={{ borderRadius: `${radius}px`, flexGrow: !ready ? (isActive && count > 1 ? (Math.min(Math.max(expandRatio, .2), .9) * (count - 1)) / (1 - Math.min(Math.max(expandRatio, .2), .9)) : 1) : undefined }}
             type="button"
             onPointerDown={() => { pointerStart.current = active; }}
             onClick={e => handleClick(i, e)}
@@ -264,7 +316,7 @@ const AccordionGallery = ({
                   mediaRefs.current[i] = el;
                 }}
               >
-                <img src={item.image} alt={item.alt || item.label || ''} draggable={false} loading="lazy" decoding="async" />
+                <img src={ready ? item.image : undefined} srcSet={ready ? item.srcSet : undefined} sizes={ready ? item.sizes : undefined} alt={item.alt || item.label || ''} draggable={false} loading="eager" decoding="async" />
               </span>
               <span className="ag-panel__overlay" aria-hidden="true" />
             </span>

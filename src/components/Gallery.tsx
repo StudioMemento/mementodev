@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import data from "../data/photos.json";
+import imageData from "../data/images.json";
 import { useI18n } from "../i18n";
 import { wrap } from "../hooks/useDrag";
 import { Chevron, ExpandIcon } from "./Icon";
@@ -14,7 +15,10 @@ function Album({ album, seed }: { album: (typeof albumOrder)[number]; seed: numb
   const photos = data.GALLERY_ALBUMS[album];
   const title = t.g_categories[album];
   const [index, setIndex] = useState(0);
-  const items = photos.map((src, i) => ({ image: `/${src}`, label: `${title} · ${i + 1} / ${photos.length}`, alt: `${title} · Via Roma · ${i + 1}` }));
+  const items = useMemo(() => photos.map((src, i) => {
+    const meta = (imageData as Record<string, { small?: string; width: number }>)[src];
+    return { image: `/${src}`, srcSet: meta?.small ? `/${meta.small} 768w, /${src} ${meta.width}w` : undefined, sizes: "(max-width: 700px) 70vw, 60vw", label: `${title} · ${i + 1} / ${photos.length}`, alt: `${title} · Via Roma · ${i + 1}` };
+  }), [photos, title]);
   const show = (at: number) => open({ kind: "photo", photos: photos.map((src, i) => ({ src, caption: `${title} · ${i + 1} / ${photos.length}` })), index: at });
   return <section className="album vr-album" id={`album-${album}`} aria-labelledby={`title-${album}`}>
     <SectionAtmosphere variant="gallery" seed={seed} />
