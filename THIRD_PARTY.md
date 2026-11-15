@@ -1,5 +1,11 @@
 # Componenti e risorse
 
+## Aggiornamento V21 — 15 novembre 2026
+
+Alla base V20 si aggiungono i componenti ufficiali React Bits **Light Rays**, **Shiny Text**, **Accordion Gallery** e **Circular Gallery**. Gradual Blur è adattato con rampe più morbide. Fonti, parametri e modifiche sono documentati in `docs/VFX_V21.md` e `docs/INTERACTIONS_V21.md`; resta inclusa la licenza completa React Bits. Dot Grid e ReviewTicker sono conservati nei sorgenti storici, ma non compongono più la pagina corrente.
+
+La gallery Accordion usa **GSAP**, installato da npm con versione risolta in `package-lock.json`, distribuito secondo la [licenza ufficiale GSAP](https://gsap.com/standard-license/) dal [repository ufficiale](https://github.com/greensock/GSAP). Le tre illustrazioni SVG dei cornicioni sono state create per Via Roma; non sostituiscono o alterano fotografie e artwork originali.
+
 ## React Bits
 
 Sorgenti ufficiali acquisiti il 14 novembre 2026 dal repository [DavidHDev/react-bits](https://github.com/DavidHDev/react-bits), varianti TypeScript + CSS:

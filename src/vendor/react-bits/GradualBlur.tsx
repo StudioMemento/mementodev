@@ -141,7 +141,16 @@ const GradualBlur = ({
       ]
         .filter(Boolean)
         .join(" ");
-      const mask = `linear-gradient(${direction}, transparent ${((i / count) * 100).toFixed(2)}%, #000 ${(((i + 1) / count) * 100).toFixed(2)}%)`;
+      // Via Roma: overlap smooth ramps so a larger page-edge blur never reveals
+      // the boundary of one of its component layers on high-contrast photographs.
+      const start = Math.max(0, (i - 0.35) / count);
+      const end = Math.min(1, (i + 1.35) / count);
+      const maskStops = Array.from({ length: 7 }, (_, n) => {
+        const t = n / 6;
+        const alpha = t * t * (3 - 2 * t);
+        return `rgba(0, 0, 0, ${alpha.toFixed(3)}) ${((start + (end - start) * t) * 100).toFixed(2)}%`;
+      }).join(", ");
+      const mask = `linear-gradient(${direction}, ${maskStops})`;
       steps.push({
         position: "absolute",
         inset: 0,

@@ -6,6 +6,7 @@ import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
 import GradualBlur from "../vendor/react-bits/GradualBlur";
+import SectionAtmosphere from "./effects/SectionAtmosphere";
 export const categoryOrder = [
   "classiche",
   "audaci",
@@ -87,6 +88,50 @@ function Rows({ rows }: { rows: string[][] }) {
     </>
   );
 }
+function DrinkTable({
+  title,
+  id,
+  sizes,
+  rows,
+}: {
+  title: string;
+  id: string;
+  sizes: string[];
+  rows: { name: string; qualifier?: string; prices: string[] }[];
+}) {
+  const { language } = useI18n();
+  return (
+    <section className="drink-table" aria-labelledby={id}>
+      <p className="groupline" id={id}>{title}</p>
+      <div className="drink-table-head" aria-hidden="true">
+        <span />
+        <div className="drink-size-head">
+          {sizes.map((size) => <span key={size}>{size}</span>)}
+        </div>
+      </div>
+      {rows.map(({ name, qualifier = "", prices }) => (
+        <div className="item multi drink-item drink-row" key={name} data-menu-item={name}>
+          <div className="row">
+            <span className="label">
+              <span className="nome">{name}</span>
+              {qualifier && <span className="qualifier">{translateDescription(qualifier, language)}</span>}
+            </span>
+            <span className="dots" aria-hidden="true" />
+            <div className="pricegrid">
+              {sizes.map((size, i) => (
+                <span className="drink-price-cell" key={size}>
+                  <span className="sr-only">{size}: </span>
+                  <b>{prices[i]}</b>
+                </span>
+              ))}
+            </div>
+          </div>
+          <AllergenTrigger name={name} description={qualifier} />
+        </div>
+      ))}
+    </section>
+  );
+}
 function Drinks() {
   const { t, language } = useI18n();
   const bottles = data.BOTTIGLIA as [string, string, string[][]][];
@@ -95,60 +140,25 @@ function Drinks() {
       <Rows rows={data.ACQUA_BIBITE} />
       <p className="groupline">{t.bottiglia}</p>
       {bottles.map(([name, desc, rows]) => (
-        <div key={name}>
+        <div key={name} className="drink-bottle-group">
           <p className="groupsub">
             <strong>{name}</strong> · {translateDescription(desc, language)}
           </p>
           <Rows rows={rows} />
         </div>
       ))}
-      <p className="groupline">{t.spina}</p>
-      {data.SPINA.map((b) => (
-        <div className="item multi drink-item" key={b[0]} data-menu-item={b[0]}>
-          <div className="row">
-            <span className="label">
-              <span className="nome">{b[0]}</span>
-              {b[1] && (
-                <span className="qualifier">
-                  {translateDescription(b[1], language)}
-                </span>
-              )}
-            </span>
-            <span className="dots" />
-            <div className="pricegrid">
-              {["0,3 l", "0,5 l", `${t.caraffa} 1,5 l`].map((s, i) => (
-                <span key={s}>
-                  <em>{s}</em>
-                  <b>{b[i + 2]}</b>
-                </span>
-              ))}
-            </div>
-          </div>
-          <AllergenTrigger name={b[0]} description={b[1]} />
-        </div>
-      ))}
-      <p className="groupline">{t.vini}</p>
-      {data.VINI.map((v) => (
-        <div className="item multi drink-item" key={v[0]} data-menu-item={v[0]}>
-          <div className="row">
-            <span className="label">
-              <span className="nome">{v[0]}</span>
-            </span>
-            <span className="dots" />
-            <div className="pricegrid">
-              {[t.calice, `${t.caraffa} 0,5 l`, `${t.bott} 0,75 l`].map(
-                (s, i) => (
-                  <span key={s}>
-                    <em>{s}</em>
-                    <b>{v[i + 1]}</b>
-                  </span>
-                ),
-              )}
-            </div>
-          </div>
-          <AllergenTrigger name={v[0]} />
-        </div>
-      ))}
+      <DrinkTable
+        title={t.spina}
+        id="drinks-draught"
+        sizes={["0,3 l", "0,5 l", `${t.caraffa} 1,5 l`]}
+        rows={data.SPINA.map((b) => ({ name: b[0], qualifier: b[1], prices: b.slice(2, 5) }))}
+      />
+      <DrinkTable
+        title={t.vini}
+        id="drinks-wines"
+        sizes={[t.calice, `${t.caraffa} 0,5 l`, `${t.bott} 0,75 l`]}
+        rows={data.VINI.map((v) => ({ name: v[0], prices: v.slice(1, 4) }))}
+      />
     </>
   );
 }
@@ -202,6 +212,7 @@ export default function Menu() {
   }, []);
   return (
     <section id="menu">
+      <SectionAtmosphere variant="menu" />
       <div className="menu-head fx on">
         <p className="k-s">{t.m_eyebrow}</p>
         <h2>{t.m_title}</h2>
@@ -210,10 +221,11 @@ export default function Menu() {
       <div className="chipbar">
         <GradualBlur
           position="top"
-          height="80px"
-          strength={0.35}
-          layers={4}
-          tint="#080809dc"
+          height="150px"
+          strength={1.1}
+          layers={8}
+          tint="#09090bb0"
+          className="menu-edge-blur"
           zIndex={-1}
         />
         <div className="chipbar-inner" ref={wrap}>

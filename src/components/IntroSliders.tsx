@@ -1,249 +1,113 @@
-import { useState, useEffect, useRef, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import data from "../data/menu.json";
-import { useI18n, translateDescription } from "../i18n";
-import { useDrag, wrap } from "../hooks/useDrag";
+import { useI18n, translateDescription, translateName, type Language } from "../i18n";
+import { useCarousel } from "../hooks/useCarousel";
 import { Chevron } from "./Icon";
 import { Photo } from "./Photo";
 import { categoryOrder } from "./Menu";
-function DotButtons({
-  labels,
-  index,
-  onSelect,
-  id,
-}: {
-  labels: string[];
-  index: number;
-  onSelect: (i: number) => void;
-  id: string;
-}) {
-  return (
-    <div className="dots" id={id}>
-      {labels.map((label, i) => (
-        <button
-          key={i}
-          type="button"
-          className={index === i ? "on" : ""}
-          aria-label={label}
-          aria-pressed={index === i}
-          onClick={() => onSelect(i)}
-        />
-      ))}
+import SectionAtmosphere from "./effects/SectionAtmosphere";
+
+export const interactionCopy: Record<Language, { drag: string; pause: string; play: string; crustKicker: string; crustTitle: string; crustBody: string; ricotta: string; brie: string; gorgonzola: string; filling: string; perPizza: string; discover: string }> = {
+  it: { drag: "Trascina, scegli, lasciati tentare.", pause: "Pausa scorrimento", play: "Riprendi scorrimento", crustKicker: "FINO ALL’ULTIMO MORSO", crustTitle: "Il gusto arriva fino al bordo.", crustBody: "Scegli il tuo ripieno preferito e aggiungi qualcosa in più alla tua pizza.", ricotta: "Morbida e delicata", brie: "Cremoso e avvolgente", gorgonzola: "Dolce, dal gusto deciso", filling: "Cornicione ripieno", perPizza: "alla tua pizza", discover: "Esplora il menù" },
+  en: { drag: "Drag, choose, give in to temptation.", pause: "Pause autoplay", play: "Resume autoplay", crustKicker: "TO THE VERY LAST BITE", crustTitle: "Good taste, right to the edge.", crustBody: "Choose your favourite filling and add something extra to your pizza.", ricotta: "Soft and delicate", brie: "Rich and creamy", gorgonzola: "Sweet, with a bold character", filling: "Stuffed crust", perPizza: "per pizza", discover: "Explore the menu" },
+  de: { drag: "Ziehen, wählen, genießen.", pause: "Automatik pausieren", play: "Automatik fortsetzen", crustKicker: "BIS ZUM LETZTEN BISSEN", crustTitle: "Genuss bis zum Rand.", crustBody: "Wähle deine Lieblingsfüllung und gib deiner Pizza das gewisse Extra.", ricotta: "Weich und mild", brie: "Vollmundig und cremig", gorgonzola: "Mild, mit kräftigem Charakter", filling: "Gefüllter Rand", perPizza: "pro Pizza", discover: "Speisekarte entdecken" },
+  fr: { drag: "Faites glisser, choisissez, savourez.", pause: "Mettre le défilement en pause", play: "Reprendre le défilement", crustKicker: "JUSQU’À LA DERNIÈRE BOUCHÉE", crustTitle: "Du goût, jusqu’au bord.", crustBody: "Choisissez votre garniture préférée pour apporter un petit plus à votre pizza.", ricotta: "Douce et délicate", brie: "Fondant et crémeux", gorgonzola: "Doux, au caractère affirmé", filling: "Bordure farcie", perPizza: "par pizza", discover: "Découvrir la carte" },
+};
+
+function AutoControl({ paused, onClick, disabled = false }: { paused: boolean; onClick: () => void; disabled?: boolean }) {
+  const { language } = useI18n();
+  const text = interactionCopy[language];
+  if (disabled) return null;
+  return <button className="vr-autoplay" type="button" aria-label={paused ? text.play : text.pause} aria-pressed={paused} onClick={onClick}>
+    {paused ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m4 2 8 5-8 5V2Z" fill="currentColor" /></svg> : <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M4 2v10M10 2v10" stroke="currentColor" strokeWidth="1.5" /></svg>}
+  </button>;
+}
+
+function Controls({ labels, carousel }: { labels: string[]; carousel: ReturnType<typeof useCarousel> }) {
+  const { copy, language } = useI18n();
+  return <div className="vr-carousel-footer">
+    <p className="vr-drag-cue"><span aria-hidden="true">↔</span>{interactionCopy[language].drag}</p>
+    <div className="vr-carousel-controls">
+      <button className="vr-carousel-arrow" type="button" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
+      <span className="vr-carousel-count" aria-live={carousel.paused ? "polite" : "off"}>{String(carousel.index + 1).padStart(2, "0")}<span>/</span>{String(labels.length).padStart(2, "0")}</span>
+      <button className="vr-carousel-arrow" type="button" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
+      <AutoControl paused={carousel.paused} onClick={() => carousel.setPaused(p => !p)} disabled={carousel.reduced} />
     </div>
-  );
+  </div>;
 }
+
 function Oven() {
-  const { t, copy, language } = useI18n();
-  const [index, setIndex] = useState(0);
-  const step = (direction: number) =>
-    setIndex((i) => wrap(i + direction, data.FORNO.length));
-  const drag = useDrag(step);
-  return (
-    <section className="strip-wrap" id="pizza-slider" aria-label={t.strip_k}>
-      <div className="strip-head fx on">
-        <p className="k-s">{t.strip_k}</p>
-      </div>
-      <div className="pizza-viewport">
-        <div
-          className="strip oven-stage"
-          id="forno"
-          {...drag}
-          tabIndex={0}
-          role="region"
-          aria-roledescription="carousel"
-          aria-label={t.strip_k}
-        >
-          {[-2, -1, 0, 1, 2].map((offset) => {
-            const logical = wrap(index + offset, data.FORNO.length);
-            const [src, name, description] = data.FORNO[logical];
-            const d = translateDescription(description, language);
-            return (
-              <figure
-                key={logical}
-                className={`oven-card ${offset === 0 ? "mid" : ""}`}
-                data-forno-index={logical}
-                style={{ "--offset": offset } as CSSProperties}
-                aria-hidden={offset !== 0}
-              >
-                <div className="shot">
-                  <Photo
-                    className="pizza bgimg"
-                    src={src}
-                    alt={offset === 0 ? name : ""}
-                  />
-                </div>
-                <figcaption>
-                  <span>{name}</span>
-                </figcaption>
-                <p className="forno-ingredients">
-                  {d.charAt(0).toUpperCase() + d.slice(1)}
-                </p>
-              </figure>
-            );
-          })}
-        </div>
-        <button
-          className="pizza-arrow previous"
-          type="button"
-          aria-label={copy.previous}
-          onClick={() => step(-1)}
-        >
-          <Chevron direction="left" />
-        </button>
-        <button
-          className="pizza-arrow next"
-          type="button"
-          aria-label={copy.next}
-          onClick={() => step(1)}
-        >
-          <Chevron direction="right" />
-        </button>
-      </div>
-      <DotButtons
-        labels={data.FORNO.map((r) => r[1])}
-        index={index}
-        onSelect={setIndex}
-        id="fornodots"
-      />
-    </section>
-  );
-}
-function Cornicione() {
-  const { t } = useI18n();
-  return (
-    <section className="screen compact teaser" id="cornicione">
-      <div className="inner fx on">
-        <div className="pz-s">
-          <span className="arc" />
-          <Photo
-            className="pizza"
-            src="assets/pizze/cornice-ripieno.webp"
-            alt={t.cornice}
-          />
-        </div>
-        <div className="crust-copy">
-          <h2>{t.t_title}</h2>
-          <p>{t.t_body}</p>
-          <div className="mini-list">
-            <div>
-              <span>Ricotta</span>
-              <b>3,00</b>
-            </div>
-            <div>
-              <span>Brie</span>
-              <b>3,00</b>
-            </div>
-            <div>
-              <span>{t.gorgo}</span>
-              <b>3,00</b>
-            </div>
-          </div>
-          <a className="text-link crust-link" href="#menu">
-            {t.t_cta}
-            <Chevron direction="right" />
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
-function Categories() {
-  const { t, copy, language } = useI18n();
-  const [index, setIndex] = useState(0);
-  const section = useRef<HTMLElement>(null);
-  const step = (d: number) =>
-    setIndex((i) => wrap(i + d, categoryOrder.length));
-  const drag = useDrag(step);
-  useEffect(() => {
-    const root = section.current,
-      window = root?.querySelector<HTMLElement>(".is-active .preview-window");
-    if (!root || !window) return;
-    const measure = () =>
-      root.style.setProperty(
-        "--category-arrow-y",
-        `${window.getBoundingClientRect().top - root.getBoundingClientRect().top + window.getBoundingClientRect().height / 2}px`,
-      );
-    const observer = new ResizeObserver(measure);
-    observer.observe(root);
-    observer.observe(window);
-    measure();
-    return () => observer.disconnect();
-  }, [index, language]);
-  return (
-    <section id="catshow" ref={section} aria-label={t.m_title}>
-      <div className="edge l" />
-      <div className="edge r" />
-      <button
-        className="chev l"
-        onClick={() => step(-1)}
-        aria-label={copy.previous}
-      >
-        <Chevron direction="left" />
-      </button>
-      <button className="chev r" onClick={() => step(1)} aria-label={copy.next}>
-        <Chevron direction="right" />
-      </button>
-      <div
-        className="rail category-stage"
-        id="showrail"
-        tabIndex={0}
-        role="region"
-        aria-roledescription="carousel"
-        aria-label={t.m_title}
-        {...drag}
-      >
-        {[-1, 0, 1].map((offset) => {
-          const logical = wrap(index + offset, categoryOrder.length);
-          const id = categoryOrder[logical];
-          return (
-            <div
-              key={id}
-              className={`slide ${offset === 0 ? "is-active" : ""}`}
-              style={{ "--offset": offset } as CSSProperties}
-              aria-hidden={offset !== 0}
-              data-cat={id}
-            >
-              <article className="preview-card">
-                <header className="preview-head">
-                  <h2>{t.cats[id][0]}</h2>
-                </header>
-                <a
-                  draggable={false}
-                  className="preview-window"
-                  href={`#cat-${id}`}
-                  aria-label={t.cats[id][0]}
-                  tabIndex={offset === 0 ? 0 : -1}
-                >
-                  <span className="preview-trace t1" />
-                  <span className="preview-trace t2" />
-                  <Photo
-                    className="preview-cutout bgimg"
-                    src={data.MENU_ART[id]}
-                    alt={offset === 0 ? t.cats[id][0] : ""}
-                  />
-                </a>
-                <p className={`sub ${t.cats[id][1] ? "" : "is-empty"}`}>
-                  {t.cats[id][1] || "\u00a0"}
-                </p>
-              </article>
-            </div>
-          );
+  const { t, language } = useI18n();
+  const carousel = useCarousel(data.FORNO.length, 7200);
+  return <section className="vr-pizza-carousel" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
+    <SectionAtmosphere variant="oven" />
+    <header className="vr-carousel-heading"><p className="k-s">{t.strip_k}</p></header>
+    <div className="vr-pizza-viewport">
+      <div className="vr-pizza-stage" id="forno" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.strip_k}>
+        {data.FORNO.map(([src, name, description], logical) => {
+          const offset = ((logical + data.FORNO.length / 2) % data.FORNO.length) - data.FORNO.length / 2;
+          return <figure key={src} className={`vr-pizza-card${logical === carousel.index ? " is-current" : ""}`} data-carousel-card data-forno-index={logical} aria-hidden={logical !== carousel.index} style={{ "--slide-x": `${offset * 340}px`, "--slide-distance": Math.abs(offset) } as CSSProperties}>
+            <div className="vr-pizza-image"><Photo src={src} alt={logical === carousel.index ? translateName(name, language) : ""} eager sizes="(max-width: 700px) 74vw, 25vw" /></div>
+            <figcaption>{translateName(name, language)}</figcaption>
+            <p className="vr-pizza-ingredients">{translateDescription(description, language)}</p>
+          </figure>;
         })}
       </div>
-      <DotButtons
-        labels={categoryOrder.map((id) => t.cats[id][0])}
-        index={index}
-        onSelect={setIndex}
-        id="showdots"
-      />
-    </section>
-  );
+    </div>
+    <Controls labels={data.FORNO.map(r => r[1])} carousel={carousel} />
+  </section>;
 }
-export function IntroSliders() {
-  return (
-    <>
-      <Oven />
-      <Cornicione />
-      <Categories />
-    </>
-  );
+
+function Cornicione() {
+  const { t, language } = useI18n();
+  const text = interactionCopy[language];
+  const options = [
+    { id: "ricotta", name: "Ricotta", body: text.ricotta },
+    { id: "brie", name: "Brie", body: text.brie },
+    { id: "gorgonzola", name: t.gorgo, body: text.gorgonzola },
+  ];
+  return <section className="vr-crust-intro" id="cornicione">
+    <SectionAtmosphere variant="crust" />
+    <header className="crust-heading">
+      <p className="k-s">{text.crustKicker}</p>
+      <h2>{text.crustTitle}</h2>
+      <p>{text.crustBody}</p>
+    </header>
+    <div className="crust-options crust-grid">
+      {options.map((option, i) => <article className="crust-option crust-card" key={option.id}>
+        <img className="crust-illustration" src={`/assets/cornicione/${option.id}.svg`} width="540" height="300" loading="lazy" alt={`${text.filling} · ${option.name}`} />
+        <div className="crust-option-copy crust-card-copy">
+          <h3>{option.name}</h3>
+          <p>{option.body}</p>
+          <div className="crust-price"><strong>+ € {data.CORNICE[i][2]}</strong><span>{text.perPizza}</span></div>
+        </div>
+      </article>)}
+    </div>
+    <a className="text-link crust-link" href="#menu">{t.t_cta}<Chevron direction="right" /></a>
+  </section>;
 }
+
+function Categories() {
+  const { t, copy, language } = useI18n();
+  const carousel = useCarousel(categoryOrder.length, 8200);
+  return <section id="catshow" className="vr-category-carousel" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.m_title}>
+    <SectionAtmosphere variant="categories" />
+    <div className="vr-category-stage" id="showrail" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.m_title}>
+      {categoryOrder.map((id, logical) => {
+        const offset = ((logical + categoryOrder.length / 2) % categoryOrder.length) - categoryOrder.length / 2;
+        const active = logical === carousel.index;
+        return <article className={`vr-category-slide${active ? " is-current" : ""}`} key={id} data-cat={id} data-carousel-card aria-hidden={!active} style={{ "--slide-x": `${offset * 1000}px`, "--slide-distance": Math.abs(offset) } as CSSProperties}>
+          <header className="vr-category-heading"><h2>{t.cats[id][0]}</h2></header>
+          <a className="vr-category-image" href={`#cat-${id}`} draggable={false} tabIndex={active ? 0 : -1} aria-label={`${copy.menu}: ${t.cats[id][0]}`}>
+            <Photo src={data.MENU_ART[id]} alt={active ? t.cats[id][0] : ""} eager sizes="(max-width: 700px) 90vw, 64vw" />
+            <span className="vr-category-link">{interactionCopy[language].discover}<Chevron direction="right" /></span>
+          </a>
+          <p className="vr-category-description">{t.cats[id][1] || "\u00a0"}</p>
+        </article>;
+      })}
+    </div>
+    <Controls labels={categoryOrder.map(id => t.cats[id][0])} carousel={carousel} />
+  </section>;
+}
+
+export function IntroSliders() { return <><Oven /><Cornicione /><Categories /></>; }

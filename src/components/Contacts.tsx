@@ -5,6 +5,7 @@ import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
 import MagicBento from "../vendor/react-bits/MagicBento";
+import SectionAtmosphere from "./effects/SectionAtmosphere";
 export function isRestaurantOpen(date: Date) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Rome",
@@ -129,6 +130,7 @@ export default function Contacts() {
   ];
   return (
     <section id="dove" className="vr-contacts">
+      <SectionAtmosphere variant="info" />
       <div className="closing-shell">
         <header className="visit-heading-row fx">
           <div className="visit-heading-copy">

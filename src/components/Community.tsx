@@ -1,83 +1,31 @@
-import { useState } from "react";
-import MagicBento from "../vendor/react-bits/MagicBento";
+import { useMemo, useState } from "react";
 import data from "../data/photos.json";
+import imageData from "../data/images.json";
 import { useI18n } from "../i18n";
 import { useDialog } from "./DialogContext";
-import { Photo } from "./Photo";
 import { useMedia } from "../hooks/useMedia";
-import { Chevron } from "./Icon";
-import { wrap } from "../hooks/useDrag";
+import CircularGallery from "../vendor/galleries/CircularGallery";
+import SectionAtmosphere from "./effects/SectionAtmosphere";
+import { interactionCopy } from "./IntroSliders";
 export default function Community() {
-  const { t, copy } = useI18n();
-  const { open } = useDialog();
+  const { t, copy, language } = useI18n();
+  const { open, modal } = useDialog();
   const reduce = useMedia("(prefers-reduced-motion: reduce)");
-  const small = useMedia("(max-width: 640px)");
-  const coarse = useMedia("(pointer: coarse)");
-  const [page, setPage] = useState(0);
-  const count = small ? 1 : 3;
-  const pages = Math.ceil(data.CUSTOMER.length / count);
-  const current = wrap(page, pages);
-  const photos = data.CUSTOMER.map((c) => ({ src: c.src, caption: c.name }));
-  const items = data.CUSTOMER.slice(
-    current * count,
-    current * count + count,
-  ).map((c, i) => ({
-    id: c.src,
-    title: `${copy.expand} · ${c.name}`,
-    onClick: () => open({ kind: "photo", photos, index: current * count + i }),
-    content: (
-      <figure className="community-photo">
-        <Photo
-          src={c.src}
-          alt={`${t.cu_eyebrow} · ${c.name}`}
-          sizes="(max-width: 640px) 90vw, 33vw"
-        />
-        <figcaption>{c.name}</figcaption>
-      </figure>
-    ),
-  }));
-  return (
-    <section id="customer" className="vr-community">
-      <p className="k-s">{t.cu_eyebrow}</p>
-      <h2>{t.cu_title}</h2>
-      <p className="lead">{copy.communityLead}</p>
-      <MagicBento
-        items={items}
-        columns={count}
-        rowHeight={300}
-        radius={0}
-        gap={14}
-        className="community-bento vr-bento"
-        glowColor="#C6AB70"
-        spotlightRadius={180}
-        textAutoHide={false}
-        enableTilt={false}
-        enableMagnetism={false}
-        enableStars={false}
-        clickEffect={false}
-        intro={false}
-        disableAnimations={reduce || coarse}
-      />
-      <div className="community-controls">
-        <button
-          type="button"
-          aria-label={copy.previous}
-          onClick={() => setPage((i) => wrap(i - 1, pages))}
-        >
-          <Chevron direction="left" />
-        </button>
-        <span aria-live="polite">
-          {String(current + 1).padStart(2, "0")}{" "}
-          <span aria-hidden="true">/</span> {String(pages).padStart(2, "0")}
-        </span>
-        <button
-          type="button"
-          aria-label={copy.next}
-          onClick={() => setPage((i) => wrap(i + 1, pages))}
-        >
-          <Chevron direction="right" />
-        </button>
+  const [paused, setPaused] = useState(false);
+  const [active, setActive] = useState(0);
+  const items = useMemo(() => data.CUSTOMER.map(c => ({ image: `/${(imageData as Record<string, { small?: string }>)[c.src]?.small || c.src}`, text: c.name, alt: `${t.cu_eyebrow} · ${c.name}` })), [t.cu_eyebrow]);
+  const photos = useMemo(() => data.CUSTOMER.map(c => ({ src: c.src, caption: c.name })), []);
+  const text = interactionCopy[language];
+  return <section id="customer" className="vr-community">
+    <SectionAtmosphere variant="community" />
+    <header className="vr-community-heading"><p className="k-s">{t.cu_eyebrow}</p><h2>{t.cu_title}</h2><p className="lead">{copy.communityLead}</p></header>
+    <div className="vr-community-reel">
+      <CircularGallery items={items} bend={0} gap={0} fadeEdges={.2} scrollEase={.3} borderRadius={0} shadow={1} itemAspect={1} wave={0} snap={false} autoScroll={paused || reduce || modal ? 0 : .5} itemSize={1} scrollSpeed={2} openOnClick={false} onItemClick={(_, index) => open({ kind: "photo", photos, index })} onActiveChange={setActive} textColor="#dfd2b7" font="400 25px Jost" dpr={1.5} intro={!reduce} className="vr-circular-gallery" tabIndex={0} aria-label={t.cu_title} />
+    </div>
+    <div className="vr-community-footer"><p className="vr-drag-cue"><span aria-hidden="true">↔</span>{text.drag}</p>
+      <div className="vr-carousel-controls"><span className="vr-carousel-count">{String(active + 1).padStart(2, "0")}<span>/</span>{String(items.length).padStart(2, "0")}</span>
+        {!reduce && <button type="button" className="vr-autoplay" aria-label={paused ? text.play : text.pause} aria-pressed={paused} onClick={() => setPaused(p => !p)}>{paused ? <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="m4 2 8 5-8 5V2Z" fill="currentColor" /></svg> : <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M4 2v10M10 2v10" stroke="currentColor" strokeWidth="1.5" /></svg>}</button>}
       </div>
-    </section>
-  );
+    </div>
+  </section>;
 }

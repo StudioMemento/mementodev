@@ -1,6 +1,6 @@
 {
   "name": "pizzeria-via-roma-react-polish",
-  "version": "20.0.0",
+  "version": "21.0.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -12,20 +12,22 @@
     "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "check": "npm run typecheck && npm run build && node scripts/check-build.mjs",
-    "test": "node scripts/verify-polish.mjs && node scripts/verify-browser.mjs && node scripts/verify-dialogs.mjs && node scripts/verify-performance.mjs && node scripts/verify-polish-ui.mjs"
+    "test": "node scripts/verify-v21.mjs",
+    "test:legacy": "node scripts/verify-polish.mjs && node scripts/verify-browser.mjs && node scripts/verify-dialogs.mjs && node scripts/verify-performance.mjs && node scripts/verify-polish-ui.mjs"
   },
   "dependencies": {
+    "gsap": "^3.15.1",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "6.3.0",
-    "typescript": "7.0.2",
-    "vite": "8.3.8",
     "playwright": "1.65.1",
-    "@types/node": "^24.0.0",
-    "purgecss": "^7.0.2"
+    "purgecss": "^7.0.2",
+    "typescript": "7.0.2",
+    "vite": "8.3.8"
   }
 }

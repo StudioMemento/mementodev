@@ -1,100 +1,68 @@
-# Pizzeria Via Roma — V20 React Polish
+# Pizzeria Via Roma — V21
 
-Pacchetto sorgente completo per la nuova repository di prova e un successivo deploy Vercel. Revisione della build React V19, confrontata con la V18 originale e con il deploy temporaneo il 14 novembre 2026. Nessun push o deploy è stato eseguito durante la preparazione.
+Nuova revisione React del polish: hero a tutto schermo, slider continui, cornicioni illustrati, gallery React Bits, navigazione e menù più leggibili. Il pacchetto contiene sorgenti, fotografie, menù originale e configurazione Vercel. I deploy esistenti non vengono modificati da questi file.
 
-## Avvio
+## Avvio e build
 
-Usa Node.js **22.12 o superiore** (verifica eseguita con Node 24).
+Richiede Node.js 22.12 o superiore.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Build e anteprima della versione di produzione:
+Per la versione di produzione:
 
 ```bash
 npm run check
+npm test
 npm run preview
 ```
 
-Il resoconto con i criteri, le misure e i limiti delle prove è in `docs/VERIFICATION.md`; le schermate sono in `docs/previews/`.
+`check` esegue TypeScript, build Vite, prerender dell’HTML e controllo delle risorse. `test` esegue le verifiche V21 sui dati e sulla composizione. Le prove visive e interattive, con i limiti del dispositivo utilizzato, sono documentate in `docs/QA_V21.md`. I vecchi script `test:legacy` sono conservati come riferimento storico: includono aspettative V20 superate, come le recensioni e la precedente gallery.
 
-Il comando `check` verifica TypeScript, genera la build statica e controlla risorse e dimensioni. `dist/` viene ricreata dalla build; non serve inserirla nella repository.
+## Vercel
 
-## Nuova repository e Vercel
+1. Estrai lo ZIP e copia il contenuto della cartella nella root della repository di prova: `package.json`, `vercel.json`, `src/` e `public/` devono essere allo stesso livello.
+2. Importa la repository in un progetto Vercel di prova.
+3. Framework: **Vite**. Installazione: `npm ci`. Build: `npm run build`. Output: `dist`.
+4. Non servono variabili d’ambiente, chiavi API, backend o database.
 
-1. Estrai lo ZIP. Copia **il contenuto** della cartella nella root della nuova repository: `package.json`, `vercel.json`, `src/` e `public/` devono essere allo stesso livello.
-2. Carica questi file nella repository di prova. Non occorrono i vecchi file HTML/JS della V18.
-3. Quando vuoi provarlo online, importa la nuova repository in un progetto Vercel separato.
-4. Impostazioni: **Framework Vite**, installazione `npm ci`, build `npm run build`, output `dist`, root directory della repository.
-5. Non occorrono variabili d'ambiente, chiavi API, backend o database.
+`vercel.json` contiene già questi comandi. Escludi `node_modules`, `.ssr` e `.env` dalla repository. La cartella `dist/` si rigenera con la build.
 
-`vercel.json` contiene già i comandi corretti. Non caricare `node_modules`, `.ssr`, `.vercel` o file `.env`.
+La configurazione conserva `noindex, nofollow` e `Disallow: /` per il deploy di prova. Prima della pubblicazione definitiva occorre aggiornare consapevolmente l’indicizzazione e completare i campi originali ancora presenti nelle pagine legali. I collegamenti esterni di telefono, WhatsApp, social e Google Maps puntano ai riferimenti già presenti nella V20.
 
-La versione è predisposta per prove temporanee con `noindex, nofollow` in `index.html` e negli header Vercel, e `Disallow: /` in `public/robots.txt`. Queste impostazioni evitano l'indicizzazione ordinaria, **non rendono privato il sito**. Prima del passaggio al dominio definitivo vanno aggiornate esplicitamente, insieme ai testi legali definitivi.
+## Cosa cambia
 
-## Interventi applicati
+- Hero alta quanto la viewport, slogan e logo originali con effetti coordinati al nero e oro Via Roma.
+- Slider delle pizze e categorie con trascinamento continuo, autoplay lento, comandi manuali e rispetto del movimento ridotto.
+- Tre proposte illustrate per il cornicione: ricotta, brie, gorgonzola dolce, ciascuna con aggiunta di **3,00 €**, come nel menù originale.
+- Header, selettore lingua e contenuti sulla stessa griglia di padding; navigazione con icone indipendenti e sfocatura progressiva ai bordi.
+- Menù più compatto e bevande con intestazioni condivise per i formati, per confrontare facilmente i prezzi.
+- Allergeni in tre colonne: codice, nome e descrizione. Popup con sfondo sfocato, chiusura esterna/Escape e ritorno del focus.
+- Cinque ambienti con Accordion Gallery; foto della community con Circular Gallery piatta, immagini quadrate e bordi sfumati.
+- Social a tutto schermo con Instagram e Facebook. Rimossi recensioni e collegamenti alle piattaforme di recensioni.
+- Info a tutto schermo con mappa, orari, telefono e WhatsApp; l’indicatore aperto/chiuso usa il fuso `Europe/Rome`.
 
-- React + TypeScript + Vite, con componenti e dati separati; corretti i difetti di gesto touch e della cascata CSS della V19.
-- Hero con logo originale, slogan invariato, campo di punti React Bits, entrata tipografica discreta, lieve risposta del logo al puntatore e CTA testuale con chevron.
-- Dock con quattro icone in riquadri indipendenti; nessuna pillola comune.
-- Scrollbar della pagina nascosta e avanzamento verticale di **2 px** sul margine destro, con un tratto iniziale visibile di 24 px e riempimento fino al fondo. Lo scorrimento nativo rimane disponibile.
-- Vecchio walkthrough a scroll rimosso, inclusi video e spazio riservato.
-- Cinque slideshow indipendenti: **Esterno, Bancone, Sala sinistra, Sala destra, Via Roma**. Immagine centrale, laterali sfumate, trascinamento sulle immagini, swipe, frecce, indicatori e lightbox per ambiente.
-- Community con 12 scatti verificati senza volti. Rimossi gli inviti alla condivisione anche dai testi social, in italiano, inglese, tedesco e francese.
-- Magic Bento reale di React Bits per community e contatti: spigoli netti, alone oro contenuto, niente tilt, magnetismo, stelle o onde al click.
-- Gradual Blur reale di React Bits per i bordi della pagina, della navigazione menù e della gallery.
-- Privacy, cookie e note legali in popup: chiusura esterna, X ed Escape; testo selezionabile, focus restituito al comando di apertura. Restano disponibili le pagine HTML autonome.
+## Dati preservati
 
-## Elementi preservati
+Prezzi, ingredienti, menù, allergeni, immagini del cartaceo, foto del locale/community, numero di telefono, WhatsApp e orari provengono dai sorgenti V20. Il menù resta presente nell’HTML prodotto dalla build. Non sono state inventate ricette o indicazioni alimentari. Le quattro lingue IT/EN/DE/FR sono mantenute.
 
-- **Social:** preservati quattro collegamenti e composizione delle card; aggiornato il copy indicato nella richiesta. Le quattro recensioni originali, attribuzioni e date sono intatte, con lettura manuale tramite frecce, drag/swipe e tastiera. Due recensioni visibili sui desktop ampi, una su schermi più piccoli.
-- **Menù e introduzione del cartaceo:** sequenza iniziale, titoli, immagini originali, prezzi, ingredienti, aggiunte, bevande e traduzioni della V18.
-- Slogan «La pizza di sempre, con un tocco in più!», logo, Jost, nero e oro Via Roma.
-- Numero di telefono, WhatsApp, indirizzo e orari della V18. L'indicatore aperto/chiuso usa il fuso `Europe/Rome`.
-- Dati e logica allergeni della V18, inclusa la voce `*` per i prodotti surgelati. Nessuna ricetta o indicazione alimentare è stata reinventata.
+Font, icone e immagini sono locali. Le nuove illustrazioni dei cornicioni sono vettoriali e illustrative. Le integrazioni React Bits e le modifiche specifiche sono documentate in `docs/VFX_V21.md` e `docs/INTERACTIONS_V21.md`; le licenze originali sono in `licenses/`.
 
-## Prestazioni e accessibilità
+## Dove intervenire
 
-- Il menù è già nell'HTML generato durante la build; React aggiunge le interazioni.
-- Font WOFF2, icone e immagini locali. Nessun caricamento di Google Fonts o widget social esterni.
-- Immagini con dimensioni esplicite, `loading="lazy"` fuori dalla hero e varianti responsive per le fotografie grandi. Le immagini del cartaceo rimangono identiche ai file originali.
-- Dialoghi e sfondo interattivo caricati in moduli separati.
-- CSS della V18 filtrato durante la build per eliminare selettori inutilizzati senza ricreare la grafica del menù/social.
-- Nessuno stato React aggiornato a ogni frame di scroll. Le animazioni imperniate su `requestAnimationFrame` si sospendono fuori schermo o con scheda nascosta.
-- `prefers-reduced-motion`: sfondo statico, animazioni e transizioni ridotte. Le recensioni non scorrono automaticamente in nessuna modalità. Slider utilizzabili con tastiera; pulsanti nominati; dialoghi nativi con focus contenuto.
-- La lingua vive in memoria per la sessione della pagina: nessun cookie o `localStorage` aggiunto.
+| Contenuto | Percorso |
+|---|---|
+| Piatti, prezzi, aggiunte e bevande | `src/data/menu.json` |
+| Traduzioni originali | `src/data/translations.json` |
+| Testi brevi del sito | `src/i18n.tsx` |
+| Foto locale e community | `src/data/photos.json` |
+| Layout e responsive | `src/styles/design-v21.css` |
+| Slider e gallery | `src/components/IntroSliders.tsx`, `Gallery.tsx`, `Community.tsx` |
+| Interazioni | `src/styles/interactions-v21.css`, `src/hooks/useCarousel.ts` |
+| Atmosfere e hero | `src/components/effects/`, `src/styles/effects-v21.css` |
+| Popup legali | `src/data/privacy.html`, `cookie.html`, `note-legali.html` |
+| Pagine legali autonome | I corrispondenti file in `public/` |
 
-## Dove modificare i contenuti
-
-| Contenuto                          | File                                                       |
-| ---------------------------------- | ---------------------------------------------------------- |
-| Piatti, prezzi, aggiunte e bevande | `src/data/menu.json`                                       |
-| Testi e quattro lingue della V18   | `src/data/translations.json`                               |
-| Testi brevi del polish        | `src/i18n.tsx`                                             |
-| Cinque album e scatti community    | `src/data/photos.json`                                     |
-| Recensioni originali               | `src/data/reviews.json`                                    |
-| Popup legali                       | `src/data/privacy.html`, `cookie.html`, `note-legali.html` |
-| Pagine legali autonome             | Gli stessi tre file in `public/`                           |
-| Polish grafico                     | `src/styles/v20.css`                                    |
-| Componenti React Bits adattati     | `src/vendor/react-bits/`                                   |
-
-Se cambi un testo legale, aggiorna sia il frammento in `src/data/` sia la pagina in `public/`. Le regole originali in `v18-*.css` sono mantenute come base visiva; aggiungi modifiche mirate nel foglio del polish.
-
-## Verifiche ripetibili
-
-```bash
-npm ci
-npm run check
-npx playwright install chromium
-npm test
-```
-
-I test avviano un server HTTP locale temporaneo e lo chiudono al termine. Coprono contenuti, immagini, slider, lingue, allergeni, lightbox, popup, scroll e movimento ridotto. Non inviano messaggi e non aprono i collegamenti esterni di telefono, WhatsApp o social.
-
-Per usare un Chromium già installato si può impostare `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. In ambienti CI limitati è disponibile `QA_BROWSER_ADAPTER`, percorso di un modulo Chromium compatibile; non è usato dalla build o dall'applicazione. Per rigenerare le schermate: `node scripts/capture-polish.mjs`.
-
-## Prima della versione definitiva
-
-Le pagine legali della V18 contengono già campi da completare per il gestore. Sono stati preservati: il nuovo popup non trasforma queste bozze in informative definitive. Nessun dato societario è stato inventato. L'elenco delle foto selezionate è in `docs/PHOTO_SELECTION.md`; i riferimenti delle dipendenze e le relative licenze sono in `THIRD_PARTY.md` e `licenses/`.
+Le regole CSS originali sono la base; i fogli V21 si caricano dopo, nell’ordine effetti → interazioni → design. Modificando i testi legali, aggiorna sia il frammento React sia la pagina HTML autonoma. Le recensioni rimangono archiviate nei dati storici ma non sono caricate nel sito.

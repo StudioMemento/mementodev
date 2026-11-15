@@ -96,19 +96,21 @@ export default function Dialogs() {
                   key={i}
                   className={info.codes.includes(i + 1) ? "contains" : ""}
                 >
-                  <b>{i + 1}</b>
-                  <span>
-                    <strong>{name}</strong>
-                    <small>{description}</small>
-                  </span>
+                  <b className="allergen-code">{i + 1}</b>
+                  <strong className="allergen-name">
+                    {name}
+                    {info.codes.includes(i + 1) && <span className="sr-only"> — {copy.allergenIncluded}</span>}
+                  </strong>
+                  <small className="allergen-description">{description}</small>
                 </li>
               ))}
               <li className={info.frozen ? "contains" : ""}>
-                <b>*</b>
-                <span>
-                  <strong>{copy.frozenTitle}</strong>
-                  <small>{copy.frozen}</small>
-                </span>
+                <b className="allergen-code">*</b>
+                <strong className="allergen-name">
+                  {copy.frozenTitle}
+                  {info.frozen && <span className="sr-only"> — {copy.allergenIncluded}</span>}
+                </strong>
+                <small className="allergen-description">{copy.frozen}</small>
               </li>
             </ol>
             <p className="allergen-note">{copy.allergenNote}</p>

@@ -1,6 +1,6 @@
-// Original social card hierarchy and sources retained; obsolete sharing copy removed.
+// Social profiles only: reviews are intentionally omitted in V21.
 import { useI18n, Copy } from "../i18n";
-import ReviewTicker from "./ReviewTicker";
+import SectionAtmosphere from "./effects/SectionAtmosphere";
 function SentenceCopy({ value }: { value: string }) {
   const clean = value
     .replace(/<[^>]+>/g, "")
@@ -21,7 +21,8 @@ function SentenceCopy({ value }: { value: string }) {
 export default function Social() {
   const { t, ui } = useI18n();
   return (
-    <section id="social">
+    <section id="social" className="vr-social">
+      <SectionAtmosphere variant="social" />
       <div className="social-shell">
         <header className="social-head fx">
           <p className="k-s">
@@ -72,67 +73,8 @@ export default function Social() {
             </span>
             <i className="ph-thin ph-arrow-up-right social-arrow"></i>
           </a>
-          <a
-            className="social-card"
-            href="https://www.tripadvisor.it/Restaurant_Review-g790406-d20931745-Reviews-Pizzeria_Via_Roma-Maniago_Province_of_Pordenone_Friuli_Venezia_Giulia.html"
-            target="_blank"
-            rel="noopener"
-          >
-            <span className="social-icon">
-              <i className="ph-thin ph-star"></i>
-            </span>
-            <span className="social-copy">
-              <small>Tripadvisor</small>
-              <strong>
-                <Copy value={ui.tripadvisor_phrase} />
-              </strong>
-              <em>
-                <Copy value={ui.so_tripadvisor} />
-              </em>
-            </span>
-            <i className="ph-thin ph-arrow-up-right social-arrow"></i>
-          </a>
-          <a
-            className="social-card"
-            href="https://restaurantguru.it/Pizzeria-Via-Roma-Maniago"
-            target="_blank"
-            rel="noopener"
-          >
-            <span className="social-icon">
-              <i className="ph-thin ph-fork-knife"></i>
-            </span>
-            <span className="social-copy">
-              <small>Restaurant Guru</small>
-              <strong>Pizzeria Via Roma</strong>
-              <em>
-                <Copy value={ui.so_restaurantguru} />
-              </em>
-            </span>
-            <i className="ph-thin ph-arrow-up-right social-arrow"></i>
-          </a>
         </div>
 
-        <div className="reviews-zone fx">
-          <aside className="review-intro">
-            <span className="review-intro-icon" aria-hidden="true">
-              <i className="ph-thin ph-quotes"></i>
-            </span>
-            <p className="k-s">
-              <Copy value={ui.review_eyebrow} />
-            </p>
-            <h3>
-              <Copy value={ui.review_title} />
-            </h3>
-            <p>
-              <Copy value={ui.review_body} />
-            </p>
-            <div className="review-platforms">
-              <span>Google Reviews</span>
-              <span>Tripadvisor</span>
-            </div>
-          </aside>
-          <ReviewTicker />
-        </div>
       </div>
     </section>
   );

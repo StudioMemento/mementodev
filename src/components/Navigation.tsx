@@ -9,10 +9,10 @@ export function Header() {
       <GradualBlur
         position="top"
         target="page"
-        height="78px"
-        strength={0.45}
-        layers={5}
-        tint="#08080980"
+        height="144px"
+        strength={1.1}
+        layers={8}
+        tint="#09090b90"
         zIndex={40}
         className="page-edge-blur top-edge"
       />
@@ -80,10 +80,10 @@ export function Dock() {
       <GradualBlur
         position="bottom"
         target="page"
-        height="104px"
-        strength={0.6}
-        layers={5}
-        tint="#08080980"
+        height="190px"
+        strength={1.3}
+        layers={8}
+        tint="#09090b90"
         zIndex={40}
         className="page-edge-blur bottom-edge"
       />
