@@ -1,0 +1,10 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> pizzeria-via-roma-react-polish@23.0.0 test
+> node scripts/verify-v23.mjs
+
+CAROUSEL_SCHEDULER_BEHAVIOR_PASS
+(node:179) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+CHROME_SIGNAL_BEHAVIOR_PASS
+V23 CONTRACT OK — 148 frozen files, exact menu HTML, 6 WebP assets, navigation, real carousel scheduler and negative controls.

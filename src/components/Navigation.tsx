@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { languages, useI18n } from "../i18n";
 import { Icon } from "./Icon";
+import { useDockMagnification } from "../hooks/useDockMagnification";
 import GradualBlur from "../vendor/react-bits/GradualBlur";
 
 type PagePosition = { active: string; progress: number; minimumProgress: number };
@@ -95,10 +96,10 @@ export function Header() {
       <GradualBlur
         position="top"
         target="page"
-        height="144px"
+        height="var(--edge-top)"
         strength={1.1}
-        layers={4}
-        tint="#09090b90"
+        layers={6}
+        tint="transparent"
         zIndex={40}
         className="page-edge-blur top-edge"
       />
@@ -136,6 +137,8 @@ export function Header() {
 }
 export function Dock() {
   const { t, copy } = useI18n();
+  const dockRef = useRef<HTMLElement>(null);
+  useDockMagnification(dockRef);
   const [active, setActive] = useState("home");
   const activeRef = useRef("home");
   useEffect(() => {
@@ -148,14 +151,14 @@ export function Dock() {
       <GradualBlur
         position="bottom"
         target="page"
-        height="190px"
+        height="var(--edge-bottom)"
         strength={1.3}
-        layers={4}
-        tint="#09090b90"
+        layers={6}
+        tint="transparent"
         zIndex={40}
         className="page-edge-blur bottom-edge"
       />
-      <nav className="vr-dock" aria-label={copy.navigation}>
+      <nav className="vr-dock vr-dock-v23" ref={dockRef} aria-label={copy.navigation}>
         {[
           { id: "menu", icon: "fork-knife", label: t.tab_menu },
           { id: "gallery", icon: "fire", label: t.tab_storia },
@@ -164,13 +167,14 @@ export function Dock() {
         ].map((x) => (
           <a
             key={x.id}
+            aria-label={x.label}
             href={x.id === "call" ? "tel:+390427541232" : `#${x.id}`}
             aria-current={active === x.id ? "location" : undefined}
           >
             <span className="dock-tile">
               <Icon name={x.icon} />
             </span>
-            <span className="dock-label">{x.label}</span>
+            
           </a>
         ))}
       </nav>

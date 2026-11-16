@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm';
 
 // Execute the production hook with deterministic hook slots, observers and
 // clocks. The simulated DOM tests scheduling and drag contracts, not visuals.
-export async function verifyCarouselScheduler() {
+export async function verifyCarouselScheduler({ count = 12, interval = 700, speed = .5 } = {}) {
   const source = await readFile('src/hooks/useCarousel.ts', 'utf8');
   const dragSource = await readFile('src/hooks/useDrag.ts', 'utf8');
   const hookCode = source.slice(source.indexOf('export function useCarousel')).replace('export function', 'function');
@@ -43,7 +43,7 @@ export async function verifyCarouselScheduler() {
     hasPointerCapture(id) { return this.capture.has(id); }
     releasePointerCapture(id) { this.capture.delete(id); }
   }
-  const cards = Array.from({ length: 12 }, () => Object.assign(new Element(), { offsetWidth: 290 }));
+  const cards = Array.from({ length: count }, () => Object.assign(new Element(), { offsetWidth: 290 }));
   const stage = Object.assign(new Element(), { clientWidth: 390, querySelectorAll: () => cards });
   const root = { contains: node => node === stage || cards.includes(node) };
   const media = { matches: false, addEventListener: (_, fn) => motionListeners.add(fn), removeEventListener: (_, fn) => motionListeners.delete(fn) };
@@ -79,7 +79,7 @@ export async function verifyCarouselScheduler() {
     do {
       assert.ok(++passes < 8, 'Hook schedules a render loop');
       renderNeeded = false; cursor = 0;
-      result = hook(12, 700, .5);
+      result = hook(count, interval, speed);
       result.rootRef.current = root; result.stageRef.current = stage;
       for (const { index, fn } of effects.splice(0)) { slots[index].cleanup?.(); slots[index].cleanup = fn(); }
     } while (renderNeeded);
@@ -106,7 +106,7 @@ export async function verifyCarouselScheduler() {
   assert.equal(raf.size, 0, 'Stationary carousel has a continuous loop');
   assert.equal(timers.size, 1, 'Autoplay deadline is not scheduled');
   const before = cards[0].properties.get('--slide-x');
-  frame(750); for (let i = 0; i < 20; i++) frame();
+  frame(interval + 50); for (let i = 0; i < 20; i++) frame();
   assert.notEqual(cards[0].properties.get('--slide-x'), before, 'Autoplay does not move visible content');
   assert.equal(stage.dataset.carouselMoving, 'true');
   result.rootBind.onPointerEnter({ pointerType: 'mouse' }); settle();

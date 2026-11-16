@@ -1,119 +1,116 @@
-import { useEffect, type CSSProperties } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import data from "../data/menu.json";
 import { useI18n, translateDescription, translateName, type Language } from "../i18n";
 import { useCarousel } from "../hooks/useCarousel";
+import { IntroBackground } from "./IntroBackground";
 import { Chevron } from "./Icon";
 import { Photo } from "./Photo";
-import { categoryOrder } from "./Menu";
-import SectionAtmosphere from "./effects/SectionAtmosphere";
-
+import { useEffectActivity } from "./effects/useEffectActivity";
+const Aurora = lazy(() => import("../vendor/v23-react-bits/Aurora"));
+const HoloCard = lazy(() => import("../vendor/v23-react-bits/HoloCard"));
 export const interactionCopy: Record<Language, { drag: string; pause: string; play: string; crustKicker: string; crustTitle: string; crustBody: string; ricotta: string; brie: string; gorgonzola: string; filling: string; perPizza: string; discover: string }> = {
-  it: { drag: "Trascina, scegli, lasciati tentare.", pause: "Pausa scorrimento", play: "Riprendi scorrimento", crustKicker: "FINO ALL’ULTIMO MORSO", crustTitle: "Il gusto arriva fino al bordo.", crustBody: "Scegli il tuo ripieno preferito e aggiungi qualcosa in più alla tua pizza.", ricotta: "Morbida e delicata", brie: "Cremoso e avvolgente", gorgonzola: "Dolce, dal gusto deciso", filling: "Cornicione ripieno", perPizza: "alla tua pizza", discover: "Esplora il menù" },
-  en: { drag: "Drag, choose, give in to temptation.", pause: "Pause autoplay", play: "Resume autoplay", crustKicker: "TO THE VERY LAST BITE", crustTitle: "Good taste, right to the edge.", crustBody: "Choose your favourite filling and add something extra to your pizza.", ricotta: "Soft and delicate", brie: "Rich and creamy", gorgonzola: "Sweet, with a bold character", filling: "Stuffed crust", perPizza: "per pizza", discover: "Explore the menu" },
-  de: { drag: "Ziehen, wählen, genießen.", pause: "Automatik pausieren", play: "Automatik fortsetzen", crustKicker: "BIS ZUM LETZTEN BISSEN", crustTitle: "Genuss bis zum Rand.", crustBody: "Wähle deine Lieblingsfüllung und gib deiner Pizza das gewisse Extra.", ricotta: "Weich und mild", brie: "Vollmundig und cremig", gorgonzola: "Mild, mit kräftigem Charakter", filling: "Gefüllter Rand", perPizza: "pro Pizza", discover: "Speisekarte entdecken" },
-  fr: { drag: "Faites glisser, choisissez, savourez.", pause: "Mettre le défilement en pause", play: "Reprendre le défilement", crustKicker: "JUSQU’À LA DERNIÈRE BOUCHÉE", crustTitle: "Du goût, jusqu’au bord.", crustBody: "Choisissez votre garniture préférée pour apporter un petit plus à votre pizza.", ricotta: "Douce et délicate", brie: "Fondant et crémeux", gorgonzola: "Doux, au caractère affirmé", filling: "Bordure farcie", perPizza: "par pizza", discover: "Découvrir la carte" },
+  it: { drag: "Trascina, scegli, lasciati tentare.", pause: "Pausa scorrimento", play: "Riprendi scorrimento", crustKicker: "FINO ALL’ULTIMO MORSO", crustTitle: "Il cornicione con qualcosa in più!", crustBody: "Scegli il ripieno e rendi la tua pizza unica.", ricotta: "Morbida e delicata", brie: "Cremoso e avvolgente", gorgonzola: "Dolce, dal gusto deciso", filling: "Cornicione ripieno", perPizza: "alla tua pizza", discover: "Esplora il menù" },
+  en: { drag: "Drag, choose, give in to temptation.", pause: "Pause autoplay", play: "Resume autoplay", crustKicker: "TO THE VERY LAST BITE", crustTitle: "A crust with something extra!", crustBody: "Choose your filling and make your pizza unique.", ricotta: "Soft and delicate", brie: "Rich and creamy", gorgonzola: "Sweet, with a bold character", filling: "Stuffed crust", perPizza: "per pizza", discover: "Explore the menu" },
+  de: { drag: "Ziehen, wählen, genießen.", pause: "Automatik pausieren", play: "Automatik fortsetzen", crustKicker: "BIS ZUM LETZTEN BISSEN", crustTitle: "Ein Pizzarand mit dem gewissen Extra!", crustBody: "Wähle deine Füllung und mache deine Pizza einzigartig.", ricotta: "Weich und mild", brie: "Vollmundig und cremig", gorgonzola: "Mild, mit kräftigem Charakter", filling: "Gefüllter Rand", perPizza: "pro Pizza", discover: "Speisekarte entdecken" },
+  fr: { drag: "Faites glisser, choisissez, savourez.", pause: "Mettre le défilement en pause", play: "Reprendre le défilement", crustKicker: "JUSQU’À LA DERNIÈRE BOUCHÉE", crustTitle: "Une bordure avec un petit plus !", crustBody: "Choisissez votre garniture et rendez votre pizza unique.", ricotta: "Douce et délicate", brie: "Fondant et crémeux", gorgonzola: "Doux, au caractère affirmé", filling: "Bordure farcie", perPizza: "par pizza", discover: "Découvrir la carte" },
 };
 
-function AutoControl({ paused, onClick, disabled = false }: { paused: boolean; onClick: () => void; disabled?: boolean }) {
-  const { language } = useI18n();
-  const text = interactionCopy[language];
-  if (disabled) return null;
-  return <button className="vr-autoplay" type="button" aria-label={paused ? text.play : text.pause} aria-pressed={paused} onClick={onClick}>
-    {paused ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m4 2 8 5-8 5V2Z" fill="currentColor" /></svg> : <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M4 2v10M10 2v10" stroke="currentColor" strokeWidth="1.5" /></svg>}
-  </button>;
+function useNear(ref: RefObject<HTMLElement | null>) {
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) { setNear(true); observer.disconnect(); }
+    }, { rootMargin: "360px 0px" });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [ref]);
+  return near;
 }
 
 function Controls({ labels, carousel }: { labels: string[]; carousel: ReturnType<typeof useCarousel> }) {
-  const { copy, language } = useI18n();
-  return <div className="vr-carousel-footer">
-    <p className="vr-drag-cue"><span aria-hidden="true">↔</span>{interactionCopy[language].drag}</p>
-    <div className="vr-carousel-controls">
-      <button className="vr-carousel-arrow" type="button" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
-      <span className="vr-carousel-count" aria-live={carousel.paused ? "polite" : "off"}>{String(carousel.index + 1).padStart(2, "0")}<span>/</span>{String(labels.length).padStart(2, "0")}</span>
-      <button className="vr-carousel-arrow" type="button" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
-      <AutoControl paused={carousel.paused} onClick={() => carousel.setPaused(p => !p)} disabled={carousel.reduced} />
+  const { copy } = useI18n();
+  return <div className="pizza-controls" aria-label={copy.navigation}>
+    <button className="pizza-arrow" type="button" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
+    <div className="pizza-dots" role="group" aria-label={copy.menu}>
+      {labels.map((label, i) => <button key={label} type="button" className="pizza-dot"
+        aria-label={label} aria-pressed={i === carousel.index} onClick={() => carousel.select(i)}><span /></button>)}
     </div>
+    <button className="pizza-arrow" type="button" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
   </div>;
 }
 
 function Oven() {
   const { t, language } = useI18n();
-  const carousel = useCarousel(data.FORNO.length, 7200);
-  return <section className="vr-pizza-carousel" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
-    <SectionAtmosphere variant="oven" />
-    <header className="vr-carousel-heading"><p className="k-s">{t.strip_k}</p></header>
+  const carousel = useCarousel(data.FORNO.length, 6500);
+  const near = useNear(carousel.rootRef);
+  const { active, reduced } = useEffectActivity(carousel.rootRef);
+  return <section className="vr-pizza-carousel pizza-v23" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
+    <IntroBackground active={active} reduced={reduced} />
+    <header className="oven-crown">
+      <div className="oven-aurora" aria-hidden="true">
+        {near && <Suspense fallback={null}><Aurora colorStops={["#f97316", "#eab308", "#ef4444"]}
+          height={0.3} glow={2} blend={0} layers={2} intro={false} direction="top"
+          mouseInteraction={false} speed={0.35} paused={!active || reduced} dpr={1} /></Suspense>}
+      </div>
+      <h2>{t.strip_k}</h2>
+    </header>
     <div className="vr-pizza-viewport">
       <div className="vr-pizza-stage" id="forno" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.strip_k}>
         {data.FORNO.map(([src, name, description], logical) => {
           const offset = ((logical + data.FORNO.length / 2) % data.FORNO.length) - data.FORNO.length / 2;
-          return <figure key={src} className={`vr-pizza-card${logical === carousel.index ? " is-current" : ""}`} data-carousel-card data-forno-index={logical} aria-hidden={logical !== carousel.index} style={{ "--slide-x": `${offset * 340}px`, "--slide-distance": Math.abs(offset) } as CSSProperties}>
-            <div className="vr-pizza-image"><Photo src={src} alt={logical === carousel.index ? translateName(name, language) : ""} enabled={carousel.isLoaded(logical)} eager sizes="(max-width: 700px) 74vw, 25vw" /></div>
+          return <figure key={src} className={`vr-pizza-card${logical === carousel.index ? " is-current" : ""}`} data-carousel-card data-forno-index={logical} aria-hidden={logical !== carousel.index} style={{ "--slide-x": `${offset * 390}px`, "--slide-distance": Math.abs(offset) } as CSSProperties}>
+            <div className="vr-pizza-image"><Photo src={src} alt={logical === carousel.index ? translateName(name, language) : ""} enabled={carousel.isLoaded(logical)} eager sizes="(max-width: 700px) 86vw, (max-width: 1100px) 42vw, 31vw" /></div>
             <figcaption>{translateName(name, language)}</figcaption>
             <p className="vr-pizza-ingredients">{translateDescription(description, language)}</p>
           </figure>;
         })}
       </div>
     </div>
-    <Controls labels={data.FORNO.map(r => r[1])} carousel={carousel} />
+    <Controls labels={data.FORNO.map(r => translateName(r[1], language))} carousel={carousel} />
   </section>;
 }
 
 function Cornicione() {
   const { t, language } = useI18n();
   const text = interactionCopy[language];
+  const ref = useRef<HTMLElement>(null);
+  const near = useNear(ref);
+  const { active, reduced } = useEffectActivity(ref);
   const options = [
-    { id: "ricotta", name: "Ricotta", body: text.ricotta },
-    { id: "brie", name: "Brie", body: text.brie },
-    { id: "gorgonzola", name: t.gorgo, body: text.gorgonzola },
+    { id: "ricotta", name: "Ricotta" },
+    { id: "brie", name: "Brie" },
+    { id: "gorgonzola", name: t.gorgo },
   ];
-  return <section className="vr-crust-intro" id="cornicione">
-    <SectionAtmosphere variant="crust" />
+  return <section className="vr-crust-intro crust-v23" id="cornicione" ref={ref}>
+    <IntroBackground active={active} reduced={reduced} />
     <header className="crust-heading">
-      <p className="k-s">{text.crustKicker}</p>
       <h2>{text.crustTitle}</h2>
       <p>{text.crustBody}</p>
     </header>
     <div className="crust-options crust-grid">
-      {options.map((option, i) => <article className="crust-option crust-card" key={option.id}>
-        <img className="crust-illustration" src={`/assets/cornicione/${option.id}.svg`} width="540" height="300" loading="lazy" alt={`${text.filling} · ${option.name}`} />
-        <div className="crust-option-copy crust-card-copy">
-          <h3>{option.name}</h3>
-          <p>{option.body}</p>
-          <div className="crust-price"><strong>+ € {data.CORNICE[i][2]}</strong><span>{text.perPizza}</span></div>
-        </div>
-      </article>)}
-    </div>
-    <a className="text-link crust-link" href="#menu">{t.t_cta}<Chevron direction="right" /></a>
-  </section>;
-}
-
-function Categories() {
-  const { t, copy, language } = useI18n();
-  const carousel = useCarousel(categoryOrder.length, 8200);
-  useEffect(() => {
-    const stage = carousel.stageRef.current;
-    const focused = document.activeElement;
-    if (!stage || focused === stage || !stage.contains(focused)) return;
-    stage.querySelectorAll<HTMLElement>('[data-carousel-card]')[carousel.index]?.querySelector<HTMLAnchorElement>('a')?.focus({ preventScroll: true });
-  }, [carousel.index, carousel.stageRef]);
-  return <section id="catshow" className="vr-category-carousel" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.m_title}>
-    <SectionAtmosphere variant="categories" />
-    <div className="vr-category-stage" id="showrail" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.m_title}>
-      {categoryOrder.map((id, logical) => {
-        const offset = ((logical + categoryOrder.length / 2) % categoryOrder.length) - categoryOrder.length / 2;
-        const active = logical === carousel.index;
-        return <article className={`vr-category-slide${active ? " is-current" : ""}`} key={id} data-cat={id} data-carousel-card aria-hidden={!active} style={{ "--slide-x": `${offset * 1000}px`, "--slide-distance": Math.abs(offset) } as CSSProperties}>
-          <header className="vr-category-heading"><h2>{t.cats[id][0]}</h2></header>
-          <a className="vr-category-image" href={`#cat-${id}`} draggable={false} tabIndex={active ? 0 : -1} aria-label={`${copy.menu}: ${t.cats[id][0]}`}>
-            <Photo src={data.MENU_ART[id]} alt={active ? t.cats[id][0] : ""} enabled={carousel.isLoaded(logical)} eager sizes="(max-width: 700px) 90vw, 64vw" />
-            <span className="vr-category-link">{interactionCopy[language].discover}<Chevron direction="right" /></span>
-          </a>
-          <p className="vr-category-description">{t.cats[id][1] || "\u00a0"}</p>
+      {options.map((option, i) => {
+        const alt = `${text.filling} · ${option.name}`;
+        const fallback = <img className="crust-photo" src={`/assets/cornicione/${option.id}-960.webp`}
+          srcSet={`/assets/cornicione/${option.id}-480.webp 480w, /assets/cornicione/${option.id}-960.webp 960w`}
+          sizes="(max-width: 700px) 31vw, 30vw" width="960" height="720" loading="lazy" decoding="async" alt={alt} />;
+        return <article className="crust-option crust-card" key={option.id}>
+          <div className="crust-art">
+            {near && !reduced ? <Suspense fallback={fallback}>
+              <HoloCard image={`/assets/cornicione/${option.id}-960.webp`} alt={alt}
+                preset="glitter" scale={1.75} hoverScale={1.1} radius={8} tiltMax={15} edgeSparkle={0.2}
+                intensity={0.32} glare={0.16} frame={0} foilColor="#e8ca85" idle={false} shadow={false}
+                style={{ width: "100%", "--hc-ratio": 4/3 } as CSSProperties} />
+            </Suspense> : fallback}
+          </div>
+          <div className="crust-card-copy">
+            <h3>{option.name}</h3>
+            <p className="crust-price"><strong>+ € {data.CORNICE[i][2]}</strong><span>{text.perPizza}</span></p>
+          </div>
         </article>;
       })}
     </div>
-    <Controls labels={categoryOrder.map(id => t.cats[id][0])} carousel={carousel} />
   </section>;
 }
 
-export function IntroSliders() { return <><Oven /><Cornicione /><Categories /></>; }
+export function IntroSliders() { return <><Oven /><Cornicione /></>; }

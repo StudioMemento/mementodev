@@ -13,6 +13,7 @@ import "./styles/design-v21.css";
 import "./styles/effects-v22.css";
 import "./styles/interactions-v22.css";
 import "./styles/design-v22.css";
+import "./styles/intro-v23.css";
 const root = document.getElementById("root")!;
 if (root.children.length)
   hydrateRoot(

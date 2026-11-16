@@ -1,3 +1,13 @@
+# Aggiornamento V23 — 16 novembre 2026
+
+Aggiunti i sorgenti ufficiali [React Bits](https://github.com/DavidHDev/react-bits): DotGrid, MetallicPaint, GradientText, Aurora e HoloCard (varianti TypeScript/CSS). Licenza completa in `licenses/react-bits-LICENSE.md`. Il dock riprende il falloff coseno e la risposta elastica, adattati a link nativi senza dipendenze motion aggiuntive. Parametri e modifiche in `docs/RELEASE_V23.md`.
+
+Adattamenti: metallo limitato a bianco/grigio chiaro; sospensione e limiti DPR; Holo 4:3; fallback Canvas 2D/CSS quando WebGL2 non è disponibile. Le tre nuove immagini food dei cornicioni sono state generate appositamente su richiesta dell’utente. Tutti gli asset originali sono conservati.
+
+Il seguito documenta la provenienza della base e degli altri componenti, non le scelte correnti dell’intro.
+
+---
+
 # Componenti e risorse
 
 ## Aggiornamento V21 — 15 novembre 2026
@@ -27,4 +37,4 @@ Adattamenti locali: Magic Bento usa contenuti del ristorante; eliminati le illus
 
 React, React DOM, Vite, TypeScript, PurgeCSS e strumenti di verifica sono installati da npm con versioni risolte in `package-lock.json`. I relativi pacchetti includono le rispettive licenze.
 
-Logo, fotografie, immagini del menù e mappa derivano dai materiali già serviti dal sito Via Roma V18. Le immagini del menù e gli originali conservati non sono stati rigenerati o ritoccati. Nessuna immagine generata per le tavole è inclusa nel sito.
+Logo, fotografie, immagini del menù e mappa derivano dai materiali già serviti dal sito Via Roma V18. Le immagini del menù e gli originali conservati non sono stati rigenerati o ritoccati. La V23 aggiunge soltanto le tre fotografie generate dei cornicioni descritte sopra.

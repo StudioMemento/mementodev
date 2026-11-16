@@ -44,7 +44,9 @@ const initialJs = initialFiles.reduce((sum, file) => {
   assert.ok(jsSizes.has(file), `Missing initial JavaScript: ${file}`);
   return sum + jsSizes.get(file);
 }, 0);
-assert.ok(js < 160_000, `JS budget exceeded: ${js}`);
+// V23 adds five requested effects, with WebGL modules deferred from the initial graph.
+assert.ok(initialJs < 105_000, `Initial JS budget exceeded: ${initialJs}`);
+assert.ok(js < 185_000, `JS budget exceeded: ${js}`);
 assert.ok(css < 35_000, `CSS budget exceeded: ${css}`);
 for (const file of [
   "privacy.html",
