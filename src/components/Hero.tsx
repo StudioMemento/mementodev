@@ -13,10 +13,9 @@ export default function Hero() {
   const [ready, setReady] = useState(false);
   useEffect(() => { if (active) setReady(true); }, [active]);
   const lines = t.tagline.replace(/<[^>]+>/g, "|").split("|").filter(Boolean);
-  return <section id="home" ref={section} className="vr-hero vr-hero-v23" aria-label="Pizzeria Via Roma" data-fx-active={active}>
+  return <section id="home" ref={section} className="vr-hero vr-hero-v24" aria-label="Pizzeria Via Roma" data-fx-active={active}>
     <IntroBackground active={active} reduced={reduced} />
     <div className="hero-composition">
-      <p className="hero-location">{t.sp_kicker}</p>
       <div className="hero-logo-fx">
         <img className="hero-logo" src="/assets/logo.png" alt="Pizzeria Via Roma" width="851" height="851" fetchPriority="high" />
         <div className="hero-metallic" aria-hidden="true">
@@ -27,7 +26,7 @@ export default function Hero() {
         </div>
       </div>
       <h1 className="hero-slogan">
-        <GradientText colors={["#ffe288", "#ffffff", "#ffbf92"]} glow={0.2}
+        <GradientText colors={["#c6ab70", "#f1ece1", "#ddc895"]} glow={0.12}
           followPointer={!reduced} borderWidth={1} showBorder={false} animationSpeed={8} paused={!active}>
           {lines.map((line, i) => <span className="hero-slogan-line" key={line}>{i > 0 && " "}{line}</span>)}
         </GradientText>

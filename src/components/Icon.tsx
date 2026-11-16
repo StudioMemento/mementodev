@@ -5,6 +5,7 @@ export function Icon({
   name: string;
   className?: string;
 }) {
+  if (name === "house") return <svg className={className} viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v11h5v-6h4v6h5V9" fill="none" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round" /></svg>;
   return <i className={`ph-thin ph-${name} ${className}`} aria-hidden="true" />;
 }
 export function Chevron({

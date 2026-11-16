@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { languages, useI18n } from "../i18n";
 import { Icon } from "./Icon";
-import { useDockMagnification } from "../hooks/useDockMagnification";
-import GradualBlur from "../vendor/react-bits/GradualBlur";
+import { ViewportBlur } from "./ViewportBlur";
 
 type PagePosition = { active: string; progress: number; minimumProgress: number };
 type PositionListener = (position: PagePosition) => void;
@@ -93,16 +92,7 @@ export function Header() {
   const { language, setLanguage, copy } = useI18n();
   return (
     <>
-      <GradualBlur
-        position="top"
-        target="page"
-        height="var(--edge-top)"
-        strength={1.1}
-        layers={6}
-        tint="transparent"
-        zIndex={40}
-        className="page-edge-blur top-edge"
-      />
+      <ViewportBlur edge="top" />
       <header className="site-top">
         <a
           className="site-brand"
@@ -137,8 +127,6 @@ export function Header() {
 }
 export function Dock() {
   const { t, copy } = useI18n();
-  const dockRef = useRef<HTMLElement>(null);
-  useDockMagnification(dockRef);
   const [active, setActive] = useState("home");
   const activeRef = useRef("home");
   useEffect(() => {
@@ -148,18 +136,10 @@ export function Dock() {
   }, []);
   return (
     <>
-      <GradualBlur
-        position="bottom"
-        target="page"
-        height="var(--edge-bottom)"
-        strength={1.3}
-        layers={6}
-        tint="transparent"
-        zIndex={40}
-        className="page-edge-blur bottom-edge"
-      />
-      <nav className="vr-dock vr-dock-v23" ref={dockRef} aria-label={copy.navigation}>
+      <ViewportBlur edge="bottom" />
+      <nav className="vr-dock vr-dock-v24" aria-label={copy.navigation}>
         {[
+          { id: "home", icon: "house", label: "Home" },
           { id: "menu", icon: "fork-knife", label: t.tab_menu },
           { id: "gallery", icon: "fire", label: t.tab_storia },
           { id: "dove", icon: "info", label: t.tab_dove },

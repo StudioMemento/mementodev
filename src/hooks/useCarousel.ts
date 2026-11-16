@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type DragEvent, type Keyboard
 import { wrap } from "./useDrag";
 
 /** One persistent element per item. Recycling happens outside the viewport, never while an image is visible. */
-export function useCarousel(count: number, interval = 7000, continuousSpeed = 0) {
+export function useCarousel(count: number, interval = 7000, continuousSpeed = 0, transitionMs = 0) {
   const rootRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -10,12 +10,13 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
   const [reduced, setReduced] = useState(false);
   const loaded = useRef(new Set<number>());
   const [, setLoadVersion] = useState(0);
-  const state = useRef({ position: 0, target: 0, step: 300, width: 0, near: false, frame: 0, last: 0, nextAuto: 0, visible: false, hovered: false, focused: false, paused: false, reduced: false, index: 0, suppress: false });
+  const state = useRef({ position: 0, target: 0, tweenFrom: 0, tweenTarget: NaN, tweenStart: 0, tweenDuration: 0, step: 300, width: 0, near: false, frame: 0, last: 0, nextAuto: 0, visible: false, hovered: false, focused: false, paused: false, reduced: false, index: 0, suppress: false });
   const pointer = useRef<{ id: number; x: number; y: number; start: number; dx: number; active: boolean; lastX: number; time: number; velocity: number } | null>(null);
   const wakeRef = useRef<() => void>(() => {});
   const move = useCallback((amount: number) => {
     const s = state.current;
     s.target = Math.round(s.target) + amount;
+    s.tweenTarget = NaN;
     s.nextAuto = performance.now() + interval + 4000;
     wakeRef.current();
   }, [interval]);
@@ -94,9 +95,20 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
         else { s.target = Math.round(s.target) + 1; s.nextAuto = now + interval; }
       }
       if (!pointer.current?.active) {
-        const follow = s.reduced ? 1 : 1 - Math.exp(-dt / .19);
-        s.position += (s.target - s.position) * follow;
-        if (Math.abs(s.target - s.position) < .0005) s.position = s.target;
+        if (transitionMs > 0 && continuousSpeed === 0 && !s.reduced) {
+          if (s.tweenTarget !== s.target) {
+            s.tweenFrom = s.position; s.tweenTarget = s.target; s.tweenStart = now;
+            s.tweenDuration = transitionMs * Math.max(.5, Math.min(1.25, Math.sqrt(Math.abs(s.target - s.position))));
+          }
+          const t = Math.min(1, (now - s.tweenStart) / Math.max(1, s.tweenDuration));
+          const eased = t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+          s.position = s.tweenFrom + (s.target - s.tweenFrom) * eased;
+          if (t >= 1 || Math.abs(s.target - s.position) < .0005) s.position = s.target;
+        } else {
+          const follow = s.reduced ? 1 : 1 - Math.exp(-dt / .19);
+          s.position += (s.target - s.position) * follow;
+          if (Math.abs(s.target - s.position) < .0005) s.position = s.target;
+        }
       }
       render();
       const moving = Math.abs(s.target - s.position) > .0005;
@@ -155,13 +167,14 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
       media.removeEventListener("change", updateMotion);
       wakeRef.current = () => {};
     };
-  }, [count, interval, continuousSpeed]);
+  }, [count, interval, continuousSpeed, transitionMs]);
 
   const release = (element: HTMLElement, cancelled: boolean) => {
     const p = pointer.current;
     if (!p) return;
     const s = state.current;
     pointer.current = null;
+    s.tweenTarget = NaN;
     element.classList.remove("is-dragging");
     if (p.active) {
       s.suppress = !cancelled;
@@ -180,6 +193,7 @@ export function useCarousel(count: number, interval = 7000, continuousSpeed = 0)
       const s = state.current;
       s.suppress = false;
       s.target = s.position;
+      s.tweenTarget = NaN;
       pointer.current = { id: e.pointerId, x: e.clientX, y: e.clientY, start: s.position, dx: 0, active: false, lastX: e.clientX, time: performance.now(), velocity: 0 };
     },
     onPointerMove(e: PointerEvent<HTMLElement>) {

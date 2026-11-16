@@ -58,6 +58,7 @@ const result = await new PurgeCSS().purge({
     ],
     greedy: [
       /data-motion/,
+      /data-carousel-moving/,
       /data-intro/,
       /data-state/,
       /data-clickable/,

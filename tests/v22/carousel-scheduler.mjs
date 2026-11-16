@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm';
 
 // Execute the production hook with deterministic hook slots, observers and
 // clocks. The simulated DOM tests scheduling and drag contracts, not visuals.
-export async function verifyCarouselScheduler({ count = 12, interval = 700, speed = .5 } = {}) {
+export async function verifyCarouselScheduler({ count = 12, interval = 700, speed = .5, transitionMs = 0 } = {}) {
   const source = await readFile('src/hooks/useCarousel.ts', 'utf8');
   const dragSource = await readFile('src/hooks/useDrag.ts', 'utf8');
   const hookCode = source.slice(source.indexOf('export function useCarousel')).replace('export function', 'function');
@@ -79,7 +79,7 @@ export async function verifyCarouselScheduler({ count = 12, interval = 700, spee
     do {
       assert.ok(++passes < 8, 'Hook schedules a render loop');
       renderNeeded = false; cursor = 0;
-      result = hook(count, interval, speed);
+      result = hook(count, interval, speed, transitionMs);
       result.rootRef.current = root; result.stageRef.current = stage;
       for (const { index, fn } of effects.splice(0)) { slots[index].cleanup?.(); slots[index].cleanup = fn(); }
     } while (renderNeeded);

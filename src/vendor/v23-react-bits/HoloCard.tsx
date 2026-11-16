@@ -44,7 +44,7 @@ interface Settings {
 
 const PRESETS: HoloPreset[] = ['bursts', 'stars', 'shards', 'cosmos', 'rainbow', 'swirl', 'glitter', 'gold'];
 const PERSPECTIVE = 1100;
-const CARD_RATIO = 4 / 3;
+const CARD_RATIO = 2 / 3;
 
 const VERTEX = `#version 300 es
 in vec2 position;
@@ -713,7 +713,7 @@ export default function HoloCard({
       {shadow ? <span ref={shadowRef} className="holo-card__shadow" aria-hidden="true" /> : null}
       <div ref={rotorRef} className="holo-card__rotor">
         <div className="holo-card__face holo-card__face--front">
-          {image ? <img src={image} alt="" width="960" height="720" loading="lazy" decoding="async" draggable={false} /> : null}
+          {image ? <img src={image} alt="" width="768" height="1152" loading="lazy" decoding="async" draggable={false} /> : null}
           <canvas ref={canvasRef} />
         </div>
         {flippable ? (

@@ -1,3 +1,9 @@
+# Aggiornamento V24 — 16 novembre 2026
+
+I componenti React Bits già acquisiti sono riutilizzati con palette Via Roma e ratio Holo 2:3. Aurora e magnification del dock non sono più importati. Il blur ai bordi viewport è un piccolo componente CSS con maschera continua. Tre nuovi visual verticali del trancio di margherita sono stati generati su richiesta; i testi sono HTML. Dettagli in `docs/RELEASE_V24.md`. Le note successive descrivono le versioni storiche.
+
+---
+
 # Aggiornamento V23 — 16 novembre 2026
 
 Aggiunti i sorgenti ufficiali [React Bits](https://github.com/DavidHDev/react-bits): DotGrid, MetallicPaint, GradientText, Aurora e HoloCard (varianti TypeScript/CSS). Licenza completa in `licenses/react-bits-LICENSE.md`. Il dock riprende il falloff coseno e la risposta elastica, adattati a link nativi senza dipendenze motion aggiuntive. Parametri e modifiche in `docs/RELEASE_V23.md`.
