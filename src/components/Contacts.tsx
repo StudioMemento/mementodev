@@ -3,7 +3,6 @@ import { useI18n, Copy } from "../i18n";
 import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
-import SectionAtmosphere from "./effects/SectionAtmosphere";
 
 export function isRestaurantOpen(date: Date) {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -28,7 +27,6 @@ export default function Contacts() {
   const isOpen = now ? isRestaurantOpen(now) : null;
   return (
     <section id="dove" className="vr-contacts v22-contacts" aria-labelledby="visit-title">
-      <SectionAtmosphere variant="info" />
       <div className="v22-visit-shell">
         <div className="v22-visit-layout">
           <div className="v22-visit-details">

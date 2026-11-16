@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "Pizzeria_Via_Roma_V24_Intro_Fix";
+const name = "Pizzeria_Via_Roma_V25_Clean";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -70,10 +70,10 @@ for (const required of [
   "public/assets/logo.png",
   "public/assets/fonts/jost-300.woff2",
   "public/legal.css",
-  "docs/QA_V24.md",
-  "docs/LAYOUT_V24.md",
-  "src/styles/intro-v24.css",
-  "licenses/react-bits-LICENSE.md",
+  "docs/QA_V25.md",
+  "docs/LAYOUT_V25.md",
+  "src/styles/clean.css",
+  "licenses/Phosphor-MIT.txt",
 ])
   assert.ok(names.includes(required), `${required} missing`);
 assert.ok(names.length > 150, "Assets or source missing");

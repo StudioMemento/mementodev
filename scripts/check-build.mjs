@@ -12,8 +12,8 @@ assert.ok(
   html.includes("noindex,nofollow"),
   "Preview indexing protection missing",
 );
-const local = [...html.matchAll(/(?:src|href)="(\/assets\/[^"#?]+)"/g)].map(
-  (m) => m[1],
+const local = [...html.matchAll(/(?:src|href)="(\/assets\/[^"#]+)"/g)].map(
+  (m) => m[1].split("?")[0],
 );
 for (const url of local) await stat("dist" + url);
 let js = 0,
@@ -44,10 +44,10 @@ const initialJs = initialFiles.reduce((sum, file) => {
   assert.ok(jsSizes.has(file), `Missing initial JavaScript: ${file}`);
   return sum + jsSizes.get(file);
 }, 0);
-// V23 adds five requested effects, with WebGL modules deferred from the initial graph.
-assert.ok(initialJs < 105_000, `Initial JS budget exceeded: ${initialJs}`);
-assert.ok(js < 185_000, `JS budget exceeded: ${js}`);
-assert.ok(css < 35_000, `CSS budget exceeded: ${css}`);
+// V25 clean baseline budgets include React, translated menu, and the optional dialogs.
+assert.ok(initialJs < 96_000, `Initial JS budget exceeded: ${initialJs}`);
+assert.ok(js < 103_000, `JS budget exceeded: ${js}`);
+assert.ok(css < 7_500, `CSS budget exceeded: ${css}`);
 for (const file of [
   "privacy.html",
   "cookie.html",

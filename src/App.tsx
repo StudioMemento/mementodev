@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect } from "react";
 import { LanguageProvider, useI18n } from "./i18n";
 import { DialogProvider, useDialog } from "./components/DialogContext";
-import { Header, Dock, ScrollProgress } from "./components/Navigation";
+import { Header, Dock } from "./components/Navigation";
 import Hero from "./components/Hero";
 import { IntroSliders } from "./components/IntroSliders";
 import Menu from "./components/Menu";
@@ -39,7 +39,6 @@ function Page() {
         <Contacts />
       </main>
       <Dock />
-      <ScrollProgress />
       <DialogHost />
     </>
   );

@@ -1,6 +1,5 @@
 import { useI18n, Copy } from "../i18n";
 import { Icon } from "./Icon";
-import SectionAtmosphere from "./effects/SectionAtmosphere";
 
 export default function Social() {
   const { t, ui } = useI18n();
@@ -18,7 +17,6 @@ export default function Social() {
   ];
   return (
     <section id="social" className="vr-social v22-social" aria-labelledby="social-title">
-      <SectionAtmosphere variant="social" />
       <div className="v22-social-shell">
         <header className="v22-social-heading">
           <p className="v22-eyebrow"><Copy value={t.so_eyebrow} /></p>

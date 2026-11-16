@@ -5,8 +5,6 @@ import { getAllergenInfo } from "../data/allergen-info";
 import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
-import GradualBlur from "../vendor/react-bits/GradualBlur";
-import SectionAtmosphere from "./effects/SectionAtmosphere";
 export const categoryOrder = [
   "classiche",
   "audaci",
@@ -212,22 +210,12 @@ export default function Menu() {
   }, []);
   return (
     <section id="menu">
-      <SectionAtmosphere variant="menu" />
       <div className="menu-head fx on">
         <p className="k-s">{t.m_eyebrow}</p>
         <h2>{t.m_title}</h2>
         <p className="menu-utility">{copy.menuHelp}</p>
       </div>
       <div className="chipbar">
-        <GradualBlur
-          position="top"
-          height="150px"
-          strength={1.1}
-          layers={8}
-          tint="#09090bb0"
-          className="menu-edge-blur"
-          zIndex={-1}
-        />
         <div className="chipbar-inner" ref={wrap}>
           <button
             className="chipchev l"

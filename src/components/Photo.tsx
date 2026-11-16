@@ -20,11 +20,13 @@ export function Photo({
   sizes?: string;
 }) {
   const meta = images[src];
+  // A new URL prevents cached 4K files from surviving the FHD release.
+  const assetUrl = (path: string) => `/${path}${path.startsWith("assets/gallery/") ? "?v=25" : ""}`;
   return (
     <img
-      src={enabled ? `/${src}` : undefined}
+      src={enabled ? assetUrl(src) : undefined}
       srcSet={
-        enabled && meta?.small ? `/${meta.small} 768w, /${src} ${meta.width}w` : undefined
+        enabled && meta?.small ? `${assetUrl(meta.small)} 768w, ${assetUrl(src)} ${meta.width}w` : undefined
       }
       sizes={enabled && meta?.small ? sizes : undefined}
       alt={alt}

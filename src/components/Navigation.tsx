@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { languages, useI18n } from "../i18n";
 import { Icon } from "./Icon";
-import { ViewportBlur } from "./ViewportBlur";
 
-type PagePosition = { active: string; progress: number; minimumProgress: number };
+type PagePosition = { active: string };
 type PositionListener = (position: PagePosition) => void;
 const positionListeners = new Set<PositionListener>();
 let stopPositionSignal: (() => void) | undefined;
@@ -20,7 +19,6 @@ function subscribePagePosition(listener: PositionListener) {
     let dirty = true;
     let disposed = false;
     let viewportHeight = 1;
-    let scrollRange = 1;
     let landmarks: { id: string; top: number }[] = [];
     const flush = () => {
       frame = 0;
@@ -28,7 +26,6 @@ function subscribePagePosition(listener: PositionListener) {
       const y = window.scrollY;
       if (dirty) {
         viewportHeight = Math.max(1, window.innerHeight);
-        scrollRange = Math.max(0, document.documentElement.scrollHeight - viewportHeight);
         landmarks = ["menu", "gallery", "dove"].flatMap((id) => {
           const element = document.getElementById(id);
           return element ? [{ id, top: element.getBoundingClientRect().top + y }] : [];
@@ -38,11 +35,7 @@ function subscribePagePosition(listener: PositionListener) {
       let active = "home";
       const marker = y + viewportHeight * 0.45;
       for (const landmark of landmarks) if (landmark.top <= marker) active = landmark.id;
-      const position = {
-        active,
-        progress: scrollRange > 0 ? Math.max(0, Math.min(1, y / scrollRange)) : 0,
-        minimumProgress: Math.min(1, 24 / viewportHeight),
-      };
+      const position = { active };
       latestPosition = position;
       for (const notify of positionListeners) notify(position);
     };
@@ -92,7 +85,6 @@ export function Header() {
   const { language, setLanguage, copy } = useI18n();
   return (
     <>
-      <ViewportBlur edge="top" />
       <header className="site-top">
         <a
           className="site-brand"
@@ -136,8 +128,7 @@ export function Dock() {
   }, []);
   return (
     <>
-      <ViewportBlur edge="bottom" />
-      <nav className="vr-dock vr-dock-v24" aria-label={copy.navigation}>
+      <nav className="vr-dock" aria-label={copy.navigation}>
         {[
           { id: "home", icon: "house", label: "Home" },
           { id: "menu", icon: "fork-knife", label: t.tab_menu },
@@ -160,20 +151,4 @@ export function Dock() {
       </nav>
     </>
   );
-}
-export function ScrollProgress() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    let previous = "";
-    return subscribePagePosition(({ progress, minimumProgress }) => {
-      const element = ref.current;
-      if (!element) return;
-      const scale = Math.max(minimumProgress, progress).toFixed(5);
-      if (scale === previous) return;
-      previous = scale;
-      element.style.transform = `scaleY(${scale})`;
-      element.dataset.progress = progress.toFixed(4);
-    });
-  }, []);
-  return <div className="scroll-progress" ref={ref} aria-hidden="true" />;
 }
