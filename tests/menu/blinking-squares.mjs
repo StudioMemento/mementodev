@@ -4,37 +4,61 @@ import { loadSideSquares } from './load-side-squares.mjs';
 
 const field = await loadSideSquares();
 const p = field.preset;
-assert.equal(p.direction, 'left');
-assert.equal(p.gridSize, 120); assert.equal(p.falloff, 2.5); assert.equal(p.fadeStart, .8);
-assert.equal(p.squareSize, .2); assert.equal(p.minBrightness, 0);
-assert.equal(p.twinkleSpeed, 2); assert.equal(p.twinkleStrength, 1);
 assert.equal(p.squareColor, '#c6ab70'); assert.equal(p.backgroundColor, '#090909');
+
+// Judge visible output in CSS pixels and seconds, not just preset field names.
+const fineAndCalm = square => {
+  assert.ok(square.size >= .4 && square.size <= 1.2, 'Grain must stay below 1.2 CSS pixels');
+  const period = 2 * Math.PI / square.rate;
+  assert.ok(period >= 10 && period <= 22, 'A full fade cycle must take 10–22 seconds');
+};
+assert.throws(() => fineAndCalm({ size: 5.7, rate: .4 }), /Grain/);
+assert.throws(() => fineAndCalm({ size: .7, rate: 2 * Math.PI * 2 }), /fade cycle/);
 
 const layouts = [];
 for (const [width, height, fraction] of [[320,568,.1],[390,844,.1],[768,1024,.15],[1199,900,.15],[1200,900,.2],[1440,900,.2],[2399,1440,.2],[2400,1440,.3],[3440,1440,.3],[7680,2160,.3]]) {
   const gutter = width * fraction;
-  const left = field.createSquares(gutter, height, width, 120);
-  const right = field.createSquares(gutter, height, width, 1033);
+  const left = field.createSquares(gutter, height, 120);
+  const right = field.createSquares(gutter, height, 1033);
   const ratio = field.pixelRatio(gutter, height, 3);
   const pixels = 2 * Math.floor(gutter * ratio) * Math.floor(height * ratio);
   assert.ok(pixels <= p.maxPixels); assert.ok(ratio <= p.maxDpr);
   assert.ok(left.length > 0 && right.length > 0);
   assert.ok(left.length <= p.maxSquaresPerSide && right.length <= p.maxSquaresPerSide);
-  assert.deepEqual(left, field.createSquares(gutter, height, width, 120), 'A remount must not randomize the pattern');
+  assert.deepEqual(left, field.createSquares(gutter, height, 120), 'A remount must not randomize the pattern');
   for (const square of [...left, ...right]) {
+    fineAndCalm(square);
     assert.ok(square.x >= 0 && square.x + square.size <= gutter);
     assert.ok(square.y >= 0 && square.y + square.size <= height);
     const mirroredX = width - square.x - square.size;
     assert.ok(mirroredX >= width - gutter, 'Right squares entered the reading column');
-    for (let t = 0; t < 5; t += .13) {
+    for (let t = 0; t < 22; t += .13) {
       const alpha = field.brightness(square, t);
       assert.ok(Number.isFinite(alpha) && alpha >= 0 && alpha <= 1);
+      assert.ok(Math.abs(field.brightness(square, t + 1/30) - alpha) < .014, 'Per-frame brightness changes too abruptly');
     }
   }
+  const sizes = left.map(s => s.size).sort((a,b) => a-b);
+  const periods = left.map(s => 2 * Math.PI / s.rate).sort((a,b) => a-b);
+  assert.ok(sizes[Math.floor(sizes.length*.9)] - sizes[Math.floor(sizes.length*.1)] > .4, 'Size variation is too uniform');
+  assert.ok(periods[Math.floor(periods.length*.9)] - periods[Math.floor(periods.length*.1)] > 8, 'Fade durations must differ');
+  assert.equal(new Set(left.map(s=>s.y)).size, left.length, 'Repeated grid rows remain');
   assert.ok(left.filter(s => s.x < gutter * .3).length > left.filter(s => s.x > gutter * .7).length, 'Density must diminish toward the content');
   assert.notEqual(field.brightness(left[0], 0), field.brightness(left[0], .25));
   layouts.push({ width, height, left: left.length, right: right.length, pixels });
 }
+const fadeField = field.createSquares(400, 900, 120);
+const thirds = [0,1,2].map(part => fadeField.filter(s => s.x >= part*400/3 && s.x < (part+1)*400/3));
+assert.ok(thirds[0].length > thirds[1].length * 2 && thirds[1].length > thirds[2].length * 2, 'Density must fall smoothly toward the menu');
+const edge = { ...fadeField[0], peak: .8, phase: Math.PI / 2 };
+assert.ok(field.brightness(edge, 0) > .79, 'The alpha bounds need a positive bright fixture');
+const innerSquares = fadeField.filter(s=>s.x>320);
+assert.ok(innerSquares.length > 0, 'The inner-edge fade check needs actual squares');
+assert.ok(innerSquares.every(s=>s.peak < .4), 'Inner-edge fade must damp even a bright square');
+const unchangedGeometry = JSON.stringify(fadeField);
+const temporal = [0,3,6,9].map(t => fadeField.map(s=>field.brightness(s,t)));
+assert.notDeepEqual(temporal[0], temporal[1], 'Three seconds must show a gentle change');
+assert.equal(JSON.stringify(fadeField), unchangedGeometry, 'Animation may not move, resize or regenerate squares');
 
 // Exercise the real painter and lifecycle against deterministic browser surfaces.
 const listeners = new Map(), jobs = new Map(), ios = [], ros = [];
@@ -116,4 +140,4 @@ await assert.rejects(access('src/components/menu/MenuDotGrid.tsx'));
 const baseline = await readFile('src/styles/clean.css', 'utf8');
 for (const rule of ['--vr-gutter: 10vw; --vr-content: 80vw', '--vr-gutter:15vw; --vr-content:70vw', '--vr-gutter:20vw; --vr-content:60vw', '--vr-gutter:30vw; --vr-content:40vw']) assert.ok(baseline.includes(rule));
 console.log('SIDE_SQUARES_LAYOUTS ' + JSON.stringify(layouts));
-console.log('BLINKING_SQUARES_OK — exact requested controls; 10/15/20/30% side confinement; no input listeners or per-frame layout reads; 30Hz paint cap; one clock; bounded pixels/squares/fills; hidden/offscreen/dialog pause; reduced-motion static frame; complete cleanup.');
+console.log('BLINKING_SQUARES_OK — fine CSS-pixel grain; slow independent 10–22s fades; varied sizes and irregular positions; controlled falloff; 10/15/20/30% side confinement; no input listeners or per-frame layout reads; 30Hz paint cap; one clock; bounded pixels/squares/fills; hidden/offscreen/dialog pause; reduced-motion static frame; complete cleanup.');

@@ -23,45 +23,34 @@ const smoothstep = (t: number) => {
   return x * x * (3 - 2 * x);
 };
 
-export function createSquares(width: number, height: number, viewportWidth: number, seed: number) {
-  const cell = Math.max(4, Math.max(viewportWidth, height) / preset.gridSize);
-  const size = cell * preset.squareSize;
-  const columns = Math.floor(width / cell);
-  const rows = Math.floor(height / cell);
+export function createSquares(width: number, height: number, seed: number) {
+  // Sample the density curve directly. Generation and drawing stay bounded even
+  // on an 8K monitor; there is no viewport-scaled grid or per-frame randomness.
+  const count = Math.min(preset.maxSquaresPerSide,
+    Math.floor(width * height / (preset.spacing ** 2 * (preset.falloff + 1))));
   const chance = random(seed);
   const squares: Square[] = [];
-  let candidates = 0;
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < columns; col++) {
-      const distance = (col + 0.5) * cell / width;
-      const density = (1 - distance) ** preset.falloff;
-      if (chance() > density) continue;
-      const innerFade = 1 - smoothstep((distance - preset.fadeStart) / (1 - preset.fadeStart));
-      const square = {
-        x: col * cell + (cell - size) / 2,
-        y: row * cell + (cell - size) / 2,
-        size,
-        peak: (0.15 + chance() * 0.85) * innerFade,
-        phase: chance() * Math.PI * 2,
-        rate: Math.PI * 2 * preset.twinkleSpeed * (0.65 + chance() * 0.35),
-      };
-      candidates++;
-      if (squares.length < preset.maxSquaresPerSide) squares.push(square);
-      else {
-        // Reservoir sampling retains an even spatial distribution at extreme sizes.
-        const replace = Math.floor(chance() * candidates);
-        if (replace < squares.length) squares[replace] = square;
-      }
-    }
+  for (let i = 0; i < count; i++) {
+    // Inverse CDF of (1 - x)^falloff: denser at the outside, sparse at the menu.
+    const distance = 1 - (1 - chance()) ** (1 / (preset.falloff + 1));
+    const size = Math.min(width, height,
+      preset.minSize + (preset.maxSize - preset.minSize) * chance() ** 2);
+    const innerFade = 1 - smoothstep((distance - preset.fadeStart) / (1 - preset.fadeStart));
+    squares.push({
+      x: distance * (width - size),
+      y: chance() * (height - size),
+      size,
+      peak: (preset.minPeak + (preset.maxPeak - preset.minPeak) * chance() ** 1.5) * innerFade,
+      phase: chance() * Math.PI * 2,
+      rate: Math.PI * 2 / (preset.minCycle + (preset.maxCycle - preset.minCycle) * chance()),
+    });
   }
   return squares;
 }
 
 export function brightness(square: Square, seconds: number) {
   const wave = 0.5 + 0.5 * Math.sin(square.phase + seconds * square.rate);
-  const twinkle = preset.minBrightness + (1 - preset.minBrightness) * wave * wave;
-  return square.peak * (1 - preset.twinkleStrength + preset.twinkleStrength * twinkle);
+  return square.peak * wave * wave;
 }
 
 export function pixelRatio(width: number, height: number, deviceRatio: number) {

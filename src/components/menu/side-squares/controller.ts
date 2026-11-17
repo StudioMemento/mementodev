@@ -17,7 +17,7 @@ export function mountSideSquares(section: HTMLElement, viewport: HTMLElement, in
   let visible = false, paused = initiallyPaused, disposed = false;
   let frame = 0, measureFrame = 0, last = 0, seconds = 0;
   let frames = 0, squares = 0, state = "paused";
-  let width = 0, height = 0, ratio = 0, pageWidth = 0;
+  let width = 0, height = 0, ratio = 0;
 
   const eligible = () => !disposed && !failed && visible && !paused && !document.hidden;
   const setState = (next: string) => {
@@ -48,10 +48,9 @@ export function mountSideSquares(section: HTMLElement, viewport: HTMLElement, in
     if (disposed || failed) return;
     const nextWidth = Math.max(1, canvases[0].clientWidth);
     const nextHeight = Math.max(1, viewport.clientHeight);
-    const nextPageWidth = viewport.clientWidth;
     const nextRatio = pixelRatio(nextWidth, nextHeight, window.devicePixelRatio);
-    if (width === nextWidth && height === nextHeight && ratio === nextRatio && pageWidth === nextPageWidth) return;
-    width = nextWidth; height = nextHeight; ratio = nextRatio; pageWidth = nextPageWidth;
+    if (width === nextWidth && height === nextHeight && ratio === nextRatio) return;
+    width = nextWidth; height = nextHeight; ratio = nextRatio;
     squares = 0;
     painters = contexts.map((context, index) => {
       const canvas = canvases[index];
@@ -59,7 +58,7 @@ export function mountSideSquares(section: HTMLElement, viewport: HTMLElement, in
       canvas.height = Math.max(1, Math.floor(height * ratio));
       // Match the actual rounded backing-store scale, avoiding edge seams.
       context!.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
-      const field = createSquares(width, height, pageWidth, 120 + index * 913);
+      const field = createSquares(width, height, 120 + index * 913);
       squares += field.length;
       return createPainter(context!, field, width, height, index === 1);
     });
