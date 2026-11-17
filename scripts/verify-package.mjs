@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_3.6_MENU";
+const name = "ViaRoma_3.7_MENU";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -87,6 +87,7 @@ for (const required of [
   "docs/MENU_3_4_POLISH.md",
   "docs/MENU_3_5_POLISH.md",
   "docs/MENU_3_6_POLISH.md",
+  "docs/MENU_3_7_AUDIT.md",
   "src/components/menu/MenuSideSquares.tsx",
   "src/components/menu/side-squares/controller.ts",
   "src/components/menu/side-squares/field.ts",

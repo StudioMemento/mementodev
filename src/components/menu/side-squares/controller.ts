@@ -56,11 +56,10 @@ export function mountSideSquares(section: HTMLElement, viewport: HTMLElement, in
       const canvas = canvases[index];
       canvas.width = Math.max(1, Math.floor(width * ratio));
       canvas.height = Math.max(1, Math.floor(height * ratio));
-      // Match the actual rounded backing-store scale, avoiding edge seams.
-      context!.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
       const field = createSquares(width, height, 120 + index * 913);
       squares += field.length;
-      return createPainter(context!, field, width, height, index === 1);
+      // Pass actual backing dimensions so fine grain lands on whole pixels.
+      return createPainter(context!, field, width, height, index === 1, canvas.width / width, canvas.height / height);
     });
     sync();
   };

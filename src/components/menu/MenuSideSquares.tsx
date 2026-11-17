@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useDialog } from "../DialogContext";
 import type { SideSquaresController } from "./side-squares/controller";
+import { SIDE_SQUARES } from "./side-squares/preset";
 
 export function MenuSideSquares() {
   const viewport = useRef<HTMLDivElement>(null);
@@ -34,8 +35,8 @@ export function MenuSideSquares() {
 
   return <div className="menu-side-background" aria-hidden="true">
     <div className="menu-side-viewport" ref={viewport}>
-      <canvas className="menu-side-band" />
-      <canvas className="menu-side-band" />
+      <canvas className="menu-side-band" style={{ maxWidth: SIDE_SQUARES.maxFieldWidth }} />
+      <canvas className="menu-side-band" style={{ maxWidth: SIDE_SQUARES.maxFieldWidth }} />
     </div>
   </div>;
 }

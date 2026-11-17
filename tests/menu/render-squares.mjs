@@ -4,21 +4,21 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import { loadSideSquares } from './load-side-squares.mjs';
 const modulePath = process.env.SQUARES_CANVAS_MODULE || (process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES + '/@napi-rs/canvas/index.js');
-const { createCanvas } = await import(modulePath);
+const { createCanvas, loadImage } = await import(modulePath);
 const effect = await loadSideSquares();
 await mkdir('test-results/menu', { recursive: true });
 const measurements = [];
 for (const [width, height, fraction] of [[390,844,.1],[768,1024,.15],[1440,900,.2],[3440,1440,.3]]) {
-  const band = width * fraction, ratio = effect.pixelRatio(band, height, 3);
+  const band = Math.min(width * fraction, effect.preset.maxFieldWidth), ratio = effect.pixelRatio(band, height, 3);
   const fields = [120,1033].map(seed => effect.createSquares(band, height, seed));
   const surfaces = fields.map(() => createCanvas(Math.floor(band * ratio), Math.floor(height * ratio)));
   const painters = surfaces.map((canvas, i) => {
-    const ctx = canvas.getContext('2d'); ctx.scale(canvas.width / band, canvas.height / height);
-    return effect.createPainter(ctx, fields[i], band, height, !!i);
+    const ctx = canvas.getContext('2d');
+    return effect.createPainter(ctx, fields[i], band, height, !!i, canvas.width / band, canvas.height / height);
   });
   const times = [];
   for (let n = 0; n < 230; n++) {
-    const start = performance.now(); for (const paint of painters) paint(n / 30);
+    const start = performance.now(); for (const paint of painters) paint(n / effect.preset.fps);
     if (n >= 30) times.push(performance.now() - start);
   }
   times.sort((a,b) => a-b);
@@ -42,6 +42,34 @@ for (const [index, seconds] of [0,3,6].entries()) {
   stripCtx.drawImage(canvas,index*540,0);
 }
 await writeFile('test-results/menu/side-squares-three-seconds.png', strip.toBuffer('image/png'));
-const report = { scope: 'Local native Canvas 2D drawing and rasterization; excludes browser compositor, page blur and physical devices', measurements };
+let referenceVisibility;
+if (process.env.SQUARES_REFERENCE_IMAGE) {
+  const reference = await loadImage(process.env.SQUARES_REFERENCE_IMAGE);
+  assert.ok(reference.width >= 400 && reference.height >= 720, 'Use the original reference, not a resized thumbnail');
+  const sample = createCanvas(reference.width, reference.height), sampleCtx = sample.getContext('2d');
+  sampleCtx.drawImage(reference, 0, 0);
+  // Exclude the reference's rounded frame. Count bright gold pixels, not dark
+  // background or a neutral border. This is a contrast proxy, not a quality score.
+  function visibleGold(context, offset = 0) {
+    const data = context.getImageData(offset + 16, 32, 384, 688).data;
+    let count = 0;
+    for (let i = 0; i < data.length; i += 4)
+      if (data[i] > 40 && data[i] > data[i + 1] + 2 && data[i + 1] > data[i + 2] + 2) count++;
+    return count;
+  }
+  const target = visibleGold(sampleCtx);
+  assert.ok(target > 500, 'Reference does not contain the expected fine gold grain');
+  const blank = createCanvas(540, 780).getContext('2d');
+  blank.fillStyle = '#090909'; blank.fillRect(0, 0, 540, 780);
+  assert.equal(visibleGold(blank), 0, 'The contrast check must reject an invisible field');
+  const samples = [0, 3, 6].map((seconds, index) => {
+    const goldPixels = visibleGold(stripCtx, index * 540), ratio = goldPixels / target;
+    assert.ok(ratio >= .65 && ratio <= 1.5, `Rendered grain is too faint or too dense at ${seconds}s: ${ratio}`);
+    return { seconds, goldPixels, referenceRatio: ratio };
+  });
+  referenceVisibility = { crop: { x: 16, y: 32, width: 384, height: 688 }, referenceGoldPixels: target, samples };
+  console.log('REFERENCE_VISIBILITY_OK ' + JSON.stringify(referenceVisibility));
+}
+const report = { scope: 'Local native Canvas 2D drawing and rasterization; excludes browser compositor, page blur and physical devices', measurements, referenceVisibility };
 await writeFile('test-results/menu/side-squares-performance.json', JSON.stringify(report,null,2));
 console.log('SIDE_SQUARES_RENDER_OK ' + JSON.stringify(report));

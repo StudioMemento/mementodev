@@ -24,10 +24,11 @@ const smoothstep = (t: number) => {
 };
 
 export function createSquares(width: number, height: number, seed: number) {
+  const spread = Math.min(width, preset.maxFieldWidth);
   // Sample the density curve directly. Generation and drawing stay bounded even
   // on an 8K monitor; there is no viewport-scaled grid or per-frame randomness.
   const count = Math.min(preset.maxSquaresPerSide,
-    Math.floor(width * height / (preset.spacing ** 2 * (preset.falloff + 1))));
+    Math.floor(spread * height / (preset.spacing ** 2 * (preset.falloff + 1))));
   const chance = random(seed);
   const squares: Square[] = [];
   for (let i = 0; i < count; i++) {
@@ -37,7 +38,7 @@ export function createSquares(width: number, height: number, seed: number) {
       preset.minSize + (preset.maxSize - preset.minSize) * chance() ** 2);
     const innerFade = 1 - smoothstep((distance - preset.fadeStart) / (1 - preset.fadeStart));
     squares.push({
-      x: distance * (width - size),
+      x: distance * (spread - size),
       y: chance() * (height - size),
       size,
       peak: (preset.minPeak + (preset.maxPeak - preset.minPeak) * chance() ** 1.5) * innerFade,
@@ -50,33 +51,48 @@ export function createSquares(width: number, height: number, seed: number) {
 
 export function brightness(square: Square, seconds: number) {
   const wave = 0.5 + 0.5 * Math.sin(square.phase + seconds * square.rate);
-  return square.peak * wave * wave;
+  return square.peak * wave;
 }
 
 export function pixelRatio(width: number, height: number, deviceRatio: number) {
   return Math.min(deviceRatio || 1, preset.maxDpr, Math.sqrt(preset.maxPixels / (2 * width * height)));
 }
 
-/** Reuse typed buckets: at most 31 fills per side, no allocations while animating. */
-export function createPainter(context: CanvasRenderingContext2D, squares: Square[], width: number, height: number, mirrored: boolean) {
-  const counts = new Uint16Array(preset.alphaLevels);
-  const indices = new Uint16Array(preset.alphaLevels * squares.length);
+/** Pixel-aligned geometry and reusable opacity buckets; no per-frame allocation. */
+export function createPainter(context: CanvasRenderingContext2D, squares: Square[], width: number, height: number, mirrored: boolean, scaleX = 1, scaleY = scaleX) {
+  const pixelsWide = Math.max(1, Math.round(width * scaleX));
+  const pixelsHigh = Math.max(1, Math.round(height * scaleY));
+  // Round once to backing pixels: a fine dot stays crisp instead of spreading
+  // its light over four dim pixels. Only opacity changes during animation.
+  const rectangles = squares.map(square => {
+    const w = Math.min(pixelsWide, Math.max(1, Math.round(square.size * scaleX)));
+    const h = Math.min(pixelsHigh, Math.max(1, Math.round(square.size * scaleY)));
+    const fromEdge = Math.round(square.x * scaleX);
+    return {
+      x: Math.max(0, Math.min(pixelsWide - w, mirrored ? pixelsWide - fromEdge - w : fromEdge)),
+      y: Math.max(0, Math.min(pixelsHigh - h, Math.round(square.y * scaleY))),
+      w, h,
+    };
+  });
+  const counts = new Uint16Array(32);
+  const indices = new Uint16Array(32 * squares.length);
+  // Geometry is already in physical pixels. No fractional transform at paint time.
+  context.setTransform(1, 0, 0, 1, 0, 0);
   return (seconds: number) => {
-    context.clearRect(0, 0, width, height);
+    context.clearRect(0, 0, pixelsWide, pixelsHigh);
     counts.fill(0);
     for (let i = 0; i < squares.length; i++) {
-      const level = Math.round(brightness(squares[i], seconds) * (preset.alphaLevels - 1));
+      const level = Math.round(brightness(squares[i], seconds) * 31);
       if (level) indices[level * squares.length + counts[level]++] = i;
     }
     context.fillStyle = preset.squareColor;
     for (let level = 1; level < counts.length; level++) {
       if (!counts[level]) continue;
-      context.globalAlpha = level / (preset.alphaLevels - 1);
+      context.globalAlpha = level / 31;
       context.beginPath();
       for (let n = 0; n < counts[level]; n++) {
-        const square = squares[indices[level * squares.length + n]];
-        const x = mirrored ? width - square.x - square.size : square.x;
-        context.rect(x, square.y, square.size, square.size);
+        const rect = rectangles[indices[level * squares.length + n]];
+        context.rect(rect.x, rect.y, rect.w, rect.h);
       }
       context.fill();
     }

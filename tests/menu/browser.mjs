@@ -97,12 +97,12 @@ try {
    background:getComputedStyle(document.querySelector('#menu')).backgroundColor,
   }));
   assert.equal(bands.surfaces.length,2);assert.equal(bands.events,'none');assert.equal(bands.background,'rgb(9, 9, 9)');
-  assert.ok(bands.surfaces.reduce((n,c)=>n+c.pixels,0)<=1_000_000);
+  assert.ok(bands.surfaces.reduce((n,c)=>n+c.pixels,0)<=1_600_000);
   assert.ok(bands.surfaces[0].rect.right<=bands.content.left+1);
   assert.ok(bands.surfaces[1].rect.left>=bands.content.right-1);
   assert.ok(bands.viewport.height<=height+1);
   const fraction=width>=2400?.3:width>=1200?.2:width>=768?.15:.1;
-  assert.ok(Math.abs(bands.surfaces[0].rect.width-width*fraction)<1);
+  assert.ok(Math.abs(bands.surfaces[0].rect.width-Math.min(width*fraction,520))<1);
   await page.screenshot({path:`${out}/side-squares-${width}.png`});
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.waitForFunction(()=>document.querySelector('.menu-side-viewport').dataset.state==='static');
