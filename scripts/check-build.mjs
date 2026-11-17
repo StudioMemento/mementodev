@@ -44,15 +44,15 @@ const initialJs = initialFiles.reduce((sum, file) => {
   assert.ok(jsSizes.has(file), `Missing initial JavaScript: ${file}`);
   return sum + jsSizes.get(file);
 }, 0);
-// Existing hero + deferred menu DotGrid; no new runtime libraries.
+// Original side squares are optional and deferred; prior initial bundle limits stay intact.
 assert.ok(initialJs < 101_000, `Initial JS budget exceeded: ${initialJs}`);
-assert.ok(js < 112_000, `JS budget exceeded: ${js}`);
+assert.ok(js < 110_000, `JS budget exceeded: ${js}`);
 assert.ok(css < 8_500, `CSS budget exceeded: ${css}`);
-const gridKey="src/components/menu/dot-grid/controller.ts";
-assert.ok(manifest[gridKey]?.isDynamicEntry, "Dot Grid must be a deferred chunk");
-assert.ok(!initialKeys.has(gridKey), "Dot Grid engine leaked into initial loading");
-assert.ok(jsSizes.get(manifest[gridKey].file)<6_000, "Dot Grid chunk exceeds its 6 KB gzip budget");
-assert.equal(await readFile("dist/licenses/ReactBits.txt","utf8"),await readFile("licenses/ReactBits.txt","utf8"),"React Bits license missing from deployment");
+assert.ok(!Object.keys(manifest).some(key=>key.includes('dot-grid')), "Removed Dot Grid remains in the build");
+const sideKey = "src/components/menu/side-squares/controller.ts";
+assert.ok(manifest[sideKey]?.isDynamicEntry, "Side-square engine is not deferred");
+assert.ok(!initialKeys.has(sideKey), "Side-square engine leaked into initial loading");
+assert.ok(jsSizes.get(manifest[sideKey].file) < 4_000, "Side-square engine exceeds 4 KB gzip");
 for (const file of [
   "privacy.html",
   "cookie.html",

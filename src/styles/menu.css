@@ -1,5 +1,5 @@
-/* ViaRoma_3.4_MENU — original printed artwork and data, a clearer reading rhythm. */
-#menu { position:relative; padding-top:clamp(80px,12svh,160px); padding-bottom:32px; }
+/* ViaRoma_3.5_MENU — original printed artwork and data, a clearer reading rhythm. */
+#menu { position:relative; background:#090909; padding-top:clamp(80px,12svh,160px); padding-bottom:32px; }
 .menu-head,.mcat,.chipbar-inner { width:var(--vr-content); margin-inline:auto; }
 .menu-head { text-align:center; margin-bottom:clamp(32px,6vw,72px); }
 .menu-head h2 { font-size:var(--menu-title-size,calc(var(--vr-content) * .25)); font-weight:200; line-height:1.12; letter-spacing:.26em; text-transform:uppercase; color:var(--vr-highlight); }
@@ -125,10 +125,9 @@
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .chips button { background:rgb(37 37 36 / .88); } .modal-allergens::backdrop { background:rgb(9 9 9 / .96); } }
 @media(forced-colors:active) { .menu-head h2 span,.mcat h3 span { background:none; -webkit-text-fill-color:CanvasText; filter:none; } .chips button.on { outline:2px solid Highlight; outline-offset:-4px; } .allergen-list li { color:GrayText; } .allergen-list .contains { color:Highlight; } .allergen-panel .modal-close:focus-visible { outline:1px solid Highlight; } }
 
-/* One viewport-sized surface under menu content; the category rail keeps its global z-index. */
+/* The existing content widths reserve the requested side bands:
+   mobile 10/80/10, tablet 15/70/15, desktop 20/60/20, ultrawide 30/40/30. */
 .menu-head,#carta { position:relative; z-index:1; }
-.menu-dot-grid { position:absolute; inset:0; pointer-events:none; z-index:0; }
-.menu-dot-viewport { position:sticky; top:0; height:100svh; width:100%; background:radial-gradient(circle,#252524 1px,transparent 1px) center / 50px 50px; }
-.menu-dot-viewport[data-ready=true] { background:none; }
-.menu-dot-viewport canvas { display:block; width:100%; height:100%; }
-.menu-dot-viewport canvas[hidden] { display:none; }
+.menu-side-background { position:absolute; inset:0; pointer-events:none; z-index:0; }
+.menu-side-viewport { position:sticky; top:0; height:100svh; width:100%; display:flex; justify-content:space-between; overflow:clip; }
+.menu-side-band { display:block; width:var(--vr-gutter); height:100%; flex:none; contain:paint; }

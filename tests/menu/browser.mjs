@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 const modulePath=process.env.PLAYWRIGHT_MODULE || (process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES ? process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright/index.mjs' : 'playwright');
 const {chromium}=await import(modulePath);
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true, ...(process.env.CHROMIUM_PATH ? {executablePath:process.env.CHROMIUM_PATH} : {})});
 const url=process.env.TEST_URL || 'http://127.0.0.1:4175/';
 const out=process.env.QA_DIR || 'test-results/menu';
 await mkdir(out,{recursive:true});
@@ -27,7 +27,7 @@ try {
   const first=await page.locator('.chips').evaluate(el=>({rail:el.getBoundingClientRect().toJSON(),first:el.querySelector('button').getBoundingClientRect().toJSON(),mask:getComputedStyle(el).maskImage}));
   assert.equal(first.mask,'none','Rail masking isolates satin blur');assert.ok(first.first.left>=first.rail.left);assert.ok(first.first.right<=first.rail.right);
 
-  await page.evaluate(()=>window.scrollTo({top:document.querySelector('#cat-audaci').offsetTop-140,behavior:'instant'}));
+  await page.evaluate(()=>window.scrollTo({top:document.querySelector('#cat-audaci').getBoundingClientRect().top+scrollY-140,behavior:'instant'}));
   await page.waitForFunction(()=>document.querySelector('[data-go="audaci"]').getAttribute('aria-current')==='location');
   const layout=await page.evaluate(()=>{
    const style=(el,keys)=>Object.fromEntries(keys.map(k=>[k,getComputedStyle(el)[k]]));
@@ -87,27 +87,34 @@ try {
   await page.locator('#drinks-draught').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/draught-${width}.png`});
   await page.locator('#drinks-wines').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/wines-${width}.png`});
   await page.emulateMedia({reducedMotion:'no-preference'});
-  await page.evaluate(()=>window.scrollTo({top:document.querySelector('#cat-audaci').offsetTop,behavior:'instant'}));
-  await page.waitForFunction(()=>document.querySelector('.menu-dot-viewport').dataset.ready==='true');
-  const grid=await page.locator('.menu-dot-viewport').evaluate(el=>({height:el.clientHeight,width:el.clientWidth,canvasCount:document.querySelectorAll('.menu-dot-grid canvas').length,pixels:el.querySelector('canvas').width*el.querySelector('canvas').height,events:getComputedStyle(el.parentElement).pointerEvents}));
-  assert.equal(grid.canvasCount,1);assert.ok(grid.height<=height+1);assert.ok(grid.pixels<=3_000_000);assert.equal(grid.events,'none');
-  if(width>=768){
-   await page.mouse.move(width*.2,height*.5);await page.mouse.move(width*.8,height*.55,{steps:20});
-  } else {
-   const session=await page.context().newCDPSession(page);
-   const oldY=await page.evaluate(()=>scrollY);
-   await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:width*.3,y:height*.7}]});
-   for(let i=1;i<=8;i++)await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:width*(.3+i*.03),y:height*(.7-i*.025)}]});
-   await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-   await page.waitForFunction(y=>scrollY>y+5,oldY);await session.detach();
-  }
-  await page.waitForFunction(()=>document.querySelector('.menu-dot-viewport').dataset.gridState==='idle');
-  await page.screenshot({path:`${out}/dot-grid-${width}.png`});
+  await page.evaluate(()=>window.scrollTo({top:document.querySelector('#cat-audaci').getBoundingClientRect().top+scrollY-140,behavior:'instant'}));
+  await page.waitForFunction(()=>document.querySelector('.menu-side-viewport')?.dataset.state==='running');
+  const bands=await page.locator('.menu-side-viewport').evaluate(el=>({
+   viewport:el.getBoundingClientRect().toJSON(),
+   content:document.querySelector('#cat-audaci').getBoundingClientRect().toJSON(),
+   surfaces:[...el.querySelectorAll('canvas')].map(c=>({rect:c.getBoundingClientRect().toJSON(),pixels:c.width*c.height})),
+   events:getComputedStyle(el.parentElement).pointerEvents,
+   background:getComputedStyle(document.querySelector('#menu')).backgroundColor,
+  }));
+  assert.equal(bands.surfaces.length,2);assert.equal(bands.events,'none');assert.equal(bands.background,'rgb(9, 9, 9)');
+  assert.ok(bands.surfaces.reduce((n,c)=>n+c.pixels,0)<=1_000_000);
+  assert.ok(bands.surfaces[0].rect.right<=bands.content.left+1);
+  assert.ok(bands.surfaces[1].rect.left>=bands.content.right-1);
+  assert.ok(bands.viewport.height<=height+1);
+  const fraction=width>=2400?.3:width>=1200?.2:width>=768?.15:.1;
+  assert.ok(Math.abs(bands.surfaces[0].rect.width-width*fraction)<1);
+  await page.screenshot({path:`${out}/side-squares-${width}.png`});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.waitForFunction(()=>document.querySelector('.menu-side-viewport').dataset.state==='static');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await trigger.click();await page.locator('dialog').waitFor({state:'visible'});
+  await page.waitForFunction(()=>document.querySelector('.menu-side-viewport').dataset.state==='paused');
+  await page.keyboard.press('Escape');await page.locator('dialog').waitFor({state:'detached'});
   await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
-  await page.waitForFunction(()=>document.querySelector('.menu-dot-viewport').dataset.gridState==='paused');
-  results.push({width,height,heading,layout,dialog,bottles,note,drinks,grid});await page.close();
+  await page.waitForFunction(()=>document.querySelector('.menu-side-viewport').dataset.state==='paused');
+  results.push({width,height,heading,layout,dialog,bottles,note,drinks,bands});await page.close();
  }
  assert.deepEqual(errors,[]);
 } finally {await browser.close();}
 await writeFile(`${out}/results.json`,JSON.stringify(results,null,2));
-console.log('MENU_BROWSER_OK — 320–3440px, static artwork, bounded single Dot Grid canvas, desktop/touch input with native scroll, idle/offscreen states, menu and allergen regression checks.');
+console.log('MENU_BROWSER_OK — 320–3440px, static artwork, original side squares confined to gutters; reduced-motion/dialog/offscreen pause; menu and allergen regression checks.');

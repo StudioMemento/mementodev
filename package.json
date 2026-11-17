@@ -1,6 +1,6 @@
 {
-  "name": "viaroma-3-4-menu",
-  "version": "3.4.0",
+  "name": "viaroma-3-5-menu",
+  "version": "3.5.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -12,7 +12,7 @@
     "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "check": "npm run typecheck && npm run build && node scripts/check-build.mjs",
-    "test": "node scripts/verify-menu.mjs && node tests/menu/interactions.mjs && node tests/menu/dot-grid.mjs"
+    "test": "node scripts/verify-menu.mjs && node tests/menu/interactions.mjs && node tests/menu/blinking-squares.mjs"
   },
   "dependencies": {
     "react": "19.3.1",
