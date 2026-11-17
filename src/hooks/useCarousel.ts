@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useRef, useState, type DragEvent, type FocusEvent, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type DragEvent, type FocusEvent, type KeyboardEvent, type PointerEvent } from "react";
 import { useDialog } from "../components/DialogContext";
-import { advance, captionOpacity, createMotion, loopDistance, seek } from "./carouselMotion";
+import { advance, captionOpacity, carouselWindow, createMotion, loopDistance, seek } from "./carouselMotion";
 import { wrap } from "./useDrag";
 
 /** One RAF, only while visible and moving. No layout reads in the frame loop. */
 export function useCarousel(count: number, language: string) {
   const rootRef = useRef<HTMLElement>(null), stageRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
+  const [renderCount, setRenderCount] = useState(count);
   const [loaded, setLoaded] = useState(() => new Set([0, 1, count - 1]));
   const { modal } = useDialog();
   const model = useRef(createMotion());
-  const state = useRef({ visible: false, hovered: false, focused: false, reduced: false, modal: false, step: 300, index: 0, frame: 0, last: 0, holdUntil: 0 });
+  const state = useRef({ visible: false, hovered: false, focused: false, reduced: false, modal: false, step: 300, radius: 3, preload: 3, index: 0, frame: 0, last: 0, holdUntil: 0 });
   const pointer = useRef<{ id: number; x: number; y: number; start: number; active: boolean; lastX: number; time: number; velocity: number } | null>(null);
   const wake = useRef<() => void>(() => {}), paint = useRef<() => void>(() => {});
   const select = useCallback((logical: number) => {
@@ -25,7 +26,7 @@ export function useCarousel(count: number, language: string) {
     state.current.holdUntil = performance.now() + 5000;
     paint.current(); wake.current();
   }, []);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = rootRef.current, stage = stageRef.current;
     if (!root || !stage) return;
     const s = state.current, m = model.current;
@@ -35,18 +36,21 @@ export function useCarousel(count: number, language: string) {
     let disposed = false, timer = 0;
     const render = () => {
       cards.forEach((card, i) => {
-        const d = loopDistance(i, m.position, count), visible = Math.abs(d) < 2.6;
+        const d = loopDistance(i, m.position, cards.length), visible = Math.abs(d) < s.radius;
         card.style.visibility = visible ? "visible" : "hidden";
         if (visible) card.style.transform = `translate3d(calc(-50% + ${(d * s.step).toFixed(3)}px),0,0)`;
-        if (captions[i]) captions[i].style.opacity = captionOpacity(d).toFixed(4);
+        const active = Math.abs(d) < .5;
+        if (card.dataset.active !== String(active)) { card.dataset.active = String(active); card.ariaHidden = String(!active); }
       });
+      captions.forEach((caption, i) => { caption.style.opacity = captionOpacity(loopDistance(i, m.position, count)).toFixed(4); });
       const next = wrap(Math.round(m.position), count);
       if (next !== s.index) { s.index = next; setIndex(next); }
-      if (stage.dataset.loadedCenter !== String(next)) {
-        stage.dataset.loadedCenter = String(next);
+      const loadKey = `${next}:${s.preload}`;
+      if (stage.dataset.loadedCenter !== loadKey) {
+        stage.dataset.loadedCenter = loadKey;
         setLoaded(previous => {
           const nextSet = new Set(previous);
-          for (let d = -2; d <= 2; d++) nextSet.add(wrap(next + d, count));
+          for (let d = -s.preload; d <= s.preload; d++) nextSet.add(wrap(next + d, count));
           return nextSet.size === previous.size ? previous : nextSet;
         });
       }
@@ -72,7 +76,13 @@ export function useCarousel(count: number, language: string) {
       s.frame = requestAnimationFrame(tick);
     }
     const stop = () => { cancelAnimationFrame(s.frame); clearTimeout(timer); s.frame = 0; s.last = 0; };
-    const resize = () => { s.step = (cards[0]?.getBoundingClientRect().width || 300) + 16; render(); };
+    const resize = () => {
+      const cardWidth = cards[0]?.getBoundingClientRect().width || 300;
+      const layout = carouselWindow(stage.getBoundingClientRect().width, cardWidth, count);
+      s.step = layout.step; s.radius = layout.radius; s.preload = layout.preload;
+      setRenderCount(layout.renderCount);
+      render();
+    };
     const visibility = () => { stop(); if (eligible()) start(); };
     const motion = () => { s.reduced = media.matches; if (s.reduced) { m.velocity = 0; m.target = null; } visibility(); };
     const io = new IntersectionObserver(entries => { s.visible = entries[0].isIntersecting; visibility(); }, { threshold: 0 });
@@ -89,7 +99,7 @@ export function useCarousel(count: number, language: string) {
       media.removeEventListener("change", motion); document.removeEventListener("visibilitychange", visibility);
       paint.current = () => {}; wake.current = () => {};
     };
-  }, [count, language]);
+  }, [count, language, renderCount]);
   useEffect(() => { state.current.modal = !!modal; wake.current(); }, [modal]);
   const release = (element: HTMLElement, cancelled: boolean) => {
     const p = pointer.current;
@@ -105,7 +115,7 @@ export function useCarousel(count: number, language: string) {
     wake.current();
   };
   return {
-    rootRef, stageRef, index, select, move, isLoaded: (i: number) => loaded.has(i),
+    rootRef, stageRef, index, renderCount, select, move, isLoaded: (i: number) => loaded.has(i),
     rootBind: {
       onPointerEnter(e: PointerEvent<HTMLElement>) { if (e.pointerType === "mouse") { state.current.hovered = true; wake.current(); } },
       onPointerLeave(e: PointerEvent<HTMLElement>) { if (e.pointerType === "mouse") { state.current.hovered = false; if (pointer.current && !pointer.current.active) pointer.current = null; wake.current(); } },

@@ -1,4 +1,4 @@
-# Risorse e licenze — ViaRoma_1_HERO
+# Risorse e licenze — ViaRoma_2_INTRO
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.
@@ -9,3 +9,5 @@
 V25 rimuove i componenti React Bits, i relativi shader/renderer e GSAP. Il controller del carosello e i layout sono implementati nei sorgenti di questa applicazione. Non vengono caricati font, script o immagini da CDN esterne.
 
 La hero aggiunge implementazioni originali Canvas 2D, WebGL e CSS ispirate alle reference visive fornite. Il codice React Bits Pro non è incluso. Nessuna nuova libreria di animazione è stata aggiunta.
+
+Il tilt delle card cornicione implementa in modo dedicato il preset Holo Card indicato: 15°, scala 1.1, effetti foil/glare/frame a zero. Il riferimento è la documentazione pubblica React Bits; non viene distribuito codice Holo Card della libreria.

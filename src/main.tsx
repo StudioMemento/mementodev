@@ -2,6 +2,7 @@ import "./styles/clean.css";
 import "./styles/menu.css";
 import "./styles/contact.css";
 import "./styles/hero.css";
+import "./styles/intro.css";
 import { StrictMode } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import App from "./App";

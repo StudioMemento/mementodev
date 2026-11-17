@@ -4,6 +4,13 @@ export const createMotion = (): Motion => ({ position: 0, velocity: 0, target: n
 export const loopDistance = (item: number, position: number, count: number) => ((item - position + count / 2) % count + count) % count - count / 2;
 export const smoothstep = (n: number) => { const x = Math.max(0, Math.min(1, n)); return x * x * (3 - 2 * x); };
 export const captionOpacity = (distance: number) => smoothstep((0.5 - Math.abs(distance)) / 0.3);
+/** Keep one full card of overscan beyond both viewport edges. Repeat the
+ * logical menu only when the physical belt is too short to recycle offscreen. */
+export function carouselWindow(viewportWidth: number, cardWidth: number, count: number) {
+  const step = Math.max(1, cardWidth) + 16;
+  const radius = (Math.max(1, viewportWidth) / 2 + cardWidth / 2 + step) / step;
+  return { step, radius, renderCount: Math.max(count, Math.ceil(radius * 2 / count) * count), preload: Math.ceil(radius) };
+}
 export function seek(m: Motion, to: number, immediate = false) {
   m.velocity = 0;
   if (immediate) { m.position = to; m.target = null; }

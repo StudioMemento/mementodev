@@ -28,7 +28,7 @@
     animation:vr-hero-gradient var(--vr-hero-gradient-speed) ease-in-out infinite alternate;
     animation-play-state:paused;
   }
-  .vr-hero[data-fx-state=running] .hero-slogan { animation-play-state:running; }
+  :is(.vr-hero,.vr-crust-intro)[data-fx-state=running] .hero-slogan { animation-play-state:running; }
 }
 @keyframes vr-hero-gradient { to { background-position:100% 50%; } }
 /* The blur is behind the chrome, never inside an icon's material. No tint. */

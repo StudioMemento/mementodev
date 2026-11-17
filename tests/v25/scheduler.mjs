@@ -27,7 +27,7 @@ const stage=Object.assign(new Element(),{querySelectorAll:()=>cards});
 const root={querySelectorAll:()=>captions,contains:e=>e===stage};
 const media={matches:false,addEventListener(_,fn){this.fn=fn},removeEventListener(){this.fn=null}};
 const document={hidden:false,addEventListener(t,fn){listeners.set(t,fn)},removeEventListener(t){listeners.delete(t)}};
-const context={...hooks,document,matchMedia:()=>media,performance:{now:()=>clock},wrap:(i,n)=>(i%n+n)%n,
+const context={...hooks,useLayoutEffect:hooks.useEffect,document,matchMedia:()=>media,performance:{now:()=>clock},wrap:(i,n)=>(i%n+n)%n,
  requestAnimationFrame:fn=>{const n=id++;raf.set(n,fn);return n},cancelAnimationFrame:n=>raf.delete(n),
  clearTimeout:n=>timers.delete(n),window:{setTimeout:(fn,delay)=>{const n=id++;timers.set(n,{fn,at:clock+delay});return n}},
  IntersectionObserver:class{constructor(fn){this.fn=fn;ios.push(this)}observe(){}disconnect(){this.disconnected=true}},

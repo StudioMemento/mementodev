@@ -1,30 +1,22 @@
-# ViaRoma_1_HERO — polish 1.1
+# ViaRoma_2_INTRO
 
-Checkpoint del 17 novembre 2026. Pacchetto React completo per il deploy di sviluppo su Vercel. Questa revisione corregge la hero già pubblicata su mementodev.vercel.app; non è stata pubblicata automaticamente.
+Checkpoint completo del 17 novembre 2026, versione 2.0.0. Include la hero 1.1 approvata e il secondo pass su carosello pizze e card cornicione. Nessun deploy automatico.
 
 ## Modifiche
 
-1. **Background:** hollow calcolato dal perimetro visibile del logo originale, escludendo il padding trasparente del PNG. Particelle emesse appena fuori dal cerchio; variazione organica delle traiettorie, velocità esterna invariata a `0.25`. Turbulence `0.48`; nessuna scia.
-2. **Logo:** liquid argento in idle; oro su hover del cerchio visibile e durante la pressione touch. Entrata/uscita morbide e glow oro leggero. Il renderer conserva coordinate, alpha, proporzioni e asset originale.
-3. **Testo:** gradiente oro desaturo → oro → highlight, 5 secondi alternati. Font, peso, dimensioni, interlinea e impaginazione originali.
-4. **Gradual blur:** 8 strati trasparenti, 0.25–32px, top/bottom con safe area. Nessuna tinta. Corretta la regola che nascondeva tutti gli strati quando il browser riportava `prefers-reduced-transparency: reduce`.
-5. **Navbar e lingue:** satinato grigio scuro con alpha 44–66% e backdrop blur 12px, dichiarazione standard e prefisso WebKit. Highlight dal basso sulle icone attive; lingua attiva con fondo oro tenue.
-6. **Scroll:** scrollbar nativa della pagina nascosta; avanzamento oro di 2px sul bordo destro, su tutta l'altezza dinamica della viewport. La misura si aggiorna quando cambia l'altezza dei contenuti.
-7. **Interazioni:** selezione, trascinamento nativo, menu contestuale e click centrale disabilitati. Rotella, touch, pinch zoom, slider, click primario e navigazione da tastiera restano operativi. Gli eventuali campi di testo restano editabili.
+- **Carosello ultrawide:** visibilità, precaricamento e riciclo calcolati dalla viewport e dalla larghezza delle pizze. Un elemento di margine oltre ogni bordo; la sequenza viene duplicata solo quando serve a riciclare fuori schermo. Inerzia, velocità, drag, frecce e dots conservati.
+- **Titolo cornicione:** stessa classe tipografica della hero, con identici font, peso, dimensioni responsive, interlinea, tracking e gradiente oro. Animazione sospesa fuori sezione e con movimento ridotto.
+- **Card:** eliminato “aggiunta di” in tutte le lingue. Nome in basso a sinistra, prezzo in basso a destra, allineati sul fondo. Sfumatura verticale inferiore su tutti i dispositivi.
+- **Holo Card:** preset 15° / scala 1.1; intensity, frame, glare, radius ed edgeSparkle a zero. Implementazione dedicata al preset senza foil, con CSS perspective e Pointer Events. Segue il mouse; su touch segue pressione e trascinamento orizzontale, consentendo movimento su entrambi gli assi una volta agganciato. Il gesto verticale iniziale resta scroll nativo.
+- **Mobile:** sezione su 100svh, tre card più basse, spazio per header e navbar. Foto riposizionate al 42% verticale: il ripieno scende verso il centro. Landscape compatto con tre colonne.
 
 ## Palette
 
-| Ruolo | HEX |
-| --- | --- |
-| Nero carbone, hero | `#090909` |
-| Grigio satinato | `#252524` |
-| Oro | `#C6AB70` |
-| Oro desaturo | `#A89B7B` |
-| Highlight, hover e progress | **`#DAC18B`** |
+Nero carbone `#090909`, satinato `#252524`, oro `#C6AB70`, oro desaturo `#A89B7B`, highlight **`#DAC18B`**. Logo e immagini originali conservati.
 
-## Avvio e Vercel
+## Avvio e deploy Vercel
 
-Node 22.13+ della serie 22 oppure Node 24+. Dalla cartella contenente `package.json`:
+Copiare il contenuto di `ViaRoma_2_INTRO` nella radice della repository di sviluppo.
 
 ```sh
 npm ci
@@ -33,17 +25,19 @@ npm run check
 npm test
 ```
 
-Vercel: install `npm ci`, build `npm run build`, output `dist`. Copiare il contenuto della cartella `ViaRoma_1_HERO` nella radice della repository di sviluppo. Nessuna chiave o variabile di ambiente richiesta. La build conserva `noindex,nofollow`.
+Node 22.13+ nella serie 22 o Node 24+. Vercel: install `npm ci`, build `npm run build`, output `dist`. Nessuna variabile d'ambiente o chiave richiesta. `noindex,nofollow` conservato.
 
-## Verifiche e limiti
+## Verifiche
 
-- TypeScript, build client/SSR, prerender e budget di trasferimento: passati.
-- Menù prerenderizzato identico; **166 file originali** confrontati con SHA-256 e invariati, inclusi logo, foto, contenuti, traduzioni e sezioni successive.
-- Test sul codice effettivo: geometria hollow desktop/mobile, densità vicino al bordo, hover oro, pausa degli effetti, contesto WebGL perso/ripristinato, reduced motion e pulizia risorse; progress scroll, resize/overscroll e blocchi selettivi degli input.
-- Nessuna nuova dipendenza runtime. JS iniziale: **97.332 byte gzip**, CSS: **7.359 byte gzip**. Limite del clock: 40 fps desktop / 30 fps mobile, DPR massimo 1.5; questi sono parametri, non misure su dispositivi reali.
-- Il deploy precedente è stato ispezionato nel browser: blur effettivamente nascosto dalla preferenza di trasparenza ridotta, navbar opaca e hollow troppo largo confermati.
-- **La nuova build non è stata verificata visivamente nel browser.** Il browser collegato non raggiunge il server locale; il browser del runner non si avvia per una restrizione sui socket. Safari/iOS e Chrome/Android reali restano da verificare sul deploy di sviluppo. Il test browser aggiornato è incluso in `tests/hero/browser.mjs`.
+- TypeScript, build client/SSR, prerender e budget di trasferimento.
+- 36.009 posizioni del carosello tra 320 e 7680px, 360 ricicli fuori viewport e verifica del precaricamento.
+- Gestore reale del carosello: passaggio 10↔20 elementi, resize, nessuna lettura di layout nel ciclo di animazione, pulizia risorse.
+- Gestore reale del tilt: mouse, touch, limiti 15°/1.1, rilascio, annullamento del gesto, scroll verticale, coordinate dopo scroll/resize, movimento ridotto e cleanup.
+- **173 file protetti** confrontati con SHA-256. Hero HTML identica; effetti hero e stili esterni al cornicione preservati. Menù prerenderizzato identico.
+- Nessuna nuova dipendenza runtime. JS iniziale: 98.232 byte gzip, +900 byte rispetto alla hero 1.1; CSS: 7.588 byte gzip.
 
-WebGL non disponibile: PNG originale e hover oro tramite maschera CSS. Movimento ridotto: nessun liquid animato, particelle statiche e gradiente fermo. Browser senza backdrop-filter: superfici di fallback leggibili. Contrasto forzato: logo e testo leggibili senza effetti. Il sito resta consultabile senza JavaScript grazie al prerender; i blocchi di click e il progress richiedono JavaScript.
+**La nuova resa browser non è ancora validata.** Il browser collegato non è disponibile in questo turno; il renderer locale non è utilizzabile e il download del browser headless non è riuscito. I test numerici e di comportamento non sostituiscono una prova visiva su Safari iOS / Chrome Android. Checklist e limiti in `docs/INTRO_CHECKPOINT.md`.
 
-Dettagli e checklist visiva: `docs/HERO_CHECKPOINT.md`. I documenti e le anteprime V25 sono riferimenti storici, non screenshot di questo polish.
+Per il test browser, installare Playwright e Chromium nell'ambiente QA, avviare `npm run preview -- --port 4174`, poi eseguire `node tests/intro/browser.mjs`. `TEST_URL` può puntare al nuovo deploy di sviluppo.
+
+I documenti V25/HERO e le relative anteprime descrivono checkpoint precedenti. Lo ZIP contiene l'intero sito, non solo una patch.
