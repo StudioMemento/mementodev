@@ -170,7 +170,7 @@ export default function Menu() {
   const { active, chips, wrap, select, nudge } = useMenuNavigation(language);
   return (
     <section id="menu">
-      <MenuTitle text={t.m_title} />
+      <MenuTitle text={copy.menu} />
       <div className="chipbar">
         <div className="chipbar-inner" ref={wrap}>
           <button
@@ -193,7 +193,7 @@ export default function Menu() {
             className="chips scrollable"
             id="chips"
             ref={chips}
-            aria-label={t.m_title}
+            aria-label={copy.menu}
           >
             {categoryOrder.map((id, index) => (
               <button
@@ -217,7 +217,7 @@ export default function Menu() {
           return (
             <section className="mcat fx on has-art" id={`cat-${id}`} key={id}>
               <header className="mcat-head">
-                <h3>{title}</h3>
+                <h3><span>{title}</span></h3>
                 {tag && <p className="tag">{tag}</p>}
               </header>
               <figure className={`menu-art menu-art-${id}`}>

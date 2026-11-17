@@ -34,7 +34,6 @@
   "src/hooks/carouselMotion.ts": "d2cf3592ea88d596ab640124597729687e56d874de0e8f03edf27ef99e75ddb3",
   "src/hooks/useCarousel.ts": "515cc347c3963a9400362ba2670ae05d4ab3047403d33fcf14f094fdd7cc0d5a",
   "src/hooks/useDrag.ts": "57521e7608e30f383a99f1eab3aee2217c67cbf1ce1d5d4e581a7ef1d8765e1a",
-  "src/i18n.tsx": "ae9b44d7e5153abf24063ceef518fba3ff2c7144e328005d85f6923b0d3a1b6e",
   "src/main.tsx": "bf0b533ce9355b79cc9e14e57c1f5e39113eeb8aa4795339a7deb2f285d9e78c",
   "src/styles/contact.css": "c3ff54c7c03af33fc92c3634e32602bfb3b7268cc25014f91911bd25879f5b27",
   "src/styles/hero.css": "5fc693b06bc56fec38d43e93e7c59649f1b74cf215773a6ba78c1eea731dcacd",

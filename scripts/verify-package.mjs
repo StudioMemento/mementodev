@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_3_MENU";
+const name = "ViaRoma_3.1_MENU";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -81,6 +81,7 @@ for (const required of [
   "tests/menu/interactions.mjs",
   "tests/menu/browser.mjs",
   "docs/MENU_CHECKPOINT.md",
+  "docs/MENU_3_1_POLISH.md",
   "licenses/Phosphor-MIT.txt",
 ])
   assert.ok(names.includes(required), `${required} missing`);

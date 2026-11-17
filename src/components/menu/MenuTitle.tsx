@@ -13,9 +13,13 @@ export function useTitleFit(text: string) {
     const fit = () => {
       if (disposed) return;
       const available = el.clientWidth;
-      const measured = label.getBoundingClientRect().width;
+      const type = getComputedStyle(label);
+      // CSS cancels the final tracking advance with a negative inline margin.
+      // Measure the visible word, so both its first and last letters meet the gutters.
+      const tracking = parseFloat(type.letterSpacing) || 0;
+      const measured = label.getBoundingClientRect().width - tracking;
       if (available <= 0 || measured <= 0) return;
-      const current = parseFloat(getComputedStyle(label).fontSize);
+      const current = parseFloat(type.fontSize);
       el.style.setProperty("--menu-title-size", `${current * available / measured}px`);
       lastWidth = available;
     };

@@ -11,6 +11,18 @@ export const categoryLabels = {
 
 const behavior = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" as const : "smooth" as const;
 
+/** Fade the clipped pill itself: masking the rail also isolates its backdrop blur. */
+export function chipEdgeMask(left: number, width: number, railWidth: number, canLeft: boolean, canRight: boolean) {
+  if (left + width <= 0 || left >= railWidth) return "none";
+  const fade = 20;
+  const atLeft = canLeft && left < fade;
+  const atRight = canRight && left + width > railWidth - fade;
+  if (!atLeft && !atRight) return "none";
+  const start = atLeft ? `transparent ${-left}px, #000 ${fade - left}px` : "#000 0%";
+  const end = atRight ? `#000 ${railWidth - fade - left}px, transparent ${railWidth - left}px` : "#000 100%";
+  return `linear-gradient(90deg, ${start}, ${end})`;
+}
+
 export function useMenuNavigation(language: string) {
   const [active, setActive] = useState<string>("classiche");
   const chips = useRef<HTMLElement>(null);
@@ -34,20 +46,49 @@ export function useMenuNavigation(language: string) {
     const rail = chips.current;
     if (!rail) return;
     const selected = rail.querySelector<HTMLElement>(`[data-go="${active}"]`);
-    const center = () => {
-      if (selected) rail.scrollTo({ left: selected.offsetLeft - (rail.clientWidth - selected.offsetWidth) / 2, behavior: behavior() });
-    };
+    let railWidth = 0;
+    let maxScroll = 0;
+    let geometry: { el: HTMLElement; left: number; width: number; mask: string }[] = [];
     const check = () => {
-      wrap.current?.classList.toggle("can-l", rail.scrollLeft > 5);
-      wrap.current?.classList.toggle("can-r", rail.scrollLeft < rail.scrollWidth - rail.clientWidth - 5);
+      // Clamp Safari rubber-band values and fractional rounding at either end.
+      const x = Math.max(0, Math.min(rail.scrollLeft, maxScroll));
+      const canLeft = x > 1;
+      const canRight = x < maxScroll - 1;
+      wrap.current?.classList.toggle("can-l", canLeft);
+      wrap.current?.classList.toggle("can-r", canRight);
+      for (const item of geometry) {
+        const mask = chipEdgeMask(item.left - x, item.width, railWidth, canLeft, canRight);
+        if (mask !== item.mask) {
+          item.el.style.setProperty("--chip-edge", mask);
+          item.mask = mask;
+        }
+      }
     };
-    center(); check();
-    const observer = new ResizeObserver(() => { center(); check(); });
+    const measure = () => {
+      railWidth = rail.clientWidth;
+      maxScroll = Math.max(0, rail.scrollWidth - railWidth);
+      geometry = Array.from(rail.children, el => {
+        const button = el as HTMLElement;
+        return { el: button, left: button.offsetLeft, width: button.offsetWidth, mask: "" };
+      });
+      const item = geometry.find(item => item.el === selected);
+      if (item) {
+        const x = Math.max(0, Math.min(item.left - (railWidth - item.width) / 2, maxScroll));
+        // Endpoints must land exactly at zero/max; do not retain a fractional clip.
+        rail.scrollTo({ left: x, behavior: behavior() });
+      }
+      check();
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
     observer.observe(rail);
     // Translations and font loading also change overflow when rail width is fixed.
     Array.from(rail.children).forEach(el => observer.observe(el));
     rail.addEventListener("scroll", check, { passive: true });
-    return () => { observer.disconnect(); rail.removeEventListener("scroll", check); };
+    return () => {
+      observer.disconnect(); rail.removeEventListener("scroll", check);
+      for (const item of geometry) item.el.style.removeProperty("--chip-edge");
+    };
   }, [active, language]);
   const select = (id: string) => {
     document.getElementById(`cat-${id}`)?.scrollIntoView({ behavior: behavior() });

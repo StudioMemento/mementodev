@@ -73,10 +73,10 @@ export default function Dialogs() {
       >
         <header className="modal-header">
           <div>
-            {modal.kind === "allergens" && (
-              <p className="eyebrow">{copy.allergens}</p>
-            )}
             <h2 id="modal-title">{title}</h2>
+            {modal.kind === "allergens" && (
+              <p className="eyebrow allergen-eyebrow">{copy.allergens}</p>
+            )}
           </div>
           <button
             className="modal-close"
@@ -96,21 +96,25 @@ export default function Dialogs() {
                   key={i}
                   className={info.codes.includes(i + 1) ? "contains" : ""}
                 >
-                  <b className="allergen-code">{i + 1}</b>{" "}
-                  <strong className="allergen-name">
-                    {name}
-                    {info.codes.includes(i + 1) && <span className="sr-only"> — {copy.allergenIncluded}</span>}
-                  </strong>{" "}
-                  <small className="allergen-description">{description}</small>
+                  <b className="allergen-code">{i + 1}</b>
+                  <span className="allergen-text">
+                    <strong className="allergen-name">
+                      {name}
+                      {info.codes.includes(i + 1) && <span className="sr-only"> — {copy.allergenIncluded}</span>}
+                    </strong>{" "}
+                    <span className="allergen-description">{description}</span>
+                  </span>
                 </li>
               ))}
               <li className={info.frozen ? "contains" : ""}>
-                <b className="allergen-code">*</b>{" "}
-                <strong className="allergen-name">
-                  {copy.frozenTitle}
-                  {info.frozen && <span className="sr-only"> — {copy.allergenIncluded}</span>}
-                </strong>{" "}
-                <small className="allergen-description">{copy.frozen}</small>
+                <b className="allergen-code">*</b>
+                <span className="allergen-text">
+                  <strong className="allergen-name">
+                    {copy.frozenTitle}
+                    {info.frozen && <span className="sr-only"> — {copy.allergenIncluded}</span>}
+                  </strong>{" "}
+                  <span className="allergen-description">{copy.frozen}</span>
+                </span>
               </li>
             </ol>
             <p className="allergen-note">{copy.allergenNote}</p>

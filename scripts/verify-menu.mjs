@@ -15,6 +15,8 @@ const normalizeLayout=s=>s.split('\n').filter(line=>!line.startsWith('.allergen-
  .replace(' .allergen-list li { grid-template-columns:22px minmax(75px,.7fr) minmax(0,1.3fr); gap:10px; } .allergen-name { font-size:12px; overflow-wrap:break-word; } .allergen-description { font-size:13px; }','')
  .replace('/* Native dialogs: an opaque surface, no full-screen filtering or animation. */','/* Native photo/legal surfaces. Allergen presentation is scoped in menu.css. */');
 assert.equal(await readFile('src/styles/clean.css','utf8'),normalizeLayout(await readFile('tests/menu/layout-approved.css','utf8')),'Layout outside allergens changed');
+const approvedI18n = await readFile('tests/menu/i18n-approved.tsx','utf8');
+assert.equal(await readFile('src/i18n.tsx','utf8'),approvedI18n.replace('Chiedi al personale per ulteriori informazioni','Per ulteriori informazioni, chiedi al personale.'),'Unrequested translation/copy changes');
 const html=await readFile('dist/index.html','utf8');
 const old=await readFile('tests/v25/menu-carta-v24.html','utf8');
 function balanced(s,start,tag){let depth=0;for(const m of s.slice(start).matchAll(new RegExp(`<\\/?${tag}\\b[^>]*>`,'g'))){depth+=m[0].startsWith('</')?-1:1;if(!depth)return s.slice(start,start+m.index+m[0].length);}throw Error(`Unclosed ${tag}`)}
@@ -30,10 +32,10 @@ const before=entries(old),after=entries(html);assert.ok(before.length>80);assert
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_3_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_3.1_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
 assert.equal((html.match(/class="crust-card"/g)||[]).length,3);
 const head=balanced(html,html.indexOf('<header class="menu-head"'),'header');
-assert.equal(text(head),'Il Menù');assert.equal((head.match(/<h2/g)||[]).length,1);
+assert.equal(text(head),'Menù');assert.equal((head.match(/<h2/g)||[]).length,1);
 const rail=balanced(html,html.indexOf('<nav class="chips scrollable"'),'nav');
 assert.deepEqual([...rail.matchAll(/<button[^>]+data-go="[^"]+"[^>]*>(.*?)<\/button>/g)].map(m=>text(m[1])),['Classiche','Audaci','Bianche','Calzoni','Cucina','Snack','Dolci','Bevande']);
 const items=[...html.matchAll(/<div class="item\b[^>]*data-menu-item="([^"]*)"/g)];
