@@ -119,11 +119,10 @@ function DrinkTable({
               <ItemName name={name} description={qualifier} translate={false} />
               {qualifier && <span className="qualifier">{translateDescription(qualifier, language)}</span>}
             </span>
-            <span className="dots" aria-hidden="true" />
             <div className="pricegrid">
               {sizes.map((size, i) => (
                 <span className="drink-price-cell" key={size}>
-                  <span className="sr-only">{size}: </span>
+                  <span className="sr-only drink-size-label">{size}<span className="sr-only">: </span></span>
                   <b>{prices[i]}</b>
                 </span>
               ))}

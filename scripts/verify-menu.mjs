@@ -39,13 +39,25 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_3.2_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_3.3_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
 assert.equal((html.match(/class="crust-card"/g)||[]).length,3);
 const head=balanced(html,html.indexOf('<header class="menu-head"'),'header');
 assert.equal(text(head),'Menù');assert.equal((head.match(/<h2/g)||[]).length,1);
 const rail=balanced(html,html.indexOf('<nav class="chips scrollable"'),'nav');
 assert.deepEqual([...rail.matchAll(/<button[^>]+data-go="[^"]+"[^>]*>(.*?)<\/button>/g)].map(m=>text(m[1])),['Classiche','Audaci','Bianche','Calzoni','Cucina','Snack','Dolci','Bevande']);
 const items=[...html.matchAll(/<div class="item\b[^>]*data-menu-item="([^"]*)"/g)];
-for(const m of items){const s=balanced(html,m.index,'div');if(m[1]!=='Coperto')assert.match(s,/<button type="button" class="nome" aria-haspopup="dialog"/);assert.ok(s.includes('class="dots" aria-hidden="true"'));}
+const multiPriceNames=new Set([...data.SPINA,...data.VINI].map(row=>row[0]));
+for(const m of items){
+ const s=balanced(html,m.index,'div');
+ if(m[1]!=='Coperto')assert.match(s,/<button type="button" class="nome" aria-haspopup="dialog"/);
+ assert.equal(s.includes('class="dots" aria-hidden="true"'),!multiPriceNames.has(m[1]));
+ if(multiPriceNames.has(m[1])){
+  const cells=[...s.matchAll(/<span class="drink-price-cell">/g)].map(c=>text(balanced(s,c.index,'span')));
+  const draught=data.SPINA.find(row=>row[0]===m[1]);
+  const sizes=draught?['0,3 l','0,5 l','Caraffa 1,5 l']:['Calice','Caraffa 0,5 l','Bottiglia 0,75 l'];
+  const prices=draught?draught.slice(2,5):data.VINI.find(row=>row[0]===m[1]).slice(1,4);
+  assert.deepEqual(cells,sizes.map((size,i)=>`${size}: ${prices[i]}`),`Incorrect format/price association: ${m[1]}`);
+ }
+}
 assert.deepEqual(Object.keys(JSON.parse(await readFile('package.json','utf8')).dependencies).sort(),['react','react-dom']);
-console.log(`MENU_SCOPE_OK — ${Object.keys(baseline).length} protected files unchanged; ${before.length} entries retain names, description text, prices, qualifiers and allergen codes; 7 bottle descriptions joined inline; hero/intro and original assets retained.`);
+console.log(`MENU_SCOPE_OK — ${Object.keys(baseline).length} protected files unchanged; ${before.length} entries retain names, description text, prices, qualifiers and allergen codes; all 18 draught/wine format-price pairs verified; hero/intro and original assets retained.`);

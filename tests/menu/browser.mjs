@@ -36,15 +36,23 @@ try {
   });
   assert.ok(+layout.nav.zIndex>+layout.blur.zIndex);assert.equal(layout.rail.backgroundColor,'rgba(0, 0, 0, 0)');
   assert.equal(layout.pill.backdropFilter,'blur(22px)');assert.equal(layout.category.textAlign,'center');assert.ok(parseFloat(layout.tag.fontSize)>=18);assert.equal(layout.categoryBorder,'0px');
-  assert.notEqual(layout.dots.display,'none');assert.equal(layout.dots.height,'1px');assert.equal(layout.dots.opacity,'0.7');assert.ok(layout.dots.backgroundImage.includes('repeating-linear-gradient'));assert.ok(layout.dots.backgroundImage.includes('8px'));assert.equal(layout.priceColor,'rgb(218, 193, 139)');assert.ok(layout.name.right<=layout.price.left);
+  assert.notEqual(layout.dots.display,'none');assert.equal(layout.dots.height,'1px');assert.equal(layout.dots.opacity,'1');assert.ok(layout.dots.backgroundImage.includes('repeating-linear-gradient'));assert.ok(layout.dots.backgroundImage.includes('rgb(37, 37, 36)'));assert.ok(layout.dots.backgroundImage.includes('8px'));assert.equal(layout.priceColor,'rgb(218, 193, 139)');assert.ok(layout.name.right<=layout.price.left);
   if(width<768){assert.ok(layout.desc.right<=layout.price.left+1);assert.ok(layout.chevron.left>=layout.railRect.right-1);assert.ok(layout.chevron.right<=width+1);}
   if(width>=768){
    const inactive=page.locator('.chips button:not(.on)').first();await inactive.hover();
    await page.waitForFunction(()=>getComputedStyle(document.querySelector('.chips button:not(.on)')).color==='rgb(255, 255, 255)');
    const art=page.locator('#cat-audaci .menu-art');
-   const before=await art.evaluate(el=>[getComputedStyle(el,'::before').borderImageSource,getComputedStyle(el,'::before').borderTopWidth,getComputedStyle(el,'::before').borderBottomWidth,getComputedStyle(el.querySelector('.menu-art-window')).maskImage]);
-   await art.hover();const after=await art.evaluate(el=>[getComputedStyle(el,'::before').borderImageSource,getComputedStyle(el,'::before').borderTopWidth,getComputedStyle(el,'::before').borderBottomWidth,getComputedStyle(el.querySelector('.menu-art-window')).maskImage]);assert.deepEqual(after,before,'Image hover changed the stroke/fade geometry');assert.equal(before[1],'1px');assert.equal(before[2],'1px');assert.ok((await art.evaluate(el=>getComputedStyle(el,'::before').filter)).includes('0.6'));
-   assert.ok((await art.locator('img').evaluate(el=>getComputedStyle(el).filter)).includes('0.28'));
+   const snapshot=el=>{
+    const style=(target,pseudo,keys)=>Object.fromEntries(keys.map(k=>[k,getComputedStyle(target,pseudo)[k]]));
+    return {top:style(el,'::before',['backgroundImage','height','clipPath']),bottom:style(el,'::after',['backgroundImage','height','clipPath']),mask:getComputedStyle(el.querySelector('.menu-art-window')).maskImage,image:style(el.querySelector('img'),null,['filter','transform','opacity','mixBlendMode']),containerFilter:getComputedStyle(el).filter};
+   };
+   const before=await art.evaluate(snapshot);
+   await art.hover();const after=await art.evaluate(snapshot);
+   assert.deepEqual(after,before,'Image hover changed the image or stroke/fade geometry');
+   assert.equal(before.top.height,'1px');assert.equal(before.bottom.height,'1px');assert.equal(before.top.backgroundImage,before.bottom.backgroundImage);
+   assert.equal(before.top.clipPath,'inset(-20px 0px 0px)');assert.equal(before.bottom.clipPath,'inset(0px 0px -20px)');
+   assert.equal(before.image.filter,'none');assert.equal(before.containerFilter,'none');
+   for(const pseudo of ['::before','::after'])assert.ok((await art.evaluate((el,p)=>getComputedStyle(el,p).filter,pseudo)).includes('0.4'));
   }
   await page.screenshot({path:`${out}/audaci-${width}.png`});
   const trigger=page.locator('[data-menu-item="Burrata e Crudo"] button.nome');
@@ -60,9 +68,29 @@ try {
   assert.equal(bottles.length,7);assert.ok(bottles.every(b=>!b.breaks&&!b.overflow));assert.ok(bottles.some(b=>b.text==='IPA 0,5 l'));
   const note=await page.locator('.dolci-note').evaluate(el=>({text:el.textContent,align:getComputedStyle(el).textAlign,color:getComputedStyle(el).color,size:parseFloat(getComputedStyle(el).fontSize)}));
   assert.equal(note.text,'Chiedi al personale la disponibilità del giorno!');assert.equal(note.align,'center');assert.equal(note.color,'rgb(218, 193, 139)');assert.ok(note.size>=22);
-  results.push({width,height,heading,layout,dialog,bottles,note});await page.close();
+  const drinks=[];
+  for(const lang of ['de','fr','en','it']){
+   await page.locator('.lang button').filter({hasText:new RegExp(`^${lang.toUpperCase()}$`)}).click();
+   const rows=await page.locator('.drink-row').evaluateAll(els=>els.map(el=>{
+    const rect=node=>node.getBoundingClientRect().toJSON();
+    return {name:el.dataset.menuItem,row:rect(el),label:rect(el.querySelector('.label')),grid:rect(el.querySelector('.pricegrid')),dots:el.querySelectorAll('.dots').length,cells:[...el.querySelectorAll('.drink-price-cell')].map(cell=>({cell:rect(cell),label:rect(cell.querySelector('.drink-size-label')),price:rect(cell.querySelector('b')),visibleLabel:getComputedStyle(cell.querySelector('.drink-size-label')).position==='static',overflow:cell.scrollWidth>cell.clientWidth+1}))};
+   }));
+   assert.equal(rows.length,6);
+   for(const row of rows){
+    assert.equal(row.dots,0);assert.equal(row.cells.length,3);
+    assert.ok(row.grid.right<=row.row.right+1);
+    for(const cell of row.cells){assert.equal(cell.overflow,false);assert.equal(cell.visibleLabel,width<768);assert.ok(cell.price.right<=row.row.right+1);}
+    if(width<768){assert.ok(row.grid.top>=row.label.bottom+11);assert.ok(Math.abs(row.label.width-row.row.width)<1);assert.ok(row.cells.every(c=>c.price.top>=c.label.bottom));assert.ok(row.cells.every(c=>Math.abs(c.price.bottom-row.cells[0].price.bottom)<1));}
+    else assert.ok(row.grid.left>=row.label.right+23);
+   }
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+   drinks.push({lang,rows});
+  }
+  await page.locator('#drinks-draught').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/draught-${width}.png`});
+  await page.locator('#drinks-wines').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/wines-${width}.png`});
+  results.push({width,height,heading,layout,dialog,bottles,note,drinks});await page.close();
  }
  assert.deepEqual(errors,[]);
 } finally {await browser.close();}
 await writeFile(`${out}/results.json`,JSON.stringify(results,null,2));
-console.log('MENU_BROWSER_OK — 320–3440px, four-language tracked title fit, full first pill, white inactive satin navigation above blur, stable artwork hover geometry, outside mobile chevrons, readable rows, 15 allergens, click/Escape/X close and focus restoration.');
+console.log('MENU_BROWSER_OK — 320–3440px, four-language title and drink layout, unchanged artwork with outward stroke glow, dark 1px leaders, satin navigation, 15 allergens and dismissal/focus restoration.');

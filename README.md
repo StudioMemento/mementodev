@@ -1,19 +1,18 @@
-# ViaRoma_3.2_MENU
+# ViaRoma_3.3_MENU
 
-Polish 3.2 del 17 novembre 2026, basato su ViaRoma_3.1_MENU. Pacchetto sorgente completo per Vercel; nessuna pubblicazione eseguita.
+Polish 3.3 del 17 novembre 2026, basato su ViaRoma_3.2_MENU. Sorgenti e asset completi per Vercel.
 
 ## Modifiche
 
-- Tratti sopra/sotto le immagini disegnati da un unico elemento con lo stesso gradiente e spessore di 1px. Hover coordinato: più luce e glow oro, con forma e sfumatura stabili. Conservato il glow leggero dell’immagine.
-- Puntinato ripristinato: punti da 1px con passo di 8px, più affidabili della precedente trama subpixel su schermi a densità standard.
-- Le sette birre in bottiglia hanno descrizione e formato nello stesso flusso di testo, senza interruzione forzata: per esempio **IPA 0,5 l**. Disponibile tutta la larghezza della voce; eventuali ritorni a capo naturali restano possibili con testi ingranditi o schermi molto stretti.
-- **“Chiedi al personale la disponibilità del giorno!”** centrato, oro highlight `#DAC18B`, dimensione responsive 22–28px.
+- Hover delle immagini: highlight leggero soltanto sui tratti superiore e inferiore, con glow rivolto verso l’esterno. Nessun filtro, trasformazione o effetto hover sulla fotografia. La maschera sfumata rimane invariata.
+- Puntinato: micro-segmenti da **1px**, passo **8px**, grigio scuro **#252524**.
+- Birre alla spina e vini della casa: eliminati i frammenti di puntinato. Desktop con nomi a sinistra e tre colonne di prezzi allineate ai rispettivi formati. Mobile con nome a tutta larghezza, seguito da tre formati e prezzi affiancati; eventuali descrizioni sotto il nome. Dimensione dei nomi e prezzi coerente con le altre voci del menù.
 
-Tutti i dati, prezzi, asset e i precedenti checkpoint di hero, intro, navbar e allergeni sono conservati.
+Conservati dati, prezzi, asset, birre in bottiglia, nota dolci e checkpoint precedenti di hero, intro, navbar e allergeni.
 
 ## Avvio e deploy
 
-Copiare il contenuto della cartella `ViaRoma_3.2_MENU` nella radice della repository di sviluppo.
+Copiare il contenuto della cartella `ViaRoma_3.3_MENU` nella radice della repository di sviluppo.
 
 ```sh
 npm ci
@@ -22,12 +21,12 @@ npm run check
 npm test
 ```
 
-Node 22.13+ nella serie 22 o Node 24+. Vercel: install `npm ci`, build `npm run build`, output `dist`. Nessuna variabile d’ambiente. `noindex,nofollow` conservato.
+Node 22.13+ nella serie 22 o Node 24+. Vercel: install `npm ci`, build `npm run build`, output `dist`. Nessuna variabile d’ambiente; `noindex,nofollow` conservato. Nessuna pubblicazione eseguita.
 
-## Verifiche
+## Verifiche e revisione visiva
 
-TypeScript, build client/SSR, prerender e budget di peso verificati. Confronto delle 86 voci, con la sola formattazione autorizzata delle sette descrizioni delle birre. 185 file protetti e test delle interazioni precedenti conservati.
+Controlli inclusi: TypeScript, build client/SSR, prerender, budget di peso, confronto delle 86 voci del menù, associazione dei 18 prezzi ai formati di birre alla spina e vini, integrità di 185 file protetti e test delle interazioni.
 
-**La prova visiva 3.2 resta da completare sul deploy di sviluppo:** il browser headless richiesto non è disponibile in questo ambiente. Il test aggiornato è `tests/menu/browser.mjs`; usa `TEST_URL` per puntarlo al deploy da un ambiente QA con Playwright e Chromium installati. Non sono dichiarati test reali su Safari iOS/Chrome Android.
+**La revisione visiva 3.3 resta da completare sul deploy di sviluppo:** il browser headless richiesto non è disponibile in questo ambiente. `tests/menu/browser.mjs` copre viewport da 320 a 3440px e quattro lingue; eseguirlo con Playwright/Chromium installati e `TEST_URL` impostato all’anteprima. Non sono dichiarati test reali su Safari iOS/Chrome Android.
 
-Dettagli in `docs/MENU_3_2_POLISH.md`. Documenti e anteprime precedenti descrivono checkpoint storici.
+Dettagli in `docs/MENU_3_3_POLISH.md`. I documenti precedenti descrivono checkpoint storici.

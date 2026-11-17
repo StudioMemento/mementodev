@@ -1,4 +1,4 @@
-/* ViaRoma_3.2_MENU — original printed artwork and data, a clearer reading rhythm. */
+/* ViaRoma_3.3_MENU — original printed artwork and data, a clearer reading rhythm. */
 #menu { padding-top:clamp(80px,12svh,160px); padding-bottom:32px; }
 .menu-head,.mcat,.chipbar-inner { width:var(--vr-content); margin-inline:auto; }
 .menu-head { text-align:center; margin-bottom:clamp(32px,6vw,72px); }
@@ -34,10 +34,12 @@
 .mcat h3 { font-size:clamp(33px,4.6vw,68px); line-height:1.12; letter-spacing:.12em; font-weight:200; text-transform:uppercase; color:var(--vr-highlight); overflow-wrap:anywhere; }
 .mcat .tag { margin:12px auto 0; max-width:48ch; color:var(--vr-muted); letter-spacing:.015em; font-size:clamp(19px,1.5vw,23px); line-height:1.4; text-wrap:pretty; }
 .menu-art { width:100%; aspect-ratio:2048/487; position:relative; margin:28px 0; }
-/* One border frame paints both strokes from the same gradient and pixel thickness. */
-.menu-art::before { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-block:1px solid transparent; border-image:linear-gradient(90deg,transparent,rgb(198 171 112 / .08) 5%,rgb(198 171 112 / .3) 14%,rgb(198 171 112 / .65) 28%,var(--vr-highlight) 50%,rgb(198 171 112 / .65) 72%,rgb(198 171 112 / .3) 86%,rgb(198 171 112 / .08) 95%,transparent) 1; opacity:.85; filter:drop-shadow(0 0 3px rgb(218 193 139 / .16)); transition:opacity .7s ease,filter .7s ease; }
+/* Shared 1px strokes; clipping keeps their glow outside the photograph. */
+.menu-art::before,.menu-art::after { content:""; position:absolute; z-index:1; pointer-events:none; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgb(198 171 112 / .08) 5%,rgb(198 171 112 / .3) 14%,rgb(198 171 112 / .65) 28%,var(--vr-highlight) 50%,rgb(198 171 112 / .65) 72%,rgb(198 171 112 / .3) 86%,rgb(198 171 112 / .08) 95%,transparent); opacity:.85; filter:drop-shadow(0 0 6px rgb(218 193 139 / 0)); transition:opacity .7s ease,filter .7s ease; }
+.menu-art::before { top:0; clip-path:inset(-20px 0 0); }
+.menu-art::after { bottom:0; clip-path:inset(0 0 -20px); }
 .menu-art-window { position:absolute; inset:0; overflow:hidden; --art-fade:linear-gradient(transparent,rgb(0 0 0 / .12) 2%,rgb(0 0 0 / .38) 5%,rgb(0 0 0 / .74) 9%,#000 14%,#000 86%,rgb(0 0 0 / .74) 91%,rgb(0 0 0 / .38) 95%,rgb(0 0 0 / .12) 98%,transparent); -webkit-mask-image:var(--art-fade); mask-image:var(--art-fade); }
-.menu-art img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 0 12px rgb(218 193 139 / 0)); transition:filter .8s ease; }
+.menu-art img { width:100%; height:100%; object-fit:contain; }
 .item { position:relative; padding:10px 0; min-width:0; }
 .item .row { display:flex; gap:12px; align-items:baseline; }
 .item .label { display:flex; flex:0 1 auto; flex-wrap:wrap; gap:4px 10px; min-width:0; align-items:baseline; }
@@ -47,7 +49,7 @@
 .item .prezzo,.pricegrid b { font-size:21px; line-height:1.25; letter-spacing:-.01em; color:var(--vr-highlight); font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:300; }
 .item .qualifier { font-size:14px; color:#b9b09f; line-height:1.4; }
 /* Whole-pixel microdots remain visible at DPR 1: a subpixel radial dot can vanish. */
-.item .dots { display:block; flex:1 0 20px; min-width:20px; height:1px; align-self:baseline; background:repeating-linear-gradient(90deg,var(--vr-gold) 0 1px,transparent 1px 8px); opacity:.7; transform:translateY(-4px); }
+.item .dots { display:block; flex:1 0 20px; min-width:20px; height:1px; align-self:baseline; background:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); transform:translateY(-4px); }
 .item .desc { font-size:18px; line-height:1.45; margin-top:6px; letter-spacing:.005em; color:#d0cabe; max-width:80ch; }
 .allergen-trigger { display:flex; align-items:center; gap:5px; min-height:28px; padding:3px 0; font-size:12px; font-weight:400; letter-spacing:.12em; color:#969590; }
 .frozen-mark { font-size:17px; }
@@ -58,12 +60,12 @@
 .dolci-note { max-width:46ch; margin:28px auto 0; text-align:center; font-size:clamp(22px,1.8vw,28px); line-height:1.45; letter-spacing:.02em; color:var(--vr-highlight); text-wrap:balance; }
 .drink-bottle-group .item .desc { max-width:none; }
 .drink-table { width:100%; margin-bottom:22px; }
-.drink-table-head,.drink-row>.row { display:grid; grid-template-columns:minmax(0,1fr) 20px minmax(260px,40%); gap:12px; }
+.drink-table-head,.drink-row>.row { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,40%); gap:24px; }
 .drink-table-head { padding:6px 0 12px; }
-.drink-size-head { grid-column:3; }
+.drink-size-head { grid-column:2; }
 .drink-size-head,.drink-row .pricegrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; text-align:right; }
 .drink-size-head { font-size:12px; line-height:1.35; color:#bdb3a1; }
-.drink-row .pricegrid { grid-column:3; }
+.drink-row .label { display:grid; gap:4px; }
 .drink-price-cell { text-align:right; }
 /* The allergen dialog uses the native top layer, with no panel border or tint box. */
 .vr-dialog.modal-allergens { width:100%; max-width:none; height:100%; max-height:100%; margin:0; padding:calc(36px + env(safe-area-inset-top)) var(--vr-gutter) calc(36px + env(safe-area-inset-bottom)); color:var(--vr-ivory); background:transparent; outline:none; }
@@ -87,8 +89,7 @@
 .allergen-note { font-size:15px; line-height:1.5; color:var(--vr-muted); }
 @media(hover:hover) {
   .menu-head:hover h2 span { filter:drop-shadow(0 0 12px rgb(218 193 139 / .23)); }
-  .menu-art:hover::before { opacity:1; filter:drop-shadow(0 0 7px rgb(218 193 139 / .6)); }
-  .menu-art:hover img { filter:drop-shadow(0 0 12px rgb(218 193 139 / .28)); }
+  .menu-art:hover::before,.menu-art:hover::after { opacity:1; filter:drop-shadow(0 0 6px rgb(218 193 139 / .4)); }
   .mcat-head:hover h3 span { animation:vr-menu-gold 4s ease-in-out infinite alternate; filter:drop-shadow(0 0 10px rgb(218 193 139 / .23)); }
   .chips button:not(.on):hover { color:#fff; border-color:rgb(241 236 225 / .45); }
   .item button.nome:hover,.allergen-trigger:hover { color:var(--vr-highlight); }
@@ -111,17 +112,18 @@
   .item .desc { font-size:16.5px; line-height:1.45; margin-top:5px; max-width:calc(100% - 3.5rem); overflow-wrap:break-word; }
   .item .qualifier { font-size:12px; }
   .allergen-trigger { min-height:28px; font-size:11px; }
-  .drink-table-head,.drink-row>.row { grid-template-columns:minmax(0,1fr) 16px minmax(140px,50%); gap:8px; }
-  .drink-row .dots { min-width:16px; }
-  .drink-size-head,.drink-row .pricegrid { gap:6px; }
-  .drink-size-head { font-size:10px; line-height:1.4; }
-  .drink-row .nome { font-size:14px; letter-spacing:.07em; }
-  .drink-row .pricegrid b { font-size:17px; }
+  .drink-table-head { display:none; }
+  .drink-row { padding:14px 0; }
+  .drink-row>.row { grid-template-columns:minmax(0,1fr); gap:12px; }
+  .drink-row .pricegrid { gap:12px; }
+  .drink-price-cell { display:grid; gap:3px; align-content:end; text-align:left; }
+  .drink-price-cell:nth-child(2) { text-align:center; }
+  .drink-price-cell:last-child { text-align:right; }
+  .drink-size-label { position:static; width:auto; height:auto; overflow:visible; clip-path:none; white-space:normal; font-size:12px; line-height:1.4; color:#bdb3a1; }
   .allergen-panel { gap:24px; }
   .allergen-list li { font-size:15.5px; line-height:1.55; padding:5px 0; }
   .allergen-note { font-size:15px; }
 }
-@media(max-width:359px) { .drink-table-head,.drink-row>.row { grid-template-columns:minmax(0,1fr) 12px 130px; gap:6px; } .drink-row .dots { min-width:12px; } .drink-row .pricegrid b { font-size:15px; } }
-@media(prefers-reduced-motion:reduce) { .menu-head h2 span,.mcat-head:hover h3 span { animation:none; } .menu-head h2 span,.mcat h3 span,.menu-art img,.menu-art::before,.chips button { transition:none; } }
+@media(prefers-reduced-motion:reduce) { .menu-head h2 span,.mcat-head:hover h3 span { animation:none; } .menu-head h2 span,.mcat h3 span,.menu-art::before,.menu-art::after,.chips button { transition:none; } }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .chips button { background:rgb(37 37 36 / .88); } .modal-allergens::backdrop { background:rgb(9 9 9 / .96); } }
 @media(forced-colors:active) { .menu-head h2 span,.mcat h3 span { background:none; -webkit-text-fill-color:CanvasText; filter:none; } .chips button.on { outline:2px solid Highlight; outline-offset:-4px; } .allergen-list li { color:GrayText; } .allergen-list .contains { color:Highlight; } .allergen-panel .modal-close:focus-visible { outline:1px solid Highlight; } }
