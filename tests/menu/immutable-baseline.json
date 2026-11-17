@@ -178,5 +178,10 @@
   "public/privacy.html": "38650806b12979b28f7bf521b3e1525f499e78662081a56cf48062923bd9ca62",
   "public/robots.txt": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1",
   "licenses/Jost-OFL.txt": "1af3438a4d5f0ed2bdbc5751a5a67ebf6d537334161184b7fbb68503ef0ea0c5",
-  "licenses/Phosphor-MIT.txt": "687fbe52d0eb5c2353eca27a4037e889145ee0b584d3b1abf67581c4a4a4e47c"
+  "licenses/Phosphor-MIT.txt": "687fbe52d0eb5c2353eca27a4037e889145ee0b584d3b1abf67581c4a4a4e47c",
+  "src/components/Dialogs.tsx": "6e2dc1258882b82a4f8d8496d7f2ce8b6eaeac9e4e7f2f11aca08e905e55ca11",
+  "src/components/menu/MenuTitle.tsx": "89775d299305f8c90522c72c83ae3b1ceb46d4755a8fc448bfc07e6fca910441",
+  "src/components/menu/useMenuNavigation.ts": "b8a27230f6dbfa927d25d18ef96743486750a374d2f03fb07fca71a503f7afc7",
+  "src/i18n.tsx": "bbb693495d9013f1f2455290db9e82325b7f3d2d41ed7d08ff153c7d9eea33b9",
+  "src/styles/clean.css": "59927e7885bb4ef4a1a3b798dbb239b9a06be8e4d42544bbeab7c9ef621b893c"
 }

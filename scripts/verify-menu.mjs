@@ -27,12 +27,19 @@ function entries(s){return [...s.matchAll(/<div class="item\b[^>]*data-menu-item
  const grid=entry.match(/<div class="pricegrid">/);
  return [m[1],field('nome'),field('qualifier'),field('prezzo'),field('desc'),field('allergen-trigger'),grid?text(balanced(entry,grid.index,'div')):''];
 })}
-const before=entries(old),after=entries(html);assert.ok(before.length>80);assert.equal(after.length,before.length);before.forEach((row,i)=>assert.deepEqual(after[i],row,`Menu item information changed: ${row[0]}`));
+const data=JSON.parse(await readFile('src/data/menu.json','utf8'));
+const bottled=new Set(data.BOTTIGLIA.flatMap(group=>group[2].map(row=>row[0])));
+const before=entries(old).map(row=>bottled.has(row[0])?row.map((field,i)=>i===4?field.replaceAll('\n',' '):field):row);
+const after=entries(html);assert.ok(before.length>80);assert.equal(after.length,before.length);before.forEach((row,i)=>assert.deepEqual(after[i],row,`Menu item information changed: ${row[0]}`));
+assert.equal(bottled.size,7);
+for(const name of bottled){const item=html.match(new RegExp(`<div class="item" data-menu-item="${name}"`));assert.ok(item);const markup=balanced(html,item.index,'div');const description=markup.match(/<p class="desc">(.*?)<\/p>/)[1];assert.ok(!description.includes('<br'),'Bottle description still has a forced line break');}
+assert.ok(html.includes('IPA 0,5 l'));
+assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità del giorno!<\/p>/);
 // Prove the comparison can detect a changed price, not just a missing section.
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_3.1_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_3.2_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
 assert.equal((html.match(/class="crust-card"/g)||[]).length,3);
 const head=balanced(html,html.indexOf('<header class="menu-head"'),'header');
 assert.equal(text(head),'Menù');assert.equal((head.match(/<h2/g)||[]).length,1);
@@ -41,4 +48,4 @@ assert.deepEqual([...rail.matchAll(/<button[^>]+data-go="[^"]+"[^>]*>(.*?)<\/but
 const items=[...html.matchAll(/<div class="item\b[^>]*data-menu-item="([^"]*)"/g)];
 for(const m of items){const s=balanced(html,m.index,'div');if(m[1]!=='Coperto')assert.match(s,/<button type="button" class="nome" aria-haspopup="dialog"/);assert.ok(s.includes('class="dots" aria-hidden="true"'));}
 assert.deepEqual(Object.keys(JSON.parse(await readFile('package.json','utf8')).dependencies).sort(),['react','react-dom']);
-console.log(`MENU_SCOPE_OK — ${Object.keys(baseline).length} protected files unchanged; ${before.length} entries retain names, descriptions, prices, qualifiers and allergen codes; hero/intro and original assets retained.`);
+console.log(`MENU_SCOPE_OK — ${Object.keys(baseline).length} protected files unchanged; ${before.length} entries retain names, description text, prices, qualifiers and allergen codes; 7 bottle descriptions joined inline; hero/intro and original assets retained.`);

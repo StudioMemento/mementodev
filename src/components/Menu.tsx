@@ -46,7 +46,7 @@ export function AllergenTrigger({
     </button>
   );
 }
-function MenuItem({ row }: { row: string[] }) {
+function MenuItem({ row, inlineDescription = false }: { row: string[]; inlineDescription?: boolean }) {
   const [name, description, price, codes = "", qualifier = ""] = row;
   const { language } = useI18n();
   const desc = translateDescription(description, language)
@@ -70,7 +70,7 @@ function MenuItem({ row }: { row: string[] }) {
       </div>
       {description && (
         <p className="desc">
-          {desc.map((s, i) => (
+          {inlineDescription ? desc.join(" ") : desc.map((s, i) => (
             <span key={i}>
               {i > 0 && <br />}
               {s}
@@ -82,11 +82,11 @@ function MenuItem({ row }: { row: string[] }) {
     </div>
   );
 }
-function Rows({ rows }: { rows: string[][] }) {
+function Rows({ rows, inlineDescription = false }: { rows: string[][]; inlineDescription?: boolean }) {
   return (
     <>
       {rows.map((row, i) => (
-        <MenuItem key={`${row[0]}-${i}`} row={row} />
+        <MenuItem key={`${row[0]}-${i}`} row={row} inlineDescription={inlineDescription} />
       ))}
     </>
   );
@@ -147,7 +147,7 @@ function Drinks() {
           <p className="groupsub">
             <strong>{name}</strong> · {translateDescription(desc, language)}
           </p>
-          <Rows rows={rows} />
+          <Rows rows={rows} inlineDescription />
         </div>
       ))}
       <DrinkTable

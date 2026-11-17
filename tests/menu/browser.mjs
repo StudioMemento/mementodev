@@ -32,18 +32,18 @@ try {
   const layout=await page.evaluate(()=>{
    const style=(el,keys)=>Object.fromEntries(keys.map(k=>[k,getComputedStyle(el)[k]]));
    const item=document.querySelector('[data-menu-item="Burrata e Crudo"]'),name=item.querySelector('.nome'),price=item.querySelector('.prezzo'),rail=document.querySelector('.chipbar-inner');
-   return {nav:style(document.querySelector('.chipbar'),['zIndex']),blur:style(document.querySelector('.vr-edge-blur'),['zIndex']),rail:style(rail,['backgroundColor']),pill:style(document.querySelector('.chips button.on'),['backgroundImage','backdropFilter']),category:style(document.querySelector('.mcat-head'),['textAlign']),tag:style(document.querySelector('.mcat .tag'),['fontSize']),dots:style(item.querySelector('.dots'),['display','backgroundSize']),name:name.getBoundingClientRect().toJSON(),price:price.getBoundingClientRect().toJSON(),priceColor:getComputedStyle(price).color,desc:item.querySelector('.desc').getBoundingClientRect().toJSON(),chevron:document.querySelector('.chipchev.r').getBoundingClientRect().toJSON(),railRect:rail.getBoundingClientRect().toJSON(),categoryBorder:getComputedStyle(document.querySelector('#cat-audaci')).borderTopWidth};
+   return {nav:style(document.querySelector('.chipbar'),['zIndex']),blur:style(document.querySelector('.vr-edge-blur'),['zIndex']),rail:style(rail,['backgroundColor']),pill:style(document.querySelector('.chips button.on'),['backgroundImage','backdropFilter']),category:style(document.querySelector('.mcat-head'),['textAlign']),tag:style(document.querySelector('.mcat .tag'),['fontSize']),dots:style(item.querySelector('.dots'),['display','backgroundImage','height','opacity']),name:name.getBoundingClientRect().toJSON(),price:price.getBoundingClientRect().toJSON(),priceColor:getComputedStyle(price).color,desc:item.querySelector('.desc').getBoundingClientRect().toJSON(),chevron:document.querySelector('.chipchev.r').getBoundingClientRect().toJSON(),railRect:rail.getBoundingClientRect().toJSON(),categoryBorder:getComputedStyle(document.querySelector('#cat-audaci')).borderTopWidth};
   });
   assert.ok(+layout.nav.zIndex>+layout.blur.zIndex);assert.equal(layout.rail.backgroundColor,'rgba(0, 0, 0, 0)');
   assert.equal(layout.pill.backdropFilter,'blur(22px)');assert.equal(layout.category.textAlign,'center');assert.ok(parseFloat(layout.tag.fontSize)>=18);assert.equal(layout.categoryBorder,'0px');
-  assert.notEqual(layout.dots.display,'none');assert.equal(layout.dots.backgroundSize,'8px 2px');assert.equal(layout.priceColor,'rgb(218, 193, 139)');assert.ok(layout.name.right<=layout.price.left);
+  assert.notEqual(layout.dots.display,'none');assert.equal(layout.dots.height,'1px');assert.equal(layout.dots.opacity,'0.7');assert.ok(layout.dots.backgroundImage.includes('repeating-linear-gradient'));assert.ok(layout.dots.backgroundImage.includes('8px'));assert.equal(layout.priceColor,'rgb(218, 193, 139)');assert.ok(layout.name.right<=layout.price.left);
   if(width<768){assert.ok(layout.desc.right<=layout.price.left+1);assert.ok(layout.chevron.left>=layout.railRect.right-1);assert.ok(layout.chevron.right<=width+1);}
   if(width>=768){
    const inactive=page.locator('.chips button:not(.on)').first();await inactive.hover();
    await page.waitForFunction(()=>getComputedStyle(document.querySelector('.chips button:not(.on)')).color==='rgb(255, 255, 255)');
    const art=page.locator('#cat-audaci .menu-art');
-   const before=await art.evaluate(el=>[getComputedStyle(el,'::before').backgroundImage,getComputedStyle(el,'::before').backgroundSize,getComputedStyle(el,'::after').backgroundImage,getComputedStyle(el.querySelector('.menu-art-window')).maskImage]);
-   await art.hover();const after=await art.evaluate(el=>[getComputedStyle(el,'::before').backgroundImage,getComputedStyle(el,'::before').backgroundSize,getComputedStyle(el,'::after').backgroundImage,getComputedStyle(el.querySelector('.menu-art-window')).maskImage]);assert.deepEqual(after,before,'Image hover changed the stroke/fade geometry');
+   const before=await art.evaluate(el=>[getComputedStyle(el,'::before').borderImageSource,getComputedStyle(el,'::before').borderTopWidth,getComputedStyle(el,'::before').borderBottomWidth,getComputedStyle(el.querySelector('.menu-art-window')).maskImage]);
+   await art.hover();const after=await art.evaluate(el=>[getComputedStyle(el,'::before').borderImageSource,getComputedStyle(el,'::before').borderTopWidth,getComputedStyle(el,'::before').borderBottomWidth,getComputedStyle(el.querySelector('.menu-art-window')).maskImage]);assert.deepEqual(after,before,'Image hover changed the stroke/fade geometry');assert.equal(before[1],'1px');assert.equal(before[2],'1px');assert.ok((await art.evaluate(el=>getComputedStyle(el,'::before').filter)).includes('0.6'));
    assert.ok((await art.locator('img').evaluate(el=>getComputedStyle(el).filter)).includes('0.28'));
   }
   await page.screenshot({path:`${out}/audaci-${width}.png`});
@@ -56,7 +56,11 @@ try {
   assert.equal(await trigger.evaluate(el=>document.activeElement===el),true);
   await page.locator('[data-menu-item="Burrata e Crudo"] .allergen-trigger').click();await page.locator('dialog').waitFor({state:'visible'});await page.keyboard.press('Escape');await page.locator('dialog').waitFor({state:'detached'});
   await trigger.click();await page.locator('dialog').waitFor({state:'visible'});await page.locator('.modal-close').click();await page.locator('dialog').waitFor({state:'detached'});
-  results.push({width,height,heading,layout,dialog});await page.close();
+  const bottles=await page.locator('.drink-bottle-group .desc').evaluateAll(els=>els.map(el=>({text:el.textContent,breaks:el.querySelectorAll('br').length,overflow:el.scrollWidth>el.clientWidth+1})));
+  assert.equal(bottles.length,7);assert.ok(bottles.every(b=>!b.breaks&&!b.overflow));assert.ok(bottles.some(b=>b.text==='IPA 0,5 l'));
+  const note=await page.locator('.dolci-note').evaluate(el=>({text:el.textContent,align:getComputedStyle(el).textAlign,color:getComputedStyle(el).color,size:parseFloat(getComputedStyle(el).fontSize)}));
+  assert.equal(note.text,'Chiedi al personale la disponibilità del giorno!');assert.equal(note.align,'center');assert.equal(note.color,'rgb(218, 193, 139)');assert.ok(note.size>=22);
+  results.push({width,height,heading,layout,dialog,bottles,note});await page.close();
  }
  assert.deepEqual(errors,[]);
 } finally {await browser.close();}
