@@ -5,6 +5,7 @@ import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
 import { MenuTitle } from "./menu/MenuTitle";
+import { MenuDotGrid } from "./menu/MenuDotGrid";
 import { categoryOrder, categoryLabels, useMenuNavigation } from "./menu/useMenuNavigation";
 export { categoryOrder } from "./menu/useMenuNavigation";
 
@@ -169,6 +170,7 @@ export default function Menu() {
   const { active, chips, wrap, select, nudge } = useMenuNavigation(language);
   return (
     <section id="menu">
+      <MenuDotGrid />
       <MenuTitle text={copy.menu} />
       <div className="chipbar">
         <div className="chipbar-inner" ref={wrap}>

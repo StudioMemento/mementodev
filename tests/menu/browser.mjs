@@ -44,15 +44,13 @@ try {
    const art=page.locator('#cat-audaci .menu-art');
    const snapshot=el=>{
     const style=(target,pseudo,keys)=>Object.fromEntries(keys.map(k=>[k,getComputedStyle(target,pseudo)[k]]));
-    return {top:style(el,'::before',['backgroundImage','height','clipPath']),bottom:style(el,'::after',['backgroundImage','height','clipPath']),mask:getComputedStyle(el.querySelector('.menu-art-window')).maskImage,image:style(el.querySelector('img'),null,['filter','transform','opacity','mixBlendMode']),containerFilter:getComputedStyle(el).filter};
+    return {frame:style(el,'::before',['borderImageSource','borderTopWidth','borderBottomWidth','filter','transitionDuration']),after:getComputedStyle(el,'::after').content,mask:getComputedStyle(el.querySelector('.menu-art-window')).maskImage,image:style(el.querySelector('img'),null,['filter','transform','opacity','mixBlendMode']),containerFilter:getComputedStyle(el).filter};
    };
    const before=await art.evaluate(snapshot);
    await art.hover();const after=await art.evaluate(snapshot);
    assert.deepEqual(after,before,'Image hover changed the image or stroke/fade geometry');
-   assert.equal(before.top.height,'1px');assert.equal(before.bottom.height,'1px');assert.equal(before.top.backgroundImage,before.bottom.backgroundImage);
-   assert.equal(before.top.clipPath,'inset(-20px 0px 0px)');assert.equal(before.bottom.clipPath,'inset(0px 0px -20px)');
+   assert.equal(before.frame.borderTopWidth,'1px');assert.equal(before.frame.borderBottomWidth,'1px');assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');assert.equal(before.after,'none');
    assert.equal(before.image.filter,'none');assert.equal(before.containerFilter,'none');
-   for(const pseudo of ['::before','::after'])assert.ok((await art.evaluate((el,p)=>getComputedStyle(el,p).filter,pseudo)).includes('0.4'));
   }
   await page.screenshot({path:`${out}/audaci-${width}.png`});
   const trigger=page.locator('[data-menu-item="Burrata e Crudo"] button.nome');
@@ -88,9 +86,28 @@ try {
   }
   await page.locator('#drinks-draught').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/draught-${width}.png`});
   await page.locator('#drinks-wines').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/wines-${width}.png`});
-  results.push({width,height,heading,layout,dialog,bottles,note,drinks});await page.close();
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.evaluate(()=>window.scrollTo({top:document.querySelector('#cat-audaci').offsetTop,behavior:'instant'}));
+  await page.waitForFunction(()=>document.querySelector('.menu-dot-viewport').dataset.ready==='true');
+  const grid=await page.locator('.menu-dot-viewport').evaluate(el=>({height:el.clientHeight,width:el.clientWidth,canvasCount:document.querySelectorAll('.menu-dot-grid canvas').length,pixels:el.querySelector('canvas').width*el.querySelector('canvas').height,events:getComputedStyle(el.parentElement).pointerEvents}));
+  assert.equal(grid.canvasCount,1);assert.ok(grid.height<=height+1);assert.ok(grid.pixels<=3_000_000);assert.equal(grid.events,'none');
+  if(width>=768){
+   await page.mouse.move(width*.2,height*.5);await page.mouse.move(width*.8,height*.55,{steps:20});
+  } else {
+   const session=await page.context().newCDPSession(page);
+   const oldY=await page.evaluate(()=>scrollY);
+   await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:width*.3,y:height*.7}]});
+   for(let i=1;i<=8;i++)await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:width*(.3+i*.03),y:height*(.7-i*.025)}]});
+   await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+   await page.waitForFunction(y=>scrollY>y+5,oldY);await session.detach();
+  }
+  await page.waitForFunction(()=>document.querySelector('.menu-dot-viewport').dataset.gridState==='idle');
+  await page.screenshot({path:`${out}/dot-grid-${width}.png`});
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+  await page.waitForFunction(()=>document.querySelector('.menu-dot-viewport').dataset.gridState==='paused');
+  results.push({width,height,heading,layout,dialog,bottles,note,drinks,grid});await page.close();
  }
  assert.deepEqual(errors,[]);
 } finally {await browser.close();}
 await writeFile(`${out}/results.json`,JSON.stringify(results,null,2));
-console.log('MENU_BROWSER_OK — 320–3440px, four-language title and drink layout, unchanged artwork with outward stroke glow, dark 1px leaders, satin navigation, 15 allergens and dismissal/focus restoration.');
+console.log('MENU_BROWSER_OK — 320–3440px, static artwork, bounded single Dot Grid canvas, desktop/touch input with native scroll, idle/offscreen states, menu and allergen regression checks.');

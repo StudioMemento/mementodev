@@ -39,8 +39,13 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_3.3_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_3.4_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
 assert.equal((html.match(/class="crust-card"/g)||[]).length,3);
+assert.equal((html.match(/class="menu-dot-grid"/g)||[]).length,1);
+const menuMarkup=balanced(html,html.indexOf('<section id="menu"'),'section');
+assert.ok(menuMarkup.includes('class="menu-dot-grid" aria-hidden="true"'));
+const css=await readFile('src/styles/menu.css','utf8');
+assert.ok(!css.includes('.menu-art:hover')&&!css.includes('.menu-art::after'),'Obsolete artwork hover layers remain');
 const head=balanced(html,html.indexOf('<header class="menu-head"'),'header');
 assert.equal(text(head),'Menù');assert.equal((head.match(/<h2/g)||[]).length,1);
 const rail=balanced(html,html.indexOf('<nav class="chips scrollable"'),'nav');

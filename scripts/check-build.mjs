@@ -44,10 +44,15 @@ const initialJs = initialFiles.reduce((sum, file) => {
   assert.ok(jsSizes.has(file), `Missing initial JavaScript: ${file}`);
   return sum + jsSizes.get(file);
 }, 0);
-// V25 + bounded hero renderers; no runtime animation libraries.
+// Existing hero + deferred menu DotGrid; no new runtime libraries.
 assert.ok(initialJs < 101_000, `Initial JS budget exceeded: ${initialJs}`);
-assert.ok(js < 108_000, `JS budget exceeded: ${js}`);
+assert.ok(js < 112_000, `JS budget exceeded: ${js}`);
 assert.ok(css < 8_500, `CSS budget exceeded: ${css}`);
+const gridKey="src/components/menu/dot-grid/controller.ts";
+assert.ok(manifest[gridKey]?.isDynamicEntry, "Dot Grid must be a deferred chunk");
+assert.ok(!initialKeys.has(gridKey), "Dot Grid engine leaked into initial loading");
+assert.ok(jsSizes.get(manifest[gridKey].file)<6_000, "Dot Grid chunk exceeds its 6 KB gzip budget");
+assert.equal(await readFile("dist/licenses/ReactBits.txt","utf8"),await readFile("licenses/ReactBits.txt","utf8"),"React Bits license missing from deployment");
 for (const file of [
   "privacy.html",
   "cookie.html",

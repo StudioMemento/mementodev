@@ -1,4 +1,4 @@
-# Risorse e licenze — ViaRoma_2_INTRO
+# Risorse e licenze — ViaRoma_3.4_MENU
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.
@@ -6,8 +6,10 @@
 - Logo, fotografie del locale/community, artwork del menù e mappa: materiali già forniti/serviti dal progetto Via Roma. Le 40 fotografie della gallery sono soltanto ridimensionate e ricodificate WebP, senza ritocco del contenuto.
 - Tre immagini dei cornicioni: visual generati su richiesta nelle precedenti iterazioni, riutilizzati con ritaglio CSS. Testi e prezzi sono HTML.
 
-V25 rimuove i componenti React Bits, i relativi shader/renderer e GSAP. Il controller del carosello e i layout sono implementati nei sorgenti di questa applicazione. Non vengono caricati font, script o immagini da CDN esterne.
+La base V25 rimuoveva i componenti React Bits, i relativi shader/renderer e GSAP. Il controller del carosello e i layout sono implementati nei sorgenti di questa applicazione. Non vengono caricati font, script o immagini da CDN esterne.
 
 La hero aggiunge implementazioni originali Canvas 2D, WebGL e CSS ispirate alle reference visive fornite. Il codice React Bits Pro non è incluso. Nessuna nuova libreria di animazione è stata aggiunta.
 
 Il tilt delle card cornicione implementa in modo dedicato il preset Holo Card indicato: 15°, scala 1.1, effetti foil/glare/frame a zero. Il riferimento è la documentazione pubblica React Bits; non viene distribuito codice Holo Card della libreria.
+
+La 3.4 integra DotGrid da React Bits (David Haz), adattato al solo menù: shader e dinamica elastica dalla versione TypeScript/CSS, blob `47c3c28ae805d84a83e663030f4187185196d0fb`. Fonte: https://github.com/DavidHDev/react-bits/blob/main/src/ts-default/Backgrounds/DotGrid/DotGrid.tsx . Licenza MIT + Commons Clause inclusa in `licenses/ReactBits.txt`. Eliminati shock/intro non usati; aggiunti caricamento differito, limiti di geometria/risoluzione, input touch passivo e gestione del ciclo di vita. Distribuito come parte del sito Via Roma.
