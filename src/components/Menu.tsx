@@ -1,20 +1,25 @@
-import { useEffect, useRef, useState } from "react";
 import data from "../data/menu.json";
 import { Copy, translateDescription, translateName, useI18n } from "../i18n";
 import { getAllergenInfo } from "../data/allergen-info";
 import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
-export const categoryOrder = [
-  "classiche",
-  "audaci",
-  "bianche",
-  "calzoni",
-  "cucina",
-  "stuzzicherie",
-  "dolci",
-  "bevande",
-] as const;
+import { MenuTitle } from "./menu/MenuTitle";
+import { categoryOrder, categoryLabels, useMenuNavigation } from "./menu/useMenuNavigation";
+export { categoryOrder } from "./menu/useMenuNavigation";
+
+function ItemName({ name, description = "", codes = "", translate = true }: {
+  name: string; description?: string; codes?: string; translate?: boolean;
+}) {
+  const { language, copy } = useI18n();
+  const { open } = useDialog();
+  const label = translate ? translateName(name, language) : name;
+  if (name === "Coperto") return <span className="nome">{label}</span>;
+  return <button type="button" className="nome" aria-haspopup="dialog"
+    aria-label={`${label}: ${copy.allergens}`}
+    onClick={() => open({ kind: "allergens", name, description, codes })}>{label}</button>;
+}
+
 export function AllergenTrigger({
   name,
   codes = "",
@@ -53,14 +58,14 @@ function MenuItem({ row }: { row: string[] }) {
     <div className="item" data-menu-item={name}>
       <div className="row">
         <span className="label">
-          <span className="nome">{translateName(name, language)}</span>
+          <ItemName name={name} description={description} codes={codes} />
           {qualifier && (
             <span className="qualifier">
               {translateDescription(qualifier, language)}
             </span>
           )}
         </span>
-        <span className="dots" />
+        <span className="dots" aria-hidden="true" />
         <span className="prezzo">{price}</span>
       </div>
       {description && (
@@ -111,7 +116,7 @@ function DrinkTable({
         <div className="item multi drink-item drink-row" key={name} data-menu-item={name}>
           <div className="row">
             <span className="label">
-              <span className="nome">{name}</span>
+              <ItemName name={name} description={qualifier} translate={false} />
               {qualifier && <span className="qualifier">{translateDescription(qualifier, language)}</span>}
             </span>
             <span className="dots" aria-hidden="true" />
@@ -161,77 +166,26 @@ function Drinks() {
   );
 }
 export default function Menu() {
-  const { t, copy } = useI18n();
-  const [active, setActive] = useState<string>("classiche");
-  const chips = useRef<HTMLElement>(null);
-  const wrap = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries)
-          if (e.isIntersecting) setActive(e.target.id.replace("cat-", ""));
-      },
-      { rootMargin: "-150px 0px -55% 0px" },
-    );
-    document.querySelectorAll(".mcat").forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => {
-    const rail = chips.current;
-    const selected = rail?.querySelector<HTMLElement>(`[data-go="${active}"]`);
-    if (!rail || !selected) return;
-    const x =
-      selected.offsetLeft - (rail.clientWidth - selected.offsetWidth) / 2;
-    rail.scrollTo({
-      left: x,
-      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
-    });
-  }, [active]);
-  useEffect(() => {
-    const rail = chips.current;
-    if (!rail) return;
-    const check = () => {
-      wrap.current?.classList.toggle("can-l", rail.scrollLeft > 5);
-      wrap.current?.classList.toggle(
-        "can-r",
-        rail.scrollLeft < rail.scrollWidth - rail.clientWidth - 5,
-      );
-    };
-    check();
-    const ro = new ResizeObserver(check);
-    ro.observe(rail);
-    rail.addEventListener("scroll", check, { passive: true });
-    return () => {
-      ro.disconnect();
-      rail.removeEventListener("scroll", check);
-    };
-  }, []);
+  const { t, copy, language } = useI18n();
+  const { active, chips, wrap, select, nudge } = useMenuNavigation(language);
   return (
     <section id="menu">
-      <div className="menu-head fx on">
-        <p className="k-s">{t.m_eyebrow}</p>
-        <h2>{t.m_title}</h2>
-        <p className="menu-utility">{copy.menuHelp}</p>
-      </div>
+      <MenuTitle text={t.m_title} />
       <div className="chipbar">
         <div className="chipbar-inner" ref={wrap}>
           <button
             className="chipchev l"
             aria-label={copy.previous}
-            onClick={() =>
-              chips.current?.scrollBy({ left: -220, behavior: "smooth" })
-            }
+            type="button"
+            onClick={() => nudge(-1)}
           >
             <Icon name="caret-left" />
           </button>
           <button
             className="chipchev r"
             aria-label={copy.next}
-            onClick={() =>
-              chips.current?.scrollBy({ left: 220, behavior: "smooth" })
-            }
+            type="button"
+            onClick={() => nudge(1)}
           >
             <Icon name="caret-right" />
           </button>
@@ -241,27 +195,16 @@ export default function Menu() {
             ref={chips}
             aria-label={t.m_title}
           >
-            {categoryOrder.map((id) => (
+            {categoryOrder.map((id, index) => (
               <button
                 key={id}
                 type="button"
                 data-go={id}
                 className={active === id ? "on" : ""}
                 aria-current={active === id ? "location" : undefined}
-                onClick={() => {
-                  document
-                    .getElementById(`cat-${id}`)
-                    ?.scrollIntoView({
-                      behavior: matchMedia("(prefers-reduced-motion: reduce)")
-                        .matches
-                        ? "instant"
-                        : "smooth",
-                    });
-                  history.replaceState(null, "", `#cat-${id}`);
-                  setActive(id);
-                }}
+                onClick={() => select(id)}
               >
-                {t.cats[id][0]}
+                {categoryLabels[language][index]}
               </button>
             ))}
           </nav>

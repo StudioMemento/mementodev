@@ -55,7 +55,7 @@ export default function Dialogs() {
         close();
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) close();
+        if (modal.kind === "allergens" || e.target === e.currentTarget) close();
       }}
       onKeyDown={(e) => {
         if (
@@ -83,7 +83,7 @@ export default function Dialogs() {
             type="button"
             autoFocus
             aria-label={copy.close}
-            onClick={close}
+            onClick={(e) => { e.stopPropagation(); close(); }}
           >
             <Icon name="x" />
           </button>
@@ -96,20 +96,20 @@ export default function Dialogs() {
                   key={i}
                   className={info.codes.includes(i + 1) ? "contains" : ""}
                 >
-                  <b className="allergen-code">{i + 1}</b>
+                  <b className="allergen-code">{i + 1}</b>{" "}
                   <strong className="allergen-name">
                     {name}
                     {info.codes.includes(i + 1) && <span className="sr-only"> — {copy.allergenIncluded}</span>}
-                  </strong>
+                  </strong>{" "}
                   <small className="allergen-description">{description}</small>
                 </li>
               ))}
               <li className={info.frozen ? "contains" : ""}>
-                <b className="allergen-code">*</b>
+                <b className="allergen-code">*</b>{" "}
                 <strong className="allergen-name">
                   {copy.frozenTitle}
                   {info.frozen && <span className="sr-only"> — {copy.allergenIncluded}</span>}
-                </strong>
+                </strong>{" "}
                 <small className="allergen-description">{copy.frozen}</small>
               </li>
             </ol>

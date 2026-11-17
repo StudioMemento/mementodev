@@ -1,8 +1,8 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_2_INTRO";
+const name = "ViaRoma_3_MENU";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -73,9 +73,29 @@ for (const required of [
   "docs/QA_V25.md",
   "docs/LAYOUT_V25.md",
   "src/styles/clean.css",
+  "src/styles/menu.css",
+  "src/components/menu/MenuTitle.tsx",
+  "src/components/menu/useMenuNavigation.ts",
+  "src/components/Menu.tsx",
+  "src/components/Dialogs.tsx",
+  "tests/menu/interactions.mjs",
+  "tests/menu/browser.mjs",
+  "docs/MENU_CHECKPOINT.md",
   "licenses/Phosphor-MIT.txt",
 ])
   assert.ok(names.includes(required), `${required} missing`);
+const excluded = new Set(["node_modules", "dist", ".ssr", "test-results", ".git", ".vercel", ".unlazy", "GATES.md"]);
+async function collect(dir = ".") {
+  const files = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    if (excluded.has(entry.name)) continue;
+    const path = dir === "." ? entry.name : `${dir}/${entry.name}`;
+    if (entry.isDirectory()) files.push(...await collect(path));
+    else if (entry.isFile()) files.push(path);
+  }
+  return files;
+}
+assert.deepEqual([...names].sort(), (await collect()).sort(), "ZIP does not contain the complete source tree");
 assert.ok(names.length > 150, "Assets or source missing");
 assert.equal(new Set(names).size, names.length, "Duplicate entries");
 console.log(

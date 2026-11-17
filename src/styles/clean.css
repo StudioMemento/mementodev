@@ -100,21 +100,13 @@ h1,h2,h3 { font-weight:300; }
 .vr-community .photo-pager { max-width:680px; margin-inline:auto; }
 .vr-community .photo-open { aspect-ratio:1; }
 @media (max-width:767px) { .album,.vr-community { padding-top:80px; padding-bottom:80px; } .album-heading h2 { font-size:30px; } }
-/* Native dialogs: an opaque surface, no full-screen filtering or animation. */
+/* Native photo/legal surfaces. Allergen presentation is scoped in menu.css. */
 .vr-dialog { border:0; padding:0; margin:auto; width:min(1100px,calc(100% - 32px)); max-height:calc(100dvh - 32px); color:var(--vr-ivory); background:#131311; overscroll-behavior:contain; }
 .vr-dialog::backdrop { background:#000c; }
 .modal-panel { padding:26px; }
 .modal-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:22px; border-bottom:1px solid var(--vr-line); }
 .modal-header h2 { font-size:clamp(24px,3vw,36px); line-height:1.2; }
 .modal-close { display:grid; place-items:center; width:44px; height:44px; flex:none; color:var(--vr-gold); font-size:28px; }
-.allergen-list { list-style:none; padding:14px 0; }
-.allergen-list li { display:grid; grid-template-columns:26px minmax(130px,190px) 1fr; align-items:start; gap:14px; padding:10px 0; }
-.allergen-code { display:grid; place-items:center; border:1px solid #7b6f52; width:23px; height:23px; border-radius:50%; font-size:12px; font-weight:400; color:#c7b78f; }
-.allergen-name { font-size:14px; font-weight:400; text-transform:uppercase; }
-.allergen-description { font-size:15px; color:#bdb7a9; }
-.allergen-list .contains .allergen-code { color:#f2dca9; border-color:#d6b368; }
-.allergen-list .contains :is(.allergen-name,.allergen-description) { color:#ead3a1; font-weight:500; }
-.allergen-note { font-size:13px; padding-top:16px; border-top:1px solid var(--vr-line); }
 .legal-body { padding-top:24px; line-height:1.65; font-size:16px; }
 .legal-body h2,.legal-body h3 { margin:24px 0 12px; }
 .legal-body p { margin-bottom:14px; }
@@ -123,5 +115,5 @@ h1,h2,h3 { font-weight:300; }
 .lightbox-image img { width:100%; height:min(65dvh,800px); object-fit:contain; }
 .lightbox-controls { display:flex; justify-content:center; align-items:center; gap:24px; padding-top:14px; color:var(--vr-gold); }
 .lightbox-controls button { width:44px; height:44px; display:grid; place-items:center; }
-@media(max-width:767px) { .vr-dialog { width:calc(100% - 20px); max-height:calc(100dvh - 20px); } .modal-panel { padding:18px; } .allergen-list li { grid-template-columns:22px minmax(75px,.7fr) minmax(0,1.3fr); gap:10px; } .allergen-name { font-size:12px; overflow-wrap:break-word; } .allergen-description { font-size:13px; } }
+@media(max-width:767px) { .vr-dialog { width:calc(100% - 20px); max-height:calc(100dvh - 20px); } .modal-panel { padding:18px; } }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
