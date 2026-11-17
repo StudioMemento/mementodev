@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 await import('../tests/v25/motion.mjs');
 await import('../tests/v25/scheduler.mjs');
 await import('../tests/hero/runtime.mjs');
+await import('../tests/hero/chrome.mjs');
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const baseline=JSON.parse(await readFile('tests/hero/immutable-baseline.json','utf8'));
 // Positive control: a changed byte must produce a different fingerprint.

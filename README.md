@@ -1,56 +1,49 @@
-# ViaRoma_1_HERO
+# ViaRoma_1_HERO — polish 1.1
 
-Checkpoint **STEP 1 — HERO**, 16 novembre 2026. Base: `Pizzeria_Via_Roma_V25_Clean_Vercel.zip`. Progetto React + Vite completo per il deploy di prova. Nessuna pubblicazione effettuata.
+Checkpoint del 17 novembre 2026. Pacchetto React completo per il deploy di sviluppo su Vercel. Questa revisione corregge la hero già pubblicata su mementodev.vercel.app; non è stata pubblicata automaticamente.
 
-## Interventi
+## Modifiche
 
-1. **Background Glimmer:** polvere oro in movimento lento verso l'esterno, senza scia. Hollow agganciato al centro misurato del logo, aggiornato dopo resize, cambio lingua e caricamento font.
-2. **Logo liquid:** luce da grigio a bianco sul PNG originale. Sagoma, proporzioni, alpha e file originale conservati. Nessuna dispersione cromatica; il puntatore varia leggermente la luce, senza deformare il marchio.
-3. **Testo:** gradiente 5s `#FFE0CA → #FFBF92 → #FFE0CA`, secondo il file FX_Text.txt. Jost, peso, dimensioni, interlinea, tracking, copy e a capo originali conservati. Effetto limitato allo slogan hero.
-4. **Gradual blur:** otto livelli trasparenti ai bordi della viewport, dietro header e navbar; 5rem in alto, 6rem in basso più safe area. Nessuna tinta o saturazione aggiunta.
-5. **Navbar satinata:** cinque tasti opachi distinti; highlight morbido dal basso sull'icona attiva. Niente lenti, rifrazione, ingrandimento o lineetta di stato. Collegamenti e indicazione della sezione attiva conservati.
+1. **Background:** hollow calcolato dal perimetro visibile del logo originale, escludendo il padding trasparente del PNG. Particelle emesse appena fuori dal cerchio; variazione organica delle traiettorie, velocità esterna invariata a `0.25`. Turbulence `0.48`; nessuna scia.
+2. **Logo:** liquid argento in idle; oro su hover del cerchio visibile e durante la pressione touch. Entrata/uscita morbide e glow oro leggero. Il renderer conserva coordinate, alpha, proporzioni e asset originale.
+3. **Testo:** gradiente oro desaturo → oro → highlight, 5 secondi alternati. Font, peso, dimensioni, interlinea e impaginazione originali.
+4. **Gradual blur:** 8 strati trasparenti, 0.25–32px, top/bottom con safe area. Nessuna tinta. Corretta la regola che nascondeva tutti gli strati quando il browser riportava `prefers-reduced-transparency: reduce`.
+5. **Navbar e lingue:** satinato grigio scuro con alpha 44–66% e backdrop blur 12px, dichiarazione standard e prefisso WebKit. Highlight dal basso sulle icone attive; lingua attiva con fondo oro tenue.
+6. **Scroll:** scrollbar nativa della pagina nascosta; avanzamento oro di 2px sul bordo destro, su tutta l'altezza dinamica della viewport. La misura si aggiorna quando cambia l'altezza dei contenuti.
+7. **Interazioni:** selezione, trascinamento nativo, menu contestuale e click centrale disabilitati. Rotella, touch, pinch zoom, slider, click primario e navigazione da tastiera restano operativi. Gli eventuali campi di testo restano editabili.
 
-## Colori campionati
+## Palette
 
-| Uso | HEX | Riscontro |
-| --- | --- | --- |
-| Highlight navbar | **`#DAC18B`** | Pixel pieno di “LE CLASSICHE”; stesso colore di `.mcat h3` nella V25 |
-| Oro secondario | `#C6AB70` | “DAL NOSTRO FORNO”; token `--vr-gold` della V25 |
-| Testo principale sito | `#F1ECE1` | Token `--vr-ivory` della V25 |
+| Ruolo | HEX |
+| --- | --- |
+| Nero carbone, hero | `#090909` |
+| Grigio satinato | `#252524` |
+| Oro | `#C6AB70` |
+| Oro desaturo | `#A89B7B` |
+| Highlight, hover e progress | **`#DAC18B`** |
 
-Preset highlight: `--vr-highlight: #dac18b`; RGB `218, 193, 139`. La luce usa opacità variabile dello stesso colore.
+## Avvio e Vercel
 
-## Avvio e deploy
-
-Node 24, come in `.nvmrc`.
+Node 22.13+ della serie 22 oppure Node 24+. Dalla cartella contenente `package.json`:
 
 ```sh
 npm ci
+npm run dev
 npm run check
 npm test
-npm run preview
 ```
 
-Sviluppo con aggiornamento live: `npm run dev`.
+Vercel: install `npm ci`, build `npm run build`, output `dist`. Copiare il contenuto della cartella `ViaRoma_1_HERO` nella radice della repository di sviluppo. Nessuna chiave o variabile di ambiente richiesta. La build conserva `noindex,nofollow`.
 
-Estrarre lo ZIP e caricare **il contenuto della cartella ViaRoma_1_HERO** nella radice della repository di sviluppo. Vercel: `npm ci`, `npm run build`, output `dist`. Nessuna chiave o variabile d'ambiente richiesta. Meta build: `ViaRoma_1_HERO — preview`. Conservata la protezione `noindex,nofollow`.
+## Verifiche e limiti
 
-## Prestazioni e fallback
+- TypeScript, build client/SSR, prerender e budget di trasferimento: passati.
+- Menù prerenderizzato identico; **166 file originali** confrontati con SHA-256 e invariati, inclusi logo, foto, contenuti, traduzioni e sezioni successive.
+- Test sul codice effettivo: geometria hollow desktop/mobile, densità vicino al bordo, hover oro, pausa degli effetti, contesto WebGL perso/ripristinato, reduced motion e pulizia risorse; progress scroll, resize/overscroll e blocchi selettivi degli input.
+- Nessuna nuova dipendenza runtime. JS iniziale: **97.332 byte gzip**, CSS: **7.359 byte gzip**. Limite del clock: 40 fps desktop / 30 fps mobile, DPR massimo 1.5; questi sono parametri, non misure su dispositivi reali.
+- Il deploy precedente è stato ispezionato nel browser: blur effettivamente nascosto dalla preferenza di trasparenza ridotta, navbar opaca e hollow troppo largo confermati.
+- **La nuova build non è stata verificata visivamente nel browser.** Il browser collegato non raggiunge il server locale; il browser del runner non si avvia per una restrizione sui socket. Safari/iOS e Chrome/Android reali restano da verificare sul deploy di sviluppo. Il test browser aggiornato è incluso in `tests/hero/browser.mjs`.
 
-- Nessuna nuova dipendenza runtime: React e React DOM come nella V25.
-- Un ciclo condiviso per particelle e liquid, limitato a 40 fps desktop / 30 fps mobile e DPR 1,5. Sono limiti impostati, non misure su hardware reale.
-- Effetti sospesi fuori hero, con scheda nascosta o dialog aperto. Nessuna misura di layout o aggiornamento React per frame.
-- Movimento ridotto: logo originale, particelle statiche, testo senza animazione.
-- WebGL non disponibile o perso: PNG originale visibile. Il contenuto resta disponibile senza JavaScript tramite prerender.
-- Blur non supportato o trasparenza ridotta: blur disattivato; navbar ancora opaca e leggibile.
+WebGL non disponibile: PNG originale e hover oro tramite maschera CSS. Movimento ridotto: nessun liquid animato, particelle statiche e gradiente fermo. Browser senza backdrop-filter: superfici di fallback leggibili. Contrasto forzato: logo e testo leggibili senza effetti. Il sito resta consultabile senza JavaScript grazie al prerender; i blocchi di click e il progress richiedono JavaScript.
 
-## Verifiche
-
-TypeScript, build, prerender, budget gzip, integrità del menù e test di movimento passati. **166 file originali** confrontati via SHA-256: menù, foto, dati, asset, sezioni successive e relativi stili invariati.
-Test controllati della hero passati: centratura desktop/mobile, limite DPR, hollow libero, animazione, pause, movimento ridotto, perdita/ripristino WebGL e pulizia risorse.
-
-**Verifica visiva browser ancora da eseguire.** Il browser del runner non si avvia per una restrizione sui socket; il browser remoto non raggiunge l'anteprima locale e blocca la navigazione ai file locali. Nessuna prova su Safari/iOS o Chrome/Android reale è stata effettuata. Il checkpoint è implementato e compilato, da validare visivamente nel deploy di sviluppo.
-
-I documenti `docs/*V25*` riguardano la base storica. Parametri e note attuali: `docs/HERO_CHECKPOINT.md`.
-
-Test browser fornito: `tests/hero/browser.mjs` (Playwright + Chromium e WebKit richiesti; con `npm run preview` attivo). Non è stato completato qui. Gli screenshot generati dal test sono solo locali in `test-results/hero`.
+Dettagli e checklist visiva: `docs/HERO_CHECKPOINT.md`. I documenti e le anteprime V25 sono riferimenti storici, non screenshot di questo polish.

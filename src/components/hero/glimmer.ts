@@ -1,4 +1,5 @@
 import { HERO_PRESET } from "./preset";
+import { LOGO_MARK } from "./logoGeometry";
 
 export type HeroGeometry = { width: number; height: number; x: number; y: number; logoWidth: number };
 
@@ -32,7 +33,7 @@ export function createGlimmer(canvas: HTMLCanvasElement) {
     count = g.width < 768 ? p.mobileCount : p.count;
     // Original transparent PNG has a visible mark ~68.6% of its square.
     // The inner clear radius follows that real logo, rather than viewport center.
-    hollow = g.logoWidth * (0.343 + p.hollow * 0.12);
+    hollow = g.logoWidth * LOGO_MARK.radius;
     canvas.dataset.centerX = g.x.toFixed(2); canvas.dataset.centerY = g.y.toFixed(2);
     canvas.dataset.hollowRadius = hollow.toFixed(2);
   };
@@ -42,12 +43,18 @@ export function createGlimmer(canvas: HTMLCanvasElement) {
     for (let i = 0; i < count; i++) {
       const dot = points[i];
       const phase = (dot.radius + seconds * p.speed * 0.018) % 1;
-      const radius = hollow + 8 + Math.pow(phase, 0.72) * reach * p.spread;
-      const angle = dot.angle + Math.sin(seconds * 0.13 + dot.phase) * 0.014 * p.turbulence;
-      const x = g.x + Math.cos(angle) * radius * 1.12;
+      const distance = Math.pow(phase, 0.72) * reach * p.spread;
+      // Same outward clock. A low-frequency, two-scale drift adds organic
+      // variation; turbulence fades at the logo so the hollow cannot collapse.
+      const flow = Math.sin(seconds * 0.31 + dot.phase + distance * 0.008)
+        + 0.45 * Math.sin(seconds * 0.19 - dot.phase * 1.7);
+      const envelope = Math.min(1, distance / 48);
+      const radius = hollow + 1 + Math.max(0, distance + flow * 8 * p.turbulence * envelope);
+      const angle = dot.angle + flow * 14 * p.turbulence * envelope / Math.max(radius, 1);
+      const x = g.x + Math.cos(angle) * radius;
       const y = g.y + Math.sin(angle) * radius;
       if (x < -5 || x > g.width + 5 || y < -5 || y > g.height + 5) continue;
-      const edgeFade = Math.min(1, phase * 16) * Math.min(1, (1 - phase) * 8);
+      const edgeFade = Math.min(1, distance / 8) * Math.min(1, (1 - phase) * 8);
       const bottomFade = Math.max(0, Math.min(1, (g.height - y) / (g.height * 0.26)));
       const twinkle = 0.62 + 0.38 * Math.sin(seconds * (0.5 + dot.depth) * p.twinkle + dot.phase);
       const alpha = (0.16 + dot.depth * 0.45) * twinkle * edgeFade * bottomFade * (p.boost / 14);

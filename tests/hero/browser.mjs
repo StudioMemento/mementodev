@@ -20,16 +20,42 @@ for(const engine of (process.env.HERO_BROWSERS || 'chromium,webkit').split(','))
       await page.setViewportSize({width,height});await page.waitForTimeout(220);
       const view=await page.evaluate(()=>{
         const h=document.querySelector('#home').getBoundingClientRect(),l=document.querySelector('.hero-logo').getBoundingClientRect(),p=document.querySelector('.hero-glimmer');
-        return {center:[Number(p.dataset.centerX),Number(p.dataset.centerY)],expected:[l.left-h.left+l.width/2,l.top-h.top+l.height/2],overflow:document.documentElement.scrollWidth>window.innerWidth,font:getComputedStyle(document.querySelector('.hero-slogan')).fontFamily,weight:getComputedStyle(document.querySelector('.hero-slogan')).fontWeight,tints:[...document.querySelectorAll('.vr-edge-blur,.vr-edge-blur > div')].map(e=>getComputedStyle(e).backgroundColor),tileBlur:getComputedStyle(document.querySelector('.dock-tile')).backdropFilter,active:getComputedStyle(document.querySelector('a[aria-current] .dock-tile')).color};
+        return {center:[Number(p.dataset.centerX),Number(p.dataset.centerY)],expected:[l.left-h.left+l.width*425/851,l.top-h.top+l.height*424.5/851],overflow:document.documentElement.scrollWidth>window.innerWidth,font:getComputedStyle(document.querySelector('.hero-slogan')).fontFamily,weight:getComputedStyle(document.querySelector('.hero-slogan')).fontWeight,tints:[...document.querySelectorAll('.vr-edge-blur,.vr-edge-blur > div')].map(e=>getComputedStyle(e).backgroundColor),blurBoxes:[...document.querySelectorAll('.vr-edge-blur')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height})),langBlur:getComputedStyle(document.querySelector('.lang')).backdropFilter,scrollbar:getComputedStyle(document.documentElement).scrollbarWidth,progressWidth:getComputedStyle(document.querySelector('.vr-scroll-progress')).width,selection:getComputedStyle(document.body).userSelect,tileBlur:getComputedStyle(document.querySelector('.dock-tile')).backdropFilter,active:getComputedStyle(document.querySelector('a[aria-current] .dock-tile')).color};
       });
       assert.ok(Math.abs(view.center[0]-view.expected[0])<1 && Math.abs(view.center[1]-view.expected[1])<1);
       assert.equal(view.overflow,false);assert.equal(view.weight,'300');assert.ok(view.font.includes('Jost'));
-      assert.ok(view.tints.every(c=>c==='rgba(0, 0, 0, 0)'));assert.equal(view.tileBlur,'none');assert.equal(view.active,'rgb(218, 193, 139)');
+      assert.ok(view.tints.every(c=>c==='rgba(0, 0, 0, 0)'));assert.equal(view.tileBlur,'blur(12px)');assert.equal(view.langBlur,'blur(12px)');assert.ok(view.blurBoxes.every(b=>b.width>0&&b.height>=96));assert.equal(view.scrollbar,'none');assert.equal(view.progressWidth,'2px');assert.equal(view.selection,'none');assert.equal(view.active,'rgb(218, 193, 139)');
       await page.screenshot({path:`${out}/${engine}-${width}x${height}.png`});result.push({engine,width,height,...view});
     }
+    await page.setViewportSize({width:1440,height:900});
+    await page.locator('.hero-logo').hover();
+    await page.waitForFunction(()=>document.querySelector('.hero-logo').dataset.gold==='true');
+    await page.waitForTimeout(850);
+    await page.screenshot({path:`${out}/${engine}-gold-hover.png`});
+    await page.mouse.move(20,200);
+    await page.waitForFunction(()=>document.querySelector('.hero-logo').dataset.gold==='false');
+    const canceled=await page.evaluate(()=>{
+      const el=document.querySelector('.hero-logo');
+      return {
+        menu:!el.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2})),
+        middle:!el.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true,button:1})),
+        primary:!el.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true,button:0}))
+      };
+    });
+    assert.deepEqual(canceled,{menu:true,middle:true,primary:false});
     await page.locator('.vr-dock a[href="#menu"]').click();
     await page.waitForFunction(()=>document.querySelector('#home').dataset.fxState==='paused');
     await page.waitForFunction(()=>document.querySelector('.vr-dock a[href="#menu"]').hasAttribute('aria-current'));
+    await page.evaluate(()=>window.scrollTo({top:(document.documentElement.scrollHeight-innerHeight)/2,behavior:'instant'}));
+    await page.waitForFunction(()=>Math.abs(new DOMMatrix(getComputedStyle(document.querySelector('.vr-scroll-progress > span')).transform).m22-.5)<.01);
+    await page.evaluate(()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
+    await page.waitForFunction(()=>Math.abs(new DOMMatrix(getComputedStyle(document.querySelector('.vr-scroll-progress > span')).transform).m22-1)<.01);
+    if(engine==='chromium') {
+      const cdp=await page.context().newCDPSession(page);
+      await cdp.send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-transparency',value:'reduce'}]});
+      assert.ok(await page.locator('.vr-edge-blur--bottom').evaluate(e=>e.getBoundingClientRect().height)>0,'Optical blur must stay visible with reduced-transparency preference');
+      await cdp.detach();
+    }
     await page.locator('.vr-dock a[href="#home"]').click();
     await page.waitForFunction(()=>document.querySelector('#home').dataset.fxState==='running');
     await page.emulateMedia({reducedMotion:'reduce'});
@@ -43,4 +69,4 @@ for(const engine of (process.env.HERO_BROWSERS || 'chromium,webkit').split(','))
   } finally { await browser.close(); }
 }
 await writeFile(`${out}/results.json`,JSON.stringify(result,null,2));
-console.log('HERO_BROWSER_OK — geometry, type, untinted blur, satin navigation, reduced motion and static fallback.');
+console.log('HERO_BROWSER_OK — geometry, type, untinted blur, translucent satin, hover gold, progress, input policy, reduced motion and static fallback.');

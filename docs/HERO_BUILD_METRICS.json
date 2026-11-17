@@ -1,20 +1,10 @@
 {
-  "initialJsGzipBytes": 96608,
-  "allJsGzipBytes": 102870,
-  "cssGzipBytes": 6996,
-  "htmlGzipBytes": 9029,
-  "htmlBytes": 70578,
+  "version": "1.1.0",
+  "initialJsGzipBytes": 97332,
+  "allJsGzipBytes": 103594,
+  "cssGzipBytes": 7359,
+  "htmlGzipBytes": 9050,
+  "htmlBytes": 70666,
   "initialJsFiles": 1,
-  "totalJsFiles": 2,
-  "baselineV25": {
-    "initialJsGzipBytes": 93110,
-    "allJsGzipBytes": 99374,
-    "cssGzipBytes": 6215,
-    "htmlGzipBytes": 8501,
-    "htmlBytes": 66439,
-    "initialJsFiles": 1,
-    "totalJsFiles": 2
-  },
-  "deltaInitialJsGzipBytes": 3498,
-  "deltaCssGzipBytes": 781
+  "totalJsFiles": 2
 }
