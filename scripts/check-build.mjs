@@ -44,10 +44,10 @@ const initialJs = initialFiles.reduce((sum, file) => {
   assert.ok(jsSizes.has(file), `Missing initial JavaScript: ${file}`);
   return sum + jsSizes.get(file);
 }, 0);
-// V25 clean baseline budgets include React, translated menu, and the optional dialogs.
-assert.ok(initialJs < 96_000, `Initial JS budget exceeded: ${initialJs}`);
-assert.ok(js < 103_000, `JS budget exceeded: ${js}`);
-assert.ok(css < 7_500, `CSS budget exceeded: ${css}`);
+// V25 + bounded hero renderers; no runtime animation libraries.
+assert.ok(initialJs < 101_000, `Initial JS budget exceeded: ${initialJs}`);
+assert.ok(js < 108_000, `JS budget exceeded: ${js}`);
+assert.ok(css < 8_500, `CSS budget exceeded: ${css}`);
 for (const file of [
   "privacy.html",
   "cookie.html",

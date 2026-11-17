@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { languages, useI18n } from "../i18n";
 import { Icon } from "./Icon";
+import GradualBlur from "./hero/GradualBlur";
 
 type PagePosition = { active: string };
 type PositionListener = (position: PagePosition) => void;
@@ -85,6 +86,7 @@ export function Header() {
   const { language, setLanguage, copy } = useI18n();
   return (
     <>
+      <GradualBlur position="top" />
       <header className="site-top">
         <a
           className="site-brand"
@@ -128,6 +130,7 @@ export function Dock() {
   }, []);
   return (
     <>
+      <GradualBlur position="bottom" />
       <nav className="vr-dock" aria-label={copy.navigation}>
         {[
           { id: "home", icon: "house", label: "Home" },

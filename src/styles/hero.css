@@ -1,0 +1,63 @@
+/* ViaRoma_1_HERO — scoped visual layer; existing type/layout stays in clean.css. */
+:root {
+  --vr-highlight: #dac18b; /* sampled from LE CLASSICHE, matches .mcat h3 */
+  --vr-highlight-rgb: 218,193,139;
+  --vr-hero-text-start: #ffe0ca;
+  --vr-hero-text-light: #ffbf92;
+  --vr-hero-gradient-speed: 5s;
+}
+.vr-hero { position:relative; isolation:isolate; }
+.hero-glimmer { position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; }
+.hero-logo { position:relative; aspect-ratio:1; flex:none; }
+.hero-logo > img { width:100%; height:auto; }
+.hero-liquid { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:0; }
+.hero-logo[data-liquid-ready=true] > img { opacity:0; }
+.hero-logo[data-liquid-ready=true] > .hero-liquid { opacity:1; }
+@supports ((background-clip:text) or (-webkit-background-clip:text)) {
+  .hero-slogan {
+    background-image:linear-gradient(90deg,var(--vr-hero-text-start) 0%,var(--vr-hero-text-light) 50%,var(--vr-hero-text-start) 100%);
+    background-size:250% 100%; background-position:0% 50%;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    -webkit-text-fill-color:transparent;
+    text-shadow:0 0 16px rgb(255 191 146 / .08);
+    animation:vr-hero-gradient var(--vr-hero-gradient-speed) ease-in-out infinite alternate;
+    animation-play-state:paused;
+  }
+  .vr-hero[data-fx-state=running] .hero-slogan { animation-play-state:running; }
+}
+@keyframes vr-hero-gradient { to { background-position:100% 50%; } }
+/* The blur is behind the chrome, never inside an icon's material. No tint. */
+.vr-edge-blur { position:fixed; left:0; right:0; z-index:40; pointer-events:none; background:transparent; }
+.vr-edge-blur--top { top:0; height:calc(5rem + env(safe-area-inset-top)); }
+.vr-edge-blur--bottom { bottom:0; height:calc(6rem + env(safe-area-inset-bottom)); }
+.vr-edge-blur > div { position:absolute; inset:0; background:transparent; }
+/* Opaque satin is deterministic across Safari/Chrome; avoid blend/refraction. */
+.dock-tile {
+  overflow:hidden; isolation:isolate;
+  color:#e9e7e1; border-color:#53514b;
+  background:linear-gradient(150deg,#30302f 0%,#252524 55%,#292928 100%);
+  box-shadow:inset 0 1px 0 #ffffff21,0 2px 8px #00000026;
+  transition:border-color .45s ease,color .45s ease,box-shadow .45s ease;
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+.dock-tile::before {
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(ellipse 85% 100% at 50% 120%,rgba(var(--vr-highlight-rgb),.55) 0%,rgba(var(--vr-highlight-rgb),.2) 40%,rgba(var(--vr-highlight-rgb),0) 80%);
+  opacity:0; transform:translateY(9px); transition:opacity .55s ease,transform .65s cubic-bezier(.22,1,.36,1);
+}
+.dock-tile :is(i,svg) { position:relative; z-index:1; }
+.vr-dock a[aria-current] .dock-tile { color:var(--vr-highlight); border-color:#8c7e61; box-shadow:inset 0 1px 0 #ffffff21,inset 0 -1px 0 #dac18b33,0 2px 8px #00000026; }
+.vr-dock a[aria-current] .dock-tile::before { opacity:1; transform:translateY(0); }
+@media(hover:hover) { .vr-dock a:hover .dock-tile { border-color:#a1906d; color:var(--vr-highlight); } .vr-dock a:not([aria-current]):hover .dock-tile::before { opacity:.35; transform:translateY(2px); } }
+@media(prefers-reduced-motion:reduce) {
+  .hero-slogan { animation:none; }
+  .dock-tile,.dock-tile::before { transition:none; }
+}
+@media(prefers-reduced-transparency:reduce) { .vr-edge-blur { display:none; } }
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .vr-edge-blur { display:none; } }
+@media(forced-colors:active) {
+  .hero-slogan { color:CanvasText; -webkit-text-fill-color:CanvasText; background:none; text-shadow:none; }
+  .hero-glimmer,.hero-liquid,.vr-edge-blur { display:none; }
+  .hero-logo[data-liquid-ready=true] > img { opacity:1; }
+  .vr-dock a[aria-current] .dock-tile { outline:2px solid Highlight; }
+}

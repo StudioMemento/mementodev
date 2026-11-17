@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {existsSync} from 'node:fs';
+const modulePath=process.env.PLAYWRIGHT_MODULE || (process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES ? process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright/index.mjs' : 'playwright');
+const {chromium,webkit}=await import(modulePath);
+const out=process.env.QA_DIR || 'test-results/hero';
+await mkdir(out,{recursive:true});
+const result=[];
+for(const engine of (process.env.HERO_BROWSERS || 'chromium,webkit').split(',')) {
+  const type=engine==='webkit'?webkit:chromium;
+  const options=engine==='chromium'?{headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader'],...(existsSync('/usr/bin/chromium')?{executablePath:'/usr/bin/chromium'}:{})}:{headless:true};
+  const browser=await type.launch(options);
+  try {
+    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    await page.goto(process.env.TEST_URL || 'http://127.0.0.1:4173/');
+    await page.locator('.hero-logo[data-liquid-ready=true]').waitFor();
+    await page.evaluate(()=>document.fonts.ready);
+    for(const [width,height] of [[1440,900],[390,844],[360,800],[844,390],[768,1024]]) {
+      await page.setViewportSize({width,height});await page.waitForTimeout(220);
+      const view=await page.evaluate(()=>{
+        const h=document.querySelector('#home').getBoundingClientRect(),l=document.querySelector('.hero-logo').getBoundingClientRect(),p=document.querySelector('.hero-glimmer');
+        return {center:[Number(p.dataset.centerX),Number(p.dataset.centerY)],expected:[l.left-h.left+l.width/2,l.top-h.top+l.height/2],overflow:document.documentElement.scrollWidth>window.innerWidth,font:getComputedStyle(document.querySelector('.hero-slogan')).fontFamily,weight:getComputedStyle(document.querySelector('.hero-slogan')).fontWeight,tints:[...document.querySelectorAll('.vr-edge-blur,.vr-edge-blur > div')].map(e=>getComputedStyle(e).backgroundColor),tileBlur:getComputedStyle(document.querySelector('.dock-tile')).backdropFilter,active:getComputedStyle(document.querySelector('a[aria-current] .dock-tile')).color};
+      });
+      assert.ok(Math.abs(view.center[0]-view.expected[0])<1 && Math.abs(view.center[1]-view.expected[1])<1);
+      assert.equal(view.overflow,false);assert.equal(view.weight,'300');assert.ok(view.font.includes('Jost'));
+      assert.ok(view.tints.every(c=>c==='rgba(0, 0, 0, 0)'));assert.equal(view.tileBlur,'none');assert.equal(view.active,'rgb(218, 193, 139)');
+      await page.screenshot({path:`${out}/${engine}-${width}x${height}.png`});result.push({engine,width,height,...view});
+    }
+    await page.locator('.vr-dock a[href="#menu"]').click();
+    await page.waitForFunction(()=>document.querySelector('#home').dataset.fxState==='paused');
+    await page.waitForFunction(()=>document.querySelector('.vr-dock a[href="#menu"]').hasAttribute('aria-current'));
+    await page.locator('.vr-dock a[href="#home"]').click();
+    await page.waitForFunction(()=>document.querySelector('#home').dataset.fxState==='running');
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await page.waitForFunction(()=>document.querySelector('#home').dataset.fxState==='reduced');
+    assert.equal(await page.locator('.hero-logo').getAttribute('data-liquid-ready'),'false');
+    assert.equal(await page.locator('.hero-slogan').evaluate(e=>getComputedStyle(e).animationName),'none');
+    assert.equal(errors.length,0,errors.join('\n'));
+    const nojs=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
+    const staticPage=await nojs.newPage();await staticPage.goto(process.env.TEST_URL || 'http://127.0.0.1:4173/');
+    assert.ok(await staticPage.locator('.hero-logo img').isVisible());assert.ok((await staticPage.locator('#carta').textContent()).includes('Margherita Classica'));await nojs.close();
+  } finally { await browser.close(); }
+}
+await writeFile(`${out}/results.json`,JSON.stringify(result,null,2));
+console.log('HERO_BROWSER_OK — geometry, type, untinted blur, satin navigation, reduced motion and static fallback.');

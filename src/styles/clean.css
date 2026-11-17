@@ -1,4 +1,4 @@
-/* V25: static surfaces, native page scroll, functional carousel motion only. */
+/* V25 layout baseline. Hero effects are isolated in hero.css. */
 :root {
   --vr-gutter: 10vw; --vr-content: 80vw; --vr-gold: #c6ab70;
   --vr-ivory: #f1ece1; --vr-muted: #b9b3a7; --vr-line: #c6ab7033;
@@ -34,8 +34,6 @@ h1,h2,h3 { font-weight:300; }
 .dock-tile { position:relative; display:grid; place-items:center; width:44px; height:44px; color:#f0ece3; border:1px solid #56534c; border-radius:13px; background:linear-gradient(145deg,#323232,#212121 65%,#2b2b2b); box-shadow:inset 0 1px #ffffff24; }
 .dock-tile i { font-size:26px; }
 .dock-tile svg { width:26px; height:26px; }
-.vr-dock a[aria-current] .dock-tile { color:#f1dba9; border-color:#b59a61; background:linear-gradient(145deg,#3e382a,#27241d); }
-.vr-dock a[aria-current] .dock-tile::after { content:""; position:absolute; bottom:3px; left:13px; right:13px; height:2px; border-radius:2px; background:#e2c78d; }
 @media (min-width:768px) { .vr-dock { width:400px; max-width:var(--vr-content); left:50%; right:auto; transform:translateX(-50%); } .dock-tile { width:48px; height:48px; } .lang button { min-width:36px; height:36px; } }
 .vr-hero { height:100svh; display:grid; grid-template-rows:72% 28%; padding-inline:var(--vr-gutter); text-align:center; }
 .hero-composition { display:flex; flex-direction:column; align-items:center; align-self:end; gap:clamp(28px,5svh,56px); }

@@ -1,0 +1,20 @@
+{
+  "initialJsGzipBytes": 96608,
+  "allJsGzipBytes": 102870,
+  "cssGzipBytes": 6996,
+  "htmlGzipBytes": 9029,
+  "htmlBytes": 70578,
+  "initialJsFiles": 1,
+  "totalJsFiles": 2,
+  "baselineV25": {
+    "initialJsGzipBytes": 93110,
+    "allJsGzipBytes": 99374,
+    "cssGzipBytes": 6215,
+    "htmlGzipBytes": 8501,
+    "htmlBytes": 66439,
+    "initialJsFiles": 1,
+    "totalJsFiles": 2
+  },
+  "deltaInitialJsGzipBytes": 3498,
+  "deltaCssGzipBytes": 781
+}
