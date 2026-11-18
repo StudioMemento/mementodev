@@ -14,6 +14,12 @@ const fineAndCalm = square => {
 };
 assert.throws(() => fineAndCalm({ size: 5.7, rate: .4 }), /Grain/);
 assert.throws(() => fineAndCalm({ size: 1.2, rate: 2 * Math.PI * 2 }), /fade cycle/);
+const onGrid = square => {
+  for (const center of [square.x + square.size / 2, square.y + square.size / 2])
+    assert.ok(Math.abs(center / p.spacing - .5 - Math.round(center / p.spacing - .5)) < 1e-7, 'Square center left its grid cell');
+};
+onGrid({ x: 2.5, y: 8.5, size: 1 });
+assert.throws(() => onGrid({ x: 2.8, y: 9.2, size: 1 }), /grid cell/);
 
 const layouts = [];
 for (const [width, height, fraction] of [[320,568,.1],[390,844,.1],[768,1024,.15],[1199,900,.15],[1200,900,.2],[1440,900,.2],[2399,1440,.2],[2400,1440,.3],[3440,1440,.3],[7680,2160,.3]]) {
@@ -28,6 +34,7 @@ for (const [width, height, fraction] of [[320,568,.1],[390,844,.1],[768,1024,.15
   assert.deepEqual(left, field.createSquares(gutter, height, 120), 'A remount must not randomize the pattern');
   for (const square of [...left, ...right]) {
     fineAndCalm(square);
+    onGrid(square);
     assert.ok(square.x >= 0 && square.x + square.size <= gutter);
     assert.ok(square.y >= 0 && square.y + square.size <= height);
     const mirroredX = width - square.x - square.size;
@@ -42,7 +49,8 @@ for (const [width, height, fraction] of [[320,568,.1],[390,844,.1],[768,1024,.15
   const periods = left.map(s => 2 * Math.PI / s.rate).sort((a,b) => a-b);
   assert.ok(sizes[Math.floor(sizes.length*.9)] - sizes[Math.floor(sizes.length*.1)] > .3, 'Size variation is too uniform');
   assert.ok(periods[Math.floor(periods.length*.9)] - periods[Math.floor(periods.length*.1)] > 8, 'Fade durations must differ');
-  assert.equal(new Set(left.map(s=>s.y)).size, left.length, 'Repeated grid rows remain');
+  assert.ok(new Set(left.map(s=>(s.y+s.size/2).toFixed(5))).size < left.length, 'Squares must share aligned rows');
+  assert.ok(left.some(s=>s.y > height*.9), 'The capped field must retain its lower rows');
   assert.ok(left.filter(s => s.x < gutter * .3).length > left.filter(s => s.x > gutter * .7).length, 'Density must diminish toward the content');
   assert.notEqual(field.brightness(left[0], 0), field.brightness(left[0], .25));
   layouts.push({ width, height, left: left.length, right: right.length, pixels });
@@ -115,7 +123,11 @@ engine.setPaused(false); assert.equal(jobs.size, 1); tick();
 hidden = true; fire('document:visibilitychange'); assert.equal(jobs.size, 0);
 count = clears; tick(); assert.equal(clears, count);
 hidden = false; fire('document:visibilitychange'); tick();
-reduced = true; fire('media:change'); assert.equal(jobs.size, 0); assert.equal(engine.stats().state, 'static');
+// A queued frame can observe the new media preference before the change event.
+reduced = true; tick();
+assert.equal(engine.stats().state, 'static', 'A pending frame must settle into reduced motion');
+assert.equal(jobs.size, 0);
+fire('media:change'); assert.equal(jobs.size, 0); assert.equal(engine.stats().state, 'static');
 count = clears; for (let i = 0; i < 120; i++) tick(); assert.equal(clears, count);
 reduced = false; fire('media:change'); tick();
 width = 3440; height = 1440; gutter = width * .3;
@@ -143,4 +155,4 @@ await assert.rejects(access('src/components/menu/MenuDotGrid.tsx'));
 const baseline = await readFile('src/styles/clean.css', 'utf8');
 for (const rule of ['--vr-gutter: 10vw; --vr-content: 80vw', '--vr-gutter:15vw; --vr-content:70vw', '--vr-gutter:20vw; --vr-content:60vw', '--vr-gutter:30vw; --vr-content:40vw']) assert.ok(baseline.includes(rule));
 console.log('SIDE_SQUARES_LAYOUTS ' + JSON.stringify(layouts));
-console.log('BLINKING_SQUARES_OK — crisp fine grain; slow independent 10–22s fades; varied sizes and irregular positions; stable density on wide gutters; controlled falloff; 10/15/20/30% side confinement; no input listeners or per-frame layout reads; 20Hz paint cap; one clock; bounded pixels/squares/fills; hidden/offscreen/dialog pause; reduced-motion static frame; complete cleanup.');
+console.log('BLINKING_SQUARES_OK — aligned rows/columns; fine squares and slow independent 10–22s twinkle; stable seeded occupancy; controlled density falloff; complete field at capped size; 10/15/20/30% side confinement; no input listeners or per-frame layout reads; 20Hz paint cap; one clock; bounded pixels/squares/fills; hidden/offscreen/dialog pause; reduced-motion static frame; complete cleanup.');

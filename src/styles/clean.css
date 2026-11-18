@@ -2,14 +2,14 @@
 :root {
   --vr-gutter: 10vw; --vr-content: 80vw; --vr-gold: #c6ab70;
   --vr-ivory: #f1ece1; --vr-muted: #b9b3a7; --vr-line: #c6ab7033;
-  --page-gutter: var(--vr-gutter); --oro: var(--vr-gold); --nero: #000;
+  --page-gutter: var(--vr-gutter); --oro: var(--vr-gold); --nero: #090909;
   --bianco: var(--vr-ivory); --hair: #c6ab7047; --hair-soft: #c6ab7021;
 }
 @media (min-width:768px) { :root { --vr-gutter:15vw; --vr-content:70vw; } }
 @media (min-width:1200px) { :root { --vr-gutter:20vw; --vr-content:60vw; } }
 @media (min-width:2400px) { :root { --vr-gutter:30vw; --vr-content:40vw; } }
 * { box-sizing:border-box; margin:0; padding:0; }
-html { scroll-behavior:smooth; }
+html { scroll-behavior:smooth; background:var(--nero); }
 body { background:var(--nero); color:var(--vr-ivory); font-family:Jost,system-ui,sans-serif; font-size:17px; font-weight:300; line-height:1.5; -webkit-font-smoothing:antialiased; }
 img { display:block; max-width:100%; }
 a { color:inherit; text-decoration:none; }
@@ -70,7 +70,7 @@ h1,h2,h3 { font-weight:300; }
 .vr-crust-intro { scroll-margin-top:0!important; padding:80px var(--vr-gutter) 100px; }
 .crust-heading { text-align:center; margin-bottom:32px; }
 .crust-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
-.crust-card { position:relative; min-width:0; overflow:hidden; background:#11100d; }
+.crust-card { position:relative; min-width:0; overflow:hidden; background:var(--nero); }
 .crust-photo { width:100%; height:100%; object-fit:cover; object-position:center; }
 .crust-card-shade { position:absolute; inset:22% 0 0; background:linear-gradient(to bottom,transparent 0%,#09090952 42%,#090909eb 100%); pointer-events:none; }
 .crust-card-copy { position:absolute; left:18px; right:18px; bottom:18px; display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
@@ -91,7 +91,7 @@ h1,h2,h3 { font-weight:300; }
 .album-heading h2 { text-transform:uppercase; letter-spacing:.08em; }
 .vr-community-heading .lead { max-width:44ch; margin:18px auto 0; color:var(--vr-muted); font-size:17px; }
 .photo-stage { touch-action:pan-y pinch-zoom; user-select:none; }
-.photo-open { display:block; width:100%; aspect-ratio:3840/2440; background:#121211; cursor:zoom-in; }
+.photo-open { display:block; width:100%; aspect-ratio:3840/2440; background:var(--nero); cursor:zoom-in; }
 .photo-open img { width:100%; height:100%; object-fit:contain; }
 .photo-controls { display:flex; justify-content:center; align-items:center; gap:14px; position:relative; padding-top:16px; color:var(--vr-gold); }
 .photo-controls button { display:grid; place-items:center; width:44px; height:44px; }
@@ -101,8 +101,8 @@ h1,h2,h3 { font-weight:300; }
 .vr-community .photo-open { aspect-ratio:1; }
 @media (max-width:767px) { .album,.vr-community { padding-top:80px; padding-bottom:80px; } .album-heading h2 { font-size:30px; } }
 /* Native photo/legal surfaces. Allergen presentation is scoped in menu.css. */
-.vr-dialog { border:0; padding:0; margin:auto; width:min(1100px,calc(100% - 32px)); max-height:calc(100dvh - 32px); color:var(--vr-ivory); background:#131311; overscroll-behavior:contain; }
-.vr-dialog::backdrop { background:#000c; }
+.vr-dialog { border:0; padding:0; margin:auto; width:min(1100px,calc(100% - 32px)); max-height:calc(100dvh - 32px); color:var(--vr-ivory); background:var(--nero); overscroll-behavior:contain; }
+.vr-dialog::backdrop { background:rgb(9 9 9 / .8); }
 .modal-panel { padding:26px; }
 .modal-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:22px; border-bottom:1px solid var(--vr-line); }
 .modal-header h2 { font-size:clamp(24px,3vw,36px); line-height:1.2; }

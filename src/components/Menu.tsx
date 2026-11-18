@@ -9,13 +9,13 @@ import { MenuSideSquares } from "./menu/MenuSideSquares";
 import { categoryOrder, categoryLabels, useMenuNavigation } from "./menu/useMenuNavigation";
 export { categoryOrder } from "./menu/useMenuNavigation";
 
-function ItemName({ name, description = "", codes = "", translate = true }: {
-  name: string; description?: string; codes?: string; translate?: boolean;
+function ItemName({ name, description = "", codes = "", translate = true, interactive = true }: {
+  name: string; description?: string; codes?: string; translate?: boolean; interactive?: boolean;
 }) {
   const { language, copy } = useI18n();
   const { open } = useDialog();
   const label = translate ? translateName(name, language) : name;
-  if (name === "Coperto") return <span className="nome">{label}</span>;
+  if (!interactive || name === "Coperto") return <span className="nome">{label}</span>;
   return <button type="button" className="nome" aria-haspopup="dialog"
     aria-label={`${label}: ${copy.allergens}`}
     onClick={() => open({ kind: "allergens", name, description, codes })}>{label}</button>;
@@ -47,7 +47,7 @@ export function AllergenTrigger({
     </button>
   );
 }
-function MenuItem({ row, inlineDescription = false }: { row: string[]; inlineDescription?: boolean }) {
+function MenuItem({ row, inlineDescription = false, showAllergens = true }: { row: string[]; inlineDescription?: boolean; showAllergens?: boolean }) {
   const [name, description, price, codes = "", qualifier = ""] = row;
   const { language } = useI18n();
   const desc = translateDescription(description, language)
@@ -59,7 +59,7 @@ function MenuItem({ row, inlineDescription = false }: { row: string[]; inlineDes
     <div className="item" data-menu-item={name}>
       <div className="row">
         <span className="label">
-          <ItemName name={name} description={description} codes={codes} />
+          <ItemName name={name} description={description} codes={codes} interactive={showAllergens} />
           {qualifier && (
             <span className="qualifier">
               {translateDescription(qualifier, language)}
@@ -79,15 +79,15 @@ function MenuItem({ row, inlineDescription = false }: { row: string[]; inlineDes
           ))}
         </p>
       )}
-      <AllergenTrigger name={name} codes={codes} description={description} />
+      {showAllergens && <AllergenTrigger name={name} codes={codes} description={description} />}
     </div>
   );
 }
-function Rows({ rows, inlineDescription = false }: { rows: string[][]; inlineDescription?: boolean }) {
+function Rows({ rows, inlineDescription = false, showAllergens = true }: { rows: string[][]; inlineDescription?: boolean; showAllergens?: boolean }) {
   return (
     <>
       {rows.map((row, i) => (
-        <MenuItem key={`${row[0]}-${i}`} row={row} inlineDescription={inlineDescription} />
+        <MenuItem key={`${row[0]}-${i}`} row={row} inlineDescription={inlineDescription} showAllergens={showAllergens} />
       ))}
     </>
   );
@@ -117,7 +117,7 @@ function DrinkTable({
         <div className="item multi drink-item drink-row" key={name} data-menu-item={name}>
           <div className="row">
             <span className="label">
-              <ItemName name={name} description={qualifier} translate={false} />
+              <ItemName name={name} description={qualifier} translate={false} interactive={false} />
               {qualifier && <span className="qualifier">{translateDescription(qualifier, language)}</span>}
             </span>
             <div className="pricegrid">
@@ -129,7 +129,6 @@ function DrinkTable({
               ))}
             </div>
           </div>
-          <AllergenTrigger name={name} description={qualifier} />
         </div>
       ))}
     </section>
@@ -140,14 +139,14 @@ function Drinks() {
   const bottles = data.BOTTIGLIA as [string, string, string[][]][];
   return (
     <>
-      <Rows rows={data.ACQUA_BIBITE} />
+      <Rows rows={data.ACQUA_BIBITE} showAllergens={false} />
       <p className="groupline">{t.bottiglia}</p>
       {bottles.map(([name, desc, rows]) => (
         <div key={name} className="drink-bottle-group">
           <p className="groupsub">
             <strong>{name}</strong> · {translateDescription(desc, language)}
           </p>
-          <Rows rows={rows} inlineDescription />
+          <Rows rows={rows} inlineDescription showAllergens={false} />
         </div>
       ))}
       <DrinkTable
@@ -214,12 +213,15 @@ export default function Menu() {
       <div id="carta">
         {categoryOrder.map((id) => {
           const [title, tag] = t.cats[id];
+          const kitchenBreak = id === "cucina" && language === "it" ? tag.indexOf("...") + 3 : 0;
           const rows = (data.MENU as Record<string, string[][]>)[id];
           return (
             <section className="mcat fx on has-art" id={`cat-${id}`} key={id}>
               <header className="mcat-head">
                 <h3><span>{title}</span></h3>
-                {tag && <p className="tag">{tag}</p>}
+                {tag && <p className="tag">{kitchenBreak > 2
+                  ? <>{tag.slice(0, kitchenBreak)}<br className="kitchen-mobile-break" /><span className="kitchen-desktop-space"> </span>{tag.slice(kitchenBreak).trimStart()}</>
+                  : tag}</p>}
               </header>
               <figure className={`menu-art menu-art-${id}`}>
                 <div className="menu-art-window">

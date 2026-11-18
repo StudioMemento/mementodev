@@ -29,7 +29,8 @@ function entries(s){return [...s.matchAll(/<div class="item\b[^>]*data-menu-item
 })}
 const data=JSON.parse(await readFile('src/data/menu.json','utf8'));
 const bottled=new Set(data.BOTTIGLIA.flatMap(group=>group[2].map(row=>row[0])));
-const before=entries(old).map(row=>bottled.has(row[0])?row.map((field,i)=>i===4?field.replaceAll('\n',' '):field):row);
+const beverageNames=new Set([...data.ACQUA_BIBITE,...data.BOTTIGLIA.flatMap(group=>group[2]),...data.SPINA,...data.VINI].map(row=>row[0]));
+const before=entries(old).map(row=>row.map((field,i)=>i===4&&bottled.has(row[0])?field.replaceAll('\n',' '):i===5&&beverageNames.has(row[0])?'':field));
 const after=entries(html);assert.ok(before.length>80);assert.equal(after.length,before.length);before.forEach((row,i)=>assert.deepEqual(after[i],row,`Menu item information changed: ${row[0]}`));
 assert.equal(bottled.size,7);
 for(const name of bottled){const item=html.match(new RegExp(`<div class="item" data-menu-item="${name}"`));assert.ok(item);const markup=balanced(html,item.index,'div');const description=markup.match(/<p class="desc">(.*?)<\/p>/)[1];assert.ok(!description.includes('<br'),'Bottle description still has a forced line break');}
@@ -39,13 +40,20 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_3.7_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_3.8_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
 assert.equal((html.match(/class="crust-card"/g)||[]).length,3);
 assert.equal((html.match(/class="menu-dot-grid"/g)||[]).length,0);
 const menuMarkup=balanced(html,html.indexOf('<section id="menu"'),'section');
 assert.equal((menuMarkup.match(/<canvas class="menu-side-band"/g)||[]).length,2);
 assert.ok(menuMarkup.includes('class="menu-side-background" aria-hidden="true"'));
 const css=await readFile('src/styles/menu.css','utf8');
+assert.match(await readFile('src/styles/clean.css','utf8'),/--nero: #090909/);
+assert.match(await readFile('src/styles/hero.css','utf8'),/--vr-carbon:\s*#090909/);
+assert.match(css,/#menu \{[^}]*background:#090909/);
+assert.ok(!(await readFile('src/styles/contact.css','utf8')).includes('background: #000;'));
+assert.ok((await readFile('public/legal.css','utf8')).includes('background:#090909;'));
+const kitchen=balanced(html,html.indexOf('<section class="mcat fx on has-art" id="cat-cucina"'),'section');
+assert.match(kitchen,/Anche se incredibile\.\.\.<br class="kitchen-mobile-break"\/><span class="kitchen-desktop-space"> <\/span>non si ha sempre voglia di pizza\?/);
 assert.ok(!css.includes('.menu-art:hover')&&!css.includes('.menu-art::after'),'Obsolete artwork hover layers remain');
 const head=balanced(html,html.indexOf('<header class="menu-head"'),'header');
 assert.equal(text(head),'Menù');assert.equal((head.match(/<h2/g)||[]).length,1);
@@ -55,7 +63,10 @@ const items=[...html.matchAll(/<div class="item\b[^>]*data-menu-item="([^"]*)"/g
 const multiPriceNames=new Set([...data.SPINA,...data.VINI].map(row=>row[0]));
 for(const m of items){
  const s=balanced(html,m.index,'div');
- if(m[1]!=='Coperto')assert.match(s,/<button type="button" class="nome" aria-haspopup="dialog"/);
+ if(beverageNames.has(m[1])){
+  assert.match(s,/<span class="nome">/);
+  assert.ok(!s.includes('aria-haspopup="dialog"')&&!s.includes('class="allergen-trigger"'),'Beverage still opens allergens');
+ }else if(m[1]!=='Coperto')assert.match(s,/<button type="button" class="nome" aria-haspopup="dialog"/);
  assert.equal(s.includes('class="dots" aria-hidden="true"'),!multiPriceNames.has(m[1]));
  if(multiPriceNames.has(m[1])){
   const cells=[...s.matchAll(/<span class="drink-price-cell">/g)].map(c=>text(balanced(s,c.index,'span')));
@@ -66,4 +77,4 @@ for(const m of items){
  }
 }
 assert.deepEqual(Object.keys(JSON.parse(await readFile('package.json','utf8')).dependencies).sort(),['react','react-dom']);
-console.log(`MENU_SCOPE_OK — ${Object.keys(baseline).length} protected files unchanged; ${before.length} entries retain names, description text, prices, qualifiers and allergen codes; all 18 draught/wine format-price pairs verified; hero/intro and original assets retained.`);
+console.log(`MENU_SCOPE_OK — ${Object.keys(baseline).length} protected files match the approved baseline; ${before.length} entries retain names, descriptions, prices and qualifiers; food allergen codes preserved; ${beverageNames.size} drinks have no dialog triggers; all 18 draught/wine format-price pairs verified; global background and kitchen break checked.`);

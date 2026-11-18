@@ -29,7 +29,10 @@ export function mountSideSquares(section: HTMLElement, viewport: HTMLElement, in
   };
   const animate = (now: number) => {
     frame = 0;
-    if (!eligible() || reduced.matches) return;
+    if (!eligible() || reduced.matches) {
+      sync();
+      return;
+    }
     if (!last || now - last >= 1000 / preset.fps - 0.5) {
       if (last) seconds += Math.min(0.1, (now - last) / 1000);
       last = now;

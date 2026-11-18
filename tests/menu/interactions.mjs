@@ -55,12 +55,21 @@ const shared={getAllergenInfo,useDialog:()=>({open:v=>{opened=v},modal,close:()=
 const items=await source('src/components/Menu.tsx',shared);
 const row=['Deliziosa','Bordo ripieno di ricotta, pomodoro, mozzarella di Bufala in cottura','13,00','1 · 7'];
 let view=items.MenuItem({row});const name=nodes(view,n=>n.type==='button'&&n.props.className==='nome')[0];name.props.onClick();const fromName=clone(opened);nodes(view,n=>n.props.className==='allergen-trigger')[0].props.onClick();assert.deepEqual(clone(opened),fromName);assert.equal(opened.codes,'1 · 7');
-const noCodes=items.ItemName({name:'Acqua naturale'});noCodes.props.onClick();assert.equal(opened.name,'Acqua naturale');assert.equal(items.ItemName({name:'Coperto'}).type,'span');
+const noCodes=items.ItemName({name:'Acqua naturale',interactive:false});assert.equal(noCodes.type,'span');assert.equal(noCodes.props.onClick,undefined);assert.equal(items.ItemName({name:'Coperto'}).type,'span');
+for(const drinkRow of [...data.ACQUA_BIBITE,...data.BOTTIGLIA.flatMap(group=>group[2])]) {
+ const drink=items.MenuItem({row:drinkRow,showAllergens:false});
+ assert.equal(nodes(drink,n=>n.type==='button').length,0,'Drinks must not open allergen dialogs');
+ assert.equal(nodes(drink,n=>n.props.className==='allergen-trigger').length,0);
+}
+for(const rows of [data.SPINA.map(b=>({name:b[0],qualifier:b[1],prices:b.slice(2,5)})),data.VINI.map(v=>({name:v[0],prices:v.slice(1,4)}))]) {
+ const table=items.DrinkTable({title:'Drinks',id:'drinks',sizes:['Small','Medium','Large'],rows});
+ assert.equal(nodes(table,n=>n.type==='button').length,0);
+}
 let nativeOpen=false;const rootStyle={overflow:'auto'},dialogRef={current:{showModal:()=>{nativeOpen=true},close:()=>{nativeOpen=false}}};
 const dialog=await source('src/components/Dialogs.tsx',{...shared,allergens,privacy:'',cookies:'',legal:'',useRef:()=>dialogRef,useLayoutEffect:fn=>{effect=fn},document:{documentElement:{style:rootStyle}},useDrag:()=>({}),Icon:()=>null,Photo:()=>null,wrap:(v,n)=>(v%n+n)%n});
 for(const lang of ['it','en','de','fr']){
  currentLang=lang;modal={kind:'allergens',name:row[0],description:row[1],codes:'1 · 7 *'};view=dialog.Dialogs();
- const header=nodes(view,n=>n.props.className==='modal-header')[0];assert.equal(header.props.children[0].props.children[0].type,'h2');assert.equal(header.props.children[0].props.children[1].props.className,'eyebrow allergen-eyebrow');
+ const header=nodes(view,n=>n.props.className==='modal-header')[0];assert.equal(nodes(header,n=>n.type==='h2').length,1);assert.equal(nodes(header,n=>n.type==='p').length,0,'Redundant allergen eyebrow must be removed');
  const rows=nodes(view,n=>n.type==='li');assert.equal(rows.length,15);
  for(const row of rows){const children=row.props.children;assert.equal(children[0].props.className,'allergen-code');assert.equal(children[1].props.className,'allergen-text');assert.ok(nodes(children[1],n=>n.props.className==='allergen-name').length);assert.ok(nodes(children[1],n=>n.props.className==='allergen-description').length);}assert.equal(rows.filter(n=>n.props.className==='contains').length,3);
  const mount=effect();assert.equal(nativeOpen,true);assert.equal(rootStyle.overflow,'hidden');

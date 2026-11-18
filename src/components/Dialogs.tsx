@@ -74,9 +74,6 @@ export default function Dialogs() {
         <header className="modal-header">
           <div>
             <h2 id="modal-title">{title}</h2>
-            {modal.kind === "allergens" && (
-              <p className="eyebrow allergen-eyebrow">{copy.allergens}</p>
-            )}
           </div>
           <button
             className="modal-close"
@@ -101,7 +98,7 @@ export default function Dialogs() {
                     <strong className="allergen-name">
                       {name}
                       {info.codes.includes(i + 1) && <span className="sr-only"> — {copy.allergenIncluded}</span>}
-                    </strong>{" "}
+                    </strong>
                     <span className="allergen-description">{description}</span>
                   </span>
                 </li>
@@ -112,7 +109,7 @@ export default function Dialogs() {
                   <strong className="allergen-name">
                     {copy.frozenTitle}
                     {info.frozen && <span className="sr-only"> — {copy.allergenIncluded}</span>}
-                  </strong>{" "}
+                  </strong>
                   <span className="allergen-description">{copy.frozen}</span>
                 </span>
               </li>

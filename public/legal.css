@@ -1,6 +1,6 @@
 @import url('assets/fonts/jost.css');
 :root{color-scheme:dark;--gold:#c6a15b;--edge:#c6a15b33;--ink:#e4dccd;--muted:#bbb3a6}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scrollbar-gutter:stable}body{margin:0;background:#080809;color:var(--ink);font-family:'Jost',sans-serif;font-weight:300;font-size:18px;line-height:1.65}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scrollbar-gutter:stable}body{margin:0;background:#090909;color:var(--ink);font-family:'Jost',sans-serif;font-weight:300;font-size:18px;line-height:1.65}
 a{color:#d7ba7e;text-underline-offset:5px}a:focus-visible{outline:2px solid var(--gold);outline-offset:5px}
 .legal-top{width:min(100% - 48px,1120px);margin:auto;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:24px 0;border-bottom:1px solid var(--edge)}
 .legal-top img{width:100px;height:100px;object-fit:contain;display:block}.legal-top a{font-size:14px;letter-spacing:.07em;text-decoration:none;min-height:44px;display:flex;align-items:center}

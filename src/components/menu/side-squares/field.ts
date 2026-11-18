@@ -25,26 +25,31 @@ const smoothstep = (t: number) => {
 
 export function createSquares(width: number, height: number, seed: number) {
   const spread = Math.min(width, preset.maxFieldWidth);
-  // Sample the density curve directly. Generation and drawing stay bounded even
-  // on an 8K monitor; there is no viewport-scaled grid or per-frame randomness.
-  const count = Math.min(preset.maxSquaresPerSide,
-    Math.floor(spread * height / (preset.spacing ** 2 * (preset.falloff + 1))));
   const chance = random(seed);
   const squares: Square[] = [];
-  for (let i = 0; i < count; i++) {
-    // Inverse CDF of (1 - x)^falloff: denser at the outside, sparse at the menu.
-    const distance = 1 - (1 - chance()) ** (1 / (preset.falloff + 1));
-    const size = Math.min(width, height,
-      preset.minSize + (preset.maxSize - preset.minSize) * chance() ** 2);
-    const innerFade = 1 - smoothstep((distance - preset.fadeStart) / (1 - preset.fadeStart));
-    squares.push({
-      x: distance * (spread - size),
-      y: chance() * (height - size),
-      size,
-      peak: (preset.minPeak + (preset.maxPeak - preset.minPeak) * chance() ** 1.5) * innerFade,
-      phase: chance() * Math.PI * 2,
-      rate: Math.PI * 2 / (preset.minCycle + (preset.maxCycle - preset.minCycle) * chance()),
-    });
+  let candidates = 0;
+  // Fixed row/column centers. Random occupancy and brightness provide the
+  // falloff; positions never scatter or move while the light gently changes.
+  for (let y = preset.spacing / 2; y + preset.maxSize / 2 <= height; y += preset.spacing) {
+    for (let x = preset.spacing / 2; x + preset.maxSize / 2 <= spread; x += preset.spacing) {
+      const distance = x / spread;
+      if (chance() > (1 - distance) ** preset.falloff) continue;
+      candidates++;
+      // Reservoir sampling caps large fields without truncating their bottom.
+      const slot = squares.length < preset.maxSquaresPerSide
+        ? squares.length : Math.floor(chance() * candidates);
+      if (slot >= preset.maxSquaresPerSide) continue;
+      const size = preset.minSize + (preset.maxSize - preset.minSize) * chance() ** 2;
+      const innerFade = 1 - smoothstep((distance - preset.fadeStart) / (1 - preset.fadeStart));
+      squares[slot] = {
+        x: x - size / 2,
+        y: y - size / 2,
+        size,
+        peak: (preset.minPeak + (preset.maxPeak - preset.minPeak) * chance() ** 1.5) * innerFade,
+        phase: chance() * Math.PI * 2,
+        rate: Math.PI * 2 / (preset.minCycle + (preset.maxCycle - preset.minCycle) * chance()),
+      };
+    }
   }
   return squares;
 }

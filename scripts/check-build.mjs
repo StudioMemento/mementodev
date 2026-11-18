@@ -47,7 +47,8 @@ const initialJs = initialFiles.reduce((sum, file) => {
 // Original side squares are optional and deferred; prior initial bundle limits stay intact.
 assert.ok(initialJs < 101_000, `Initial JS budget exceeded: ${initialJs}`);
 assert.ok(js < 110_000, `JS budget exceeded: ${js}`);
-assert.ok(css < 8_500, `CSS budget exceeded: ${css}`);
+// 3.8 adds height-aware allergen typography; allow 200 B more compressed CSS.
+assert.ok(css < 8_700, `CSS budget exceeded: ${css}`);
 assert.ok(!Object.keys(manifest).some(key=>key.includes('dot-grid')), "Removed Dot Grid remains in the build");
 const sideKey = "src/components/menu/side-squares/controller.ts";
 assert.ok(manifest[sideKey]?.isDynamicEntry, "Side-square engine is not deferred");
