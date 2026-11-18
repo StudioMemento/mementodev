@@ -1,5 +1,7 @@
-/* ViaRoma_3.8_MENU — original artwork/data, scoped menu and dialog presentation. */
-#menu { position:relative; background:#090909; padding-top:clamp(80px,12svh,160px); padding-bottom:32px; }
+/* ViaRoma_3.9_MENU — original artwork/data, scoped menu and dialog presentation. */
+.menu-atmosphere { position:relative; background:#090909; }
+#cornicione { position:relative; }
+#menu { position:relative; padding-top:clamp(80px,12svh,160px); padding-bottom:32px; }
 .menu-head,.mcat,.chipbar-inner { width:var(--vr-content); margin-inline:auto; }
 .menu-head { text-align:center; margin-bottom:clamp(32px,6vw,72px); }
 .menu-head h2 { font-size:var(--menu-title-size,calc(var(--vr-content) * .25)); font-weight:200; line-height:1.12; letter-spacing:.26em; text-transform:uppercase; color:var(--vr-highlight); }
@@ -35,8 +37,8 @@
 .mcat .tag { margin:12px auto 0; max-width:48ch; color:var(--vr-muted); letter-spacing:.015em; font-size:clamp(19px,1.5vw,23px); line-height:1.4; text-wrap:pretty; }
 .kitchen-mobile-break { display:none; }
 .menu-art { width:100%; aspect-ratio:2048/487; position:relative; margin:28px 0; }
-/* Static shared strokes: no hover, glow, filters or clipping layers. */
-.menu-art::before { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-block:1px solid transparent; border-image:linear-gradient(90deg,transparent,rgb(198 171 112 / .3) 20%,rgb(218 193 139 / .65) 50%,rgb(198 171 112 / .3) 80%,transparent) 1; }
+:root { --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); --menu-stroke:linear-gradient(90deg,transparent,rgb(198 171 112 / .3) 20%,rgb(218 193 139 / .65) 50%,rgb(198 171 112 / .3) 80%,transparent); }
+.menu-art::before { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-block:1px solid transparent; border-image:var(--menu-stroke) 1; }
 .menu-art-window { position:absolute; inset:0; overflow:hidden; --art-fade:linear-gradient(transparent,rgb(0 0 0 / .12) 2%,rgb(0 0 0 / .38) 5%,rgb(0 0 0 / .74) 9%,#000 14%,#000 86%,rgb(0 0 0 / .74) 91%,rgb(0 0 0 / .38) 95%,rgb(0 0 0 / .12) 98%,transparent); -webkit-mask-image:var(--art-fade); mask-image:var(--art-fade); }
 .menu-art img { width:100%; height:100%; object-fit:contain; }
 .item { position:relative; padding:10px 0; min-width:0; }
@@ -48,7 +50,7 @@
 .item .prezzo,.pricegrid b { font-size:21px; line-height:1.25; letter-spacing:-.01em; color:var(--vr-highlight); font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:300; }
 .item .qualifier { font-size:14px; color:#b9b09f; line-height:1.4; }
 /* Whole-pixel microdots remain visible at DPR 1: a subpixel radial dot can vanish. */
-.item .dots { display:block; flex:1 0 20px; min-width:20px; height:1px; align-self:baseline; background:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); transform:translateY(-4px); }
+.item .dots { display:block; flex:1 0 20px; min-width:20px; height:1px; align-self:baseline; background:var(--price-dots); transform:translateY(-4px); }
 .item .desc { font-size:18px; line-height:1.45; margin-top:6px; letter-spacing:.005em; color:#d0cabe; max-width:80ch; }
 .allergen-trigger { display:flex; align-items:center; gap:5px; min-height:28px; padding:3px 0; font-size:12px; font-weight:400; letter-spacing:.12em; color:#969590; }
 .frozen-mark { font-size:17px; }
@@ -57,34 +59,53 @@
 .groupsub strong { font-weight:400; }
 .variant-callout { margin:28px 0 10px; padding-top:12px; font-size:20px; letter-spacing:.015em; }
 .dolci-note { max-width:46ch; margin:28px auto 0; text-align:center; font-size:clamp(22px,1.8vw,28px); line-height:1.45; letter-spacing:.02em; color:var(--vr-highlight); text-wrap:balance; }
+#cat-bevande { --drink-intro:#b59a62; --drink-detail:#a19d96; }
+#cat-bevande .groupline { font-size:clamp(16px,1.3vw,21px); font-weight:400; letter-spacing:.09em; color:var(--drink-intro); }
+.drink-bottle-group .groupsub { color:var(--drink-detail); font-size:clamp(16px,1.3vw,20px); line-height:1.4; }
+.groupsub strong { color:var(--drink-intro); font-weight:500; }
+#cat-bevande .desc,.drink-product .qualifier { color:var(--drink-detail); }
 .drink-bottle-group .item .desc { max-width:none; }
-.drink-table { width:100%; margin-bottom:22px; }
-.drink-table-head,.drink-row>.row { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,40%); gap:24px; }
-.drink-table-head { padding:6px 0 12px; }
-.drink-size-head { grid-column:2; }
-.drink-size-head,.drink-row .pricegrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; text-align:right; }
-.drink-size-head { font-size:12px; line-height:1.35; color:#bdb3a1; }
-.drink-row .label { display:grid; gap:4px; }
-.drink-price-cell { text-align:right; }
-/* The allergen dialog uses the native top layer, with no panel border or tint box. */
-.vr-dialog.modal-allergens { width:100dvw; max-width:none; height:100dvh; max-height:100dvh; margin:0; padding:max(16px,env(safe-area-inset-top)) var(--vr-gutter) max(16px,env(safe-area-inset-bottom)); color:var(--vr-ivory); background:transparent; outline:none; overflow:auto; }
+.drink-table { width:100%; margin:32px 0 22px; }
+.drink-table-head,.drink-row>.row { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,40%); align-items:baseline; column-gap:0; }
+.drink-table-head { padding-bottom:10px; }
+.drink-table-head .groupline { margin:0; }
+.drink-size-head,.drink-row .pricegrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:12px; align-items:baseline; text-align:right; }
+.drink-size-head { font-size:clamp(15px,1.2vw,19px); line-height:1.28; color:var(--drink-detail); }
+.drink-product { min-width:0; }
+.drink-product .qualifier { display:block; margin-top:3px; font-size:16px; }
+.drink-leader,.drink-price-cell:first-child { display:flex; align-items:baseline; gap:12px; }
+.drink-price-cell { min-width:0; text-align:right; }
+.drink-price-cell:first-child::before { content:""; flex:1; height:1px; transform:translateY(-4px); background:var(--price-dots); }
+/* The reading area stays symmetric inside the device's safe edges. */
+.vr-dialog.modal-allergens {
+  --inset:clamp(18px,5vw,30px); --name:clamp(15px,1.85dvh,17px); --detail:clamp(13.5px,1.67dvh,15.5px);
+  --title:clamp(31px,4.6dvh,44px); --section-gap:clamp(18px,2.7dvh,30px); --row-gap:clamp(5px,.75dvh,9px);
+  width:100dvw; max-width:none; height:100dvh; max-height:100dvh; margin:0;
+  padding:max(var(--inset),env(safe-area-inset-top)) max(var(--inset),env(safe-area-inset-right)) max(var(--inset),env(safe-area-inset-bottom)) max(var(--inset),env(safe-area-inset-left));
+  color:var(--vr-ivory); background:transparent; outline:none; overflow:auto;
+}
+.modal-allergens[data-density=regular] { --inset:clamp(16px,4.8vw,26px); --name:15px; --detail:13.25px; --title:clamp(29px,4.2dvh,37px); --section-gap:17px; --row-gap:4px; }
+.modal-allergens[data-density=compact] { --inset:clamp(13px,4vw,20px); --name:13.5px; --detail:12.25px; --title:28px; --section-gap:12px; --row-gap:2.5px; }
+.modal-allergens[data-density=minimum] { --inset:10px; --name:12.5px; --detail:11.75px; --title:24px; --section-gap:8px; --row-gap:1px; }
 .modal-allergens::backdrop { background:rgb(9 9 9 / .8); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); }
-.allergen-panel { width:min(100%,760px); min-height:100%; margin:auto; padding:0; display:grid; align-content:center; gap:16px; }
+.allergen-panel { width:min(100%,760px); min-height:100%; margin:auto; padding:0; display:grid; align-content:center; gap:var(--section-gap); }
 .allergen-panel .modal-header { border:0; padding:0; align-items:flex-start; }
 .allergen-panel .modal-header > div { min-width:0; }
-.allergen-panel .modal-header h2 { font-size:clamp(28px,3.4vw,38px); line-height:1.15; margin:0; overflow-wrap:break-word; }
-.allergen-panel .modal-close { width:28px; height:32px; position:relative; border:0; background:none; border-radius:0; outline:none; }
+.allergen-panel .modal-header h2 { font-size:var(--title); font-weight:400; line-height:1.08; margin:0; overflow-wrap:break-word; }
+.allergen-panel .modal-close { width:32px; height:32px; position:relative; border:0; background:none; border-radius:0; outline:none; }
 .allergen-panel .modal-close::before { content:""; position:absolute; inset:-6px -8px; }
 .allergen-panel .modal-close svg { width:24px; height:24px; }
 .allergen-panel .modal-close:focus-visible { color:var(--vr-ivory); filter:drop-shadow(0 0 5px var(--vr-highlight)); }
-.allergen-list { list-style:none; }
-.allergen-list li { display:grid; grid-template-columns:1.2em minmax(0,1fr); column-gap:.7em; align-items:baseline; padding:3px 0; color:#7c7a73; font-size:15.5px; line-height:1.2; break-inside:avoid; }
+.allergen-list { list-style:none; columns:var(--allergen-columns,1); column-gap:14px; }
+.allergen-list li + li { margin-top:var(--row-gap); }
+.allergen-list li { display:grid; grid-template-columns:1.2em minmax(0,1fr); column-gap:.62em; align-items:baseline; color:#8f8c83; font-size:var(--name); line-height:1.17; break-inside:avoid; }
 .allergen-code { font-size:inherit; font-weight:400; }
 .allergen-text { min-width:0; overflow-wrap:break-word; }
 .allergen-name { display:block; font-size:inherit; font-weight:500; letter-spacing:.065em; text-transform:uppercase; }
-.allergen-description { display:block; font-size:14px; line-height:1.2; margin-top:1px; }
+.allergen-description { display:block; font-size:var(--detail); line-height:1.18; margin-top:1px; }
+.nut-phrase { white-space:nowrap; }
 .allergen-list .contains { color:var(--vr-highlight); }
-.allergen-note { font-size:14px; line-height:1.3; color:var(--vr-muted); }
+.allergen-note { font-size:var(--detail); line-height:1.3; color:var(--vr-muted); }
 @media(hover:hover) {
   .menu-head:hover h2 span { filter:drop-shadow(0 0 12px rgb(218 193 139 / .23)); }
   .mcat-head:hover h3 span { animation:vr-menu-gold 4s ease-in-out infinite alternate; filter:drop-shadow(0 0 10px rgb(218 193 139 / .23)); }
@@ -111,37 +132,22 @@
   .item .desc { font-size:16.5px; line-height:1.45; margin-top:5px; max-width:calc(100% - 3.5rem); overflow-wrap:break-word; }
   .item .qualifier { font-size:12px; }
   .allergen-trigger { min-height:28px; font-size:11px; }
-  .drink-table-head { display:none; }
-  .drink-row { padding:14px 0; }
-  .drink-row>.row { grid-template-columns:minmax(0,1fr); gap:12px; }
-  .drink-row .pricegrid { gap:12px; }
-  .drink-price-cell { display:grid; gap:3px; align-content:end; text-align:left; }
-  .drink-price-cell:nth-child(2) { text-align:center; }
-  .drink-price-cell:last-child { text-align:right; }
-  .drink-size-label { position:static; width:auto; height:auto; overflow:visible; clip-path:none; white-space:normal; font-size:12px; line-height:1.4; color:#bdb3a1; }
-  .allergen-panel { gap:12px; }
-  .allergen-list li { font-size:14.5px; line-height:1.18; padding:2px 0; }
-  .allergen-description { font-size:13px; line-height:1.18; }
-  .allergen-note { font-size:13px; }
-}
-/* Height-aware spacing keeps the full list readable on short phone viewports.
-   Overflow remains available for enlarged text, zoom or unusually small screens. */
-@media(max-height:860px) {
-  .vr-dialog.modal-allergens { padding:max(6px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
-  .allergen-panel { gap:5px; }
-  .allergen-panel .modal-header h2 { font-size:clamp(20px,3.5dvh,24px); }
-  .allergen-list li { font-size:clamp(12.5px,2dvh,14px); line-height:1.15; padding:0; }
-  .allergen-description { font-size:clamp(11.75px,1.9dvh,12.5px); line-height:1.15; margin-top:.5px; }
-  .allergen-note { font-size:12px; line-height:1.2; }
-}
-@media(min-height:721px) and (max-height:860px) {
-  .allergen-list li { padding:1px 0; }
+  .drink-table-head,.drink-row>.row { grid-template-columns:minmax(0,1fr) minmax(0,58%); gap:6px; }
+  #cat-bevande .drink-table-head .groupline { font-size:clamp(14px,3.7vw,17px); line-height:1.25; letter-spacing:.045em; }
+  .drink-size-head,.drink-row .pricegrid { grid-template-columns:minmax(0,.92fr) minmax(0,.96fr) minmax(0,1.12fr); column-gap:3px; }
+  .drink-size-head { font-size:clamp(12.5px,3.45vw,15px); }
+  .drink-leader .dots,.drink-price-cell:first-child::before { display:none; }
+  .drink-price-cell:first-child { display:block; }
+  .drink-row .nome { font-size:clamp(14px,3.8vw,17px); letter-spacing:.055em; }
+  .drink-product .qualifier { font-size:14px; }
 }
 @media(max-height:560px) {
-  .allergen-list { columns:2; column-gap:12px; }
-}
-@media(min-width:460px) and (max-height:340px) {
-  .allergen-list { column-count:3; }
+  .modal-allergens[data-density=minimum] { --inset:7px; --section-gap:5px; --row-gap:0px; }
+  .modal-allergens[data-density=minimum] .allergen-list { column-gap:10px; }
+  .modal-allergens[data-density=minimum] .allergen-list li { grid-template-columns:1em minmax(0,1fr); column-gap:.38em; }
+  .modal-allergens[data-density=minimum] .allergen-list li,
+  .modal-allergens[data-density=minimum] .allergen-description { line-height:1.15; }
+  .modal-allergens[data-density=minimum] .allergen-description { margin-top:.5px; }
 }
 @media(prefers-reduced-motion:reduce) { .menu-head h2 span,.mcat-head:hover h3 span { animation:none; } .menu-head h2 span,.mcat h3 span,.chips button { transition:none; } }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .chips button { background:rgb(37 37 36 / .88); } .modal-allergens::backdrop { background:rgb(9 9 9 / .96); } }
@@ -152,4 +158,21 @@
 .menu-head,#carta { position:relative; z-index:1; }
 .menu-side-background { position:absolute; inset:0; pointer-events:none; z-index:0; }
 .menu-side-viewport { position:sticky; top:0; height:100svh; width:100%; display:flex; justify-content:space-between; overflow:clip; }
-.menu-side-band { display:block; width:var(--vr-gutter); height:100%; flex:none; contain:paint; }
+.menu-side-band { display:block; width:var(--vr-gutter); height:100%; flex:none; contain:paint; will-change:transform; }
+
+
+/* The same tapered gold stroke frames the photographs, oven and menu exit. */
+#pizza-slider { background:#000; }
+#pizza-slider::before,#pizza-slider::after,.menu-atmosphere::after {
+  content:""; position:absolute; left:0; right:0; height:clamp(16px,3vw,36px); pointer-events:none;
+  background:var(--menu-stroke) center top / 100% 1px no-repeat,linear-gradient(to bottom,#090909,transparent);
+}
+#pizza-slider::before { top:0; }
+#pizza-slider::after,.menu-atmosphere::after { bottom:0; transform:scaleY(-1); }
+.menu-atmosphere::after { z-index:2; }
+.menu-side-background::before,.menu-side-background::after {
+  content:""; position:absolute; inset-inline:0; height:clamp(88px,15svh,190px); z-index:1;
+  background:linear-gradient(to bottom,#090909,transparent);
+}
+.menu-side-background::before { top:0; }
+.menu-side-background::after { bottom:0; transform:scaleY(-1); }

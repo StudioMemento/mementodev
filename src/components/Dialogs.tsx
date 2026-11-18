@@ -10,6 +10,32 @@ import { Chevron, Icon } from "./Icon";
 import { Photo } from "./Photo";
 import { useDrag, wrap } from "../hooks/useDrag";
 const legalTexts = { privacy, cookie: cookies, "note-legali": legal };
+/** Choose the roomiest layout that fits the actual title, language and safe area. */
+function fitAllergens(dialog: HTMLDialogElement) {
+  const short = dialog.clientHeight <= 560;
+  const wide = dialog.clientWidth >= 460;
+  const columns = short ? (wide && dialog.clientHeight <= 340 ? [3, 2] : [2, 1]) : [1, 2];
+  let bestOverflow = Infinity, bestCount = columns[0], bestDensity = "minimum";
+  for (const count of columns) {
+    dialog.style.setProperty("--allergen-columns", String(count));
+    for (const density of ["roomy", "regular", "compact", "minimum"]) {
+      dialog.dataset.density = density;
+      const overflow = Math.max(0, dialog.scrollHeight - dialog.clientHeight, dialog.scrollWidth - dialog.clientWidth);
+      if (!overflow) return;
+      if (overflow < bestOverflow) { bestOverflow = overflow; bestCount = count; bestDensity = density; }
+    }
+  }
+  dialog.style.setProperty("--allergen-columns", String(bestCount));
+  dialog.dataset.density = bestDensity;
+}
+
+function AllergenDescription({ text, language }: { text: string; language: string }) {
+  const phrase = "noci del Brasile";
+  const index = language === "it" ? text.indexOf(phrase) : -1;
+  if (index < 0) return <>{text}</>;
+  return <>{text.slice(0, index)}<br /><span className="nut-phrase">{phrase}</span>{text.slice(index + phrase.length)}</>;
+}
+
 export default function Dialogs() {
   const { modal, close, update } = useDialog();
   const { copy, language, ui } = useI18n();
@@ -25,6 +51,17 @@ export default function Dialogs() {
       document.documentElement.style.overflow = previous;
     };
   }, []);
+  useLayoutEffect(() => {
+    const dialog = ref.current;
+    if (!dialog || modal?.kind !== "allergens") return;
+    let active = true;
+    const fit = () => { if (active) fitAllergens(dialog); };
+    fit();
+    const resize = new ResizeObserver(fit);
+    resize.observe(dialog);
+    void document.fonts.ready.then(fit);
+    return () => { active = false; resize.disconnect(); };
+  }, [modal, language]);
   const step = (d: number) => {
     if (modal?.kind === "photo")
       update({ ...modal, index: wrap(modal.index + d, modal.photos.length) });
@@ -99,7 +136,7 @@ export default function Dialogs() {
                       {name}
                       {info.codes.includes(i + 1) && <span className="sr-only"> — {copy.allergenIncluded}</span>}
                     </strong>
-                    <span className="allergen-description">{description}</span>
+                    <span className="allergen-description"><AllergenDescription text={description} language={language} /></span>
                   </span>
                 </li>
               ))}

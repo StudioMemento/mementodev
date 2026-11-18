@@ -16,7 +16,7 @@ const normalizeLayout=s=>s.split('\n').filter(line=>!line.startsWith('.allergen-
  .replace('/* Native dialogs: an opaque surface, no full-screen filtering or animation. */','/* Native photo/legal surfaces. Allergen presentation is scoped in menu.css. */');
 assert.equal(await readFile('src/styles/clean.css','utf8'),normalizeLayout(await readFile('tests/menu/layout-approved.css','utf8')),'Layout outside allergens changed');
 const approvedI18n = await readFile('tests/menu/i18n-approved.tsx','utf8');
-assert.equal(await readFile('src/i18n.tsx','utf8'),approvedI18n.replace('Chiedi al personale per ulteriori informazioni','Per ulteriori informazioni, chiedi al personale.'),'Unrequested translation/copy changes');
+assert.equal(await readFile('src/i18n.tsx','utf8'),approvedI18n.replace('Chiedi al personale per ulteriori informazioni','Per ulteriori info, chiedi al personale.'),'Unrequested translation/copy changes');
 const html=await readFile('dist/index.html','utf8');
 const old=await readFile('tests/v25/menu-carta-v24.html','utf8');
 function balanced(s,start,tag){let depth=0;for(const m of s.slice(start).matchAll(new RegExp(`<\\/?${tag}\\b[^>]*>`,'g'))){depth+=m[0].startsWith('</')?-1:1;if(!depth)return s.slice(start,start+m.index+m[0].length);}throw Error(`Unclosed ${tag}`)}
@@ -40,16 +40,18 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_3.8_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_3.9_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
 assert.equal((html.match(/class="crust-card"/g)||[]).length,3);
 assert.equal((html.match(/class="menu-dot-grid"/g)||[]).length,0);
-const menuMarkup=balanced(html,html.indexOf('<section id="menu"'),'section');
+const menuMarkup=balanced(html,html.indexOf('<div class="menu-atmosphere">'),'div');
+assert.ok(menuMarkup.includes('id="cornicione"') && menuMarkup.includes('id="menu"'), 'The same particle field must cover crust and menu');
 assert.equal((menuMarkup.match(/<canvas class="menu-side-band"/g)||[]).length,2);
 assert.ok(menuMarkup.includes('class="menu-side-background" aria-hidden="true"'));
 const css=await readFile('src/styles/menu.css','utf8');
 assert.match(await readFile('src/styles/clean.css','utf8'),/--nero: #090909/);
 assert.match(await readFile('src/styles/hero.css','utf8'),/--vr-carbon:\s*#090909/);
-assert.match(css,/#menu \{[^}]*background:#090909/);
+assert.match(css,/\.menu-atmosphere \{[^}]*background:#090909/);
+assert.match(css,/#pizza-slider \{[^}]*background:#000/);
 assert.ok(!(await readFile('src/styles/contact.css','utf8')).includes('background: #000;'));
 assert.ok((await readFile('public/legal.css','utf8')).includes('background:#090909;'));
 const kitchen=balanced(html,html.indexOf('<section class="mcat fx on has-art" id="cat-cucina"'),'section');
@@ -67,7 +69,7 @@ for(const m of items){
   assert.match(s,/<span class="nome">/);
   assert.ok(!s.includes('aria-haspopup="dialog"')&&!s.includes('class="allergen-trigger"'),'Beverage still opens allergens');
  }else if(m[1]!=='Coperto')assert.match(s,/<button type="button" class="nome" aria-haspopup="dialog"/);
- assert.equal(s.includes('class="dots" aria-hidden="true"'),!multiPriceNames.has(m[1]));
+ assert.ok(s.includes('class="dots" aria-hidden="true"'), 'Every price row needs a desktop leader');
  if(multiPriceNames.has(m[1])){
   const cells=[...s.matchAll(/<span class="drink-price-cell">/g)].map(c=>text(balanced(s,c.index,'span')));
   const draught=data.SPINA.find(row=>row[0]===m[1]);

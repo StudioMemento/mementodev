@@ -6,7 +6,7 @@ import vm from 'node:vm';
 import postcss from 'postcss';
 const modulePath=process.env.SQUARES_CANVAS_MODULE || (process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/@napi-rs/canvas/index.js');
 const {GlobalFonts,createCanvas}=await import(modulePath);
-for(const weight of [300,500]) assert.ok(GlobalFonts.registerFromPath(`public/assets/fonts/jost-${weight}.woff2`,`Jost${weight}`));
+for(const weight of [300,400,500]) assert.ok(GlobalFonts.registerFromPath(`public/assets/fonts/jost-${weight}.woff2`,`Jost${weight}`));
 const ctx=createCanvas(1,1).getContext('2d');
 const css=postcss.parse(await readFile('src/styles/menu.css','utf8'));
 const data=JSON.parse(await readFile('src/data/menu.json','utf8'));
@@ -35,10 +35,11 @@ function pixels(value,width,height){
  return parseFloat(value);
 }
 function lines(text,font,width,weight=300,tracking=0){
+ if(text.includes('\n'))return text.split('\n').reduce((n,line)=>n+lines(line,font,width,weight,tracking),0);
  ctx.font=`${font}px Jost${weight}`;
  const measure=s=>ctx.measureText(s).width+s.length*tracking;
  let count=1,line='';
- for(const word of text.split(/\s+/)){
+ for(const word of text.split(/ +/)){
   const candidate=line?`${line} ${word}`:word;
   if(measure(candidate)<=width){line=candidate;continue;}
   if(line){count++;line='';}
@@ -46,35 +47,46 @@ function lines(text,font,width,weight=300,tracking=0){
  }
  return count;
 }
+// A native browser balances whole rows across columns. The estimator models
+// the same reading order using the tallest column of each possible split.
+function balancedHeight(items, columns, gap) {
+ if (columns === 1) return items.reduce((sum, item) => sum + item.height, 0) + (items.length - 1) * gap;
+ let best = Infinity;
+ for (let cut = 1; cut <= items.length - columns + 1; cut++)
+  best = Math.min(best, Math.max(balancedHeight(items.slice(0,cut), 1, gap), balancedHeight(items.slice(cut), columns-1, gap)));
+ return best;
+}
 function estimate(width,height,language){
- const row=styles('.allergen-list li',width,height),desc=styles('.allergen-description',width,height),panel=styles('.allergen-panel',width,height),note=styles('.allergen-note',width,height),title=styles('.allergen-panel .modal-header h2',width,height);
- const font=pixels(row['font-size'],width,height),descFont=pixels(desc['font-size'],width,height);
- const gutter=height<=860?12:width*(width<768?.1:width<1200?.15:width<2400?.2:.3);
- const availableWidth=Math.min(760,width-2*gutter),padding=height<=860?6:16;
- const columns=width>=460&&height<=340?3:height<=560?2:1;
- const textWidth=(availableWidth-12*(columns-1))/columns-1.9*font;
- const rows=[...allergens[language],[additions[language].frozenTitle,additions[language].frozen]].map(([name,description])=>{
-  const nameLines=lines(name.toUpperCase(),font,textWidth,500,font*.065),descLines=lines(description,descFont,textWidth);
-  return {name,nameLines,descLines,height:nameLines*font*parseFloat(row['line-height'])+parseFloat(desc['margin-top'])+descLines*descFont*parseFloat(desc['line-height'])+2*parseFloat(row.padding)};
- });
- const sum=rs=>rs.reduce((n,r)=>n+r.height,0);
- // CSS balances consecutive rows in their reading order and never splits an entry.
- function balancedHeight(items, count) {
-  if (count === 1) return sum(items);
-  let best = Infinity;
-  for (let cut = 1; cut <= items.length - count + 1; cut++) {
-   best = Math.min(best, Math.max(sum(items.slice(0, cut)), balancedHeight(items.slice(cut), count - 1)));
-  }
-  return best;
- }
- const listHeight = balancedHeight(rows, columns);
- const titleFont=pixels(title['font-size'],width,height);
+ const base='.vr-dialog.modal-allergens',title=styles('.allergen-panel .modal-header h2',width,height);
+ const note=styles('.allergen-note',width,height);
  const translated=names.map(n=>language==='it'?n:translations.NAME_TR[n]?.[['en','de','fr'].indexOf(language)]||n);
- const titles=translated.map(name=>({name,lines:lines(name,titleFont,availableWidth-44)})).sort((a,b)=>b.lines-a.lines);
- const titleHeight=Math.max(32,titles[0].lines*titleFont*1.15);
- const noteHeight=lines(additions[language].allergenNote,parseFloat(note['font-size']),availableWidth)*parseFloat(note['font-size'])*parseFloat(note['line-height']);
- const required=titleHeight+listHeight+noteHeight+2*parseFloat(panel.gap)+2*padding;
- return {width,height,language,font,descriptionFont:descFont,columns,worstTitle:titles[0],estimatedHeight:Math.ceil(required),estimatedFreeSpace:Math.floor(height-required),rows};
+ const columns=height<=560 ? (width>=460&&height<=340?[3,2]:[2,1]) : [1,2];
+ let best;
+ for(const count of columns)for(const density of ['roomy','regular','compact','minimum']){
+  const variant='.modal-allergens[data-density='+density+']';
+  const props={...styles(base,width,height),...styles(variant,width,height)};
+  const row={...styles('.allergen-list li',width,height),...styles(variant+' .allergen-list li',width,height)};
+  const desc={...styles('.allergen-description',width,height),...styles(variant+' .allergen-description',width,height)};
+  const list={...styles('.allergen-list',width,height),...styles(variant+' .allergen-list',width,height)};
+  const value=key=>pixels(props[key],width,height);
+  const font=value('--name'),descFont=value('--detail'),titleFont=value('--title'),inset=value('--inset'),available=Math.min(760,width-2*inset);
+  const textWidth=(available-(count-1)*parseFloat(list['column-gap']))/count-font*(parseFloat(row['grid-template-columns'])+parseFloat(row['column-gap']));
+  const rows=[...allergens[language],[additions[language].frozenTitle,additions[language].frozen]].map(([name,description])=>{
+   const text=language==='it'?description.replace(' noci del Brasile','\nnoci\u00a0del\u00a0Brasile'):description;
+   const nameLines=lines(name.toUpperCase(),font,textWidth,500,font*.065),descLines=lines(text,descFont,textWidth);
+   return {name,nameLines,descLines,height:nameLines*font*parseFloat(row['line-height'])+parseFloat(desc['margin-top'])+descLines*descFont*parseFloat(desc['line-height'])};
+  });
+  const listHeight=balancedHeight(rows,count,value('--row-gap'));
+  const worstTitle=translated.map(name=>({name,lines:lines(name,titleFont,available-48,400)})).sort((a,b)=>b.lines-a.lines)[0];
+  const titleHeight=Math.max(32,worstTitle.lines*titleFont*parseFloat(title['line-height']));
+  const noteHeight=lines(additions[language].allergenNote,descFont,available)*descFont*parseFloat(note['line-height']);
+  const required=titleHeight+listHeight+noteHeight+2*value('--section-gap')+2*inset;
+  assert.ok(Number.isFinite(required),'Unresolved CSS length in dialog estimate');
+  const result={width,height,language,density,font,descriptionFont:descFont,columns:count,worstTitle,estimatedHeight:Math.ceil(required),estimatedFreeSpace:Math.floor(height-required),rows};
+  if(result.estimatedFreeSpace>=0)return result;
+  if(!best||result.estimatedFreeSpace>best.estimatedFreeSpace)best=result;
+ }
+ return best;
 }
 assert.ok(lines('A short line',14,300)<lines('A short line',14,20),'Wrapping control must detect narrow text');
 const results=[];

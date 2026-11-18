@@ -23,7 +23,7 @@ const additions = {
     skip: "Vai al menù",
     allergens: "Allergeni",
     allergenIncluded: "Presente in questo piatto",
-    allergenNote: "Per ulteriori informazioni, chiedi al personale.",
+    allergenNote: "Per ulteriori info, chiedi al personale.",
     frozenTitle: "Prodotti surgelati",
     frozen: "Surgelato all’origine o in assenza del fresco.",
     changeLanguage: "Scegli la lingua",

@@ -29,7 +29,7 @@ export function createSquares(width: number, height: number, seed: number) {
   const squares: Square[] = [];
   let candidates = 0;
   // Fixed row/column centers. Random occupancy and brightness provide the
-  // falloff; positions never scatter or move while the light gently changes.
+  // falloff; the whole lattice travels together without disturbing its alignment.
   for (let y = preset.spacing / 2; y + preset.maxSize / 2 <= height; y += preset.spacing) {
     for (let x = preset.spacing / 2; x + preset.maxSize / 2 <= spread; x += preset.spacing) {
       const distance = x / spread;
@@ -56,7 +56,7 @@ export function createSquares(width: number, height: number, seed: number) {
 
 export function brightness(square: Square, seconds: number) {
   const wave = 0.5 + 0.5 * Math.sin(square.phase + seconds * square.rate);
-  return square.peak * wave;
+  return square.peak * (.12 + .88 * wave * wave);
 }
 
 export function pixelRatio(width: number, height: number, deviceRatio: number) {
@@ -68,7 +68,7 @@ export function createPainter(context: CanvasRenderingContext2D, squares: Square
   const pixelsWide = Math.max(1, Math.round(width * scaleX));
   const pixelsHigh = Math.max(1, Math.round(height * scaleY));
   // Round once to backing pixels: a fine dot stays crisp instead of spreading
-  // its light over four dim pixels. Only opacity changes during animation.
+  // its light over four dim pixels. Wrap the tile at a whole number of rows.
   const rectangles = squares.map(square => {
     const w = Math.min(pixelsWide, Math.max(1, Math.round(square.size * scaleX)));
     const h = Math.min(pixelsHigh, Math.max(1, Math.round(square.size * scaleY)));
@@ -83,7 +83,8 @@ export function createPainter(context: CanvasRenderingContext2D, squares: Square
   const indices = new Uint16Array(32 * squares.length);
   // Geometry is already in physical pixels. No fractional transform at paint time.
   context.setTransform(1, 0, 0, 1, 0, 0);
-  return (seconds: number) => {
+  return (seconds: number, offset = 0) => {
+    const shift = Math.round(offset * scaleY) % pixelsHigh;
     context.clearRect(0, 0, pixelsWide, pixelsHigh);
     counts.fill(0);
     for (let i = 0; i < squares.length; i++) {
@@ -97,7 +98,8 @@ export function createPainter(context: CanvasRenderingContext2D, squares: Square
       context.beginPath();
       for (let n = 0; n < counts[level]; n++) {
         const rect = rectangles[indices[level * squares.length + n]];
-        context.rect(rect.x, rect.y, rect.w, rect.h);
+        const y = (rect.y - shift + pixelsHigh) % pixelsHigh;
+        context.rect(rect.x, y, rect.w, rect.h);
       }
       context.fill();
     }

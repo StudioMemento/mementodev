@@ -5,7 +5,6 @@ import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
 import { MenuTitle } from "./menu/MenuTitle";
-import { MenuSideSquares } from "./menu/MenuSideSquares";
 import { categoryOrder, categoryLabels, useMenuNavigation } from "./menu/useMenuNavigation";
 export { categoryOrder } from "./menu/useMenuNavigation";
 
@@ -106,20 +105,22 @@ function DrinkTable({
   const { language } = useI18n();
   return (
     <section className="drink-table" aria-labelledby={id}>
-      <p className="groupline" id={id}>{title}</p>
-      <div className="drink-table-head" aria-hidden="true">
-        <span />
-        <div className="drink-size-head">
-          {sizes.map((size) => <span key={size}>{size}</span>)}
+      <div className="drink-table-head">
+        <h4 className="groupline" id={id}>{title}</h4>
+        <div className="drink-size-head" aria-hidden="true">
+          {sizes.map((size) => <span key={size}>{size.replace(/(\d) l$/, "$1\u00a0l")}</span>)}
         </div>
       </div>
       {rows.map(({ name, qualifier = "", prices }) => (
         <div className="item multi drink-item drink-row" key={name} data-menu-item={name}>
           <div className="row">
-            <span className="label">
-              <ItemName name={name} description={qualifier} translate={false} interactive={false} />
+            <div className="drink-product">
+              <div className="drink-leader">
+                <span className="label"><ItemName name={name} description={qualifier} translate={false} interactive={false} /></span>
+                <span className="dots" aria-hidden="true" />
+              </div>
               {qualifier && <span className="qualifier">{translateDescription(qualifier, language)}</span>}
-            </span>
+            </div>
             <div className="pricegrid">
               {sizes.map((size, i) => (
                 <span className="drink-price-cell" key={size}>
@@ -144,7 +145,7 @@ function Drinks() {
       {bottles.map(([name, desc, rows]) => (
         <div key={name} className="drink-bottle-group">
           <p className="groupsub">
-            <strong>{name}</strong> · {translateDescription(desc, language)}
+            <strong>{name}</strong>{" · "}<span>{translateDescription(desc, language)}</span>
           </p>
           <Rows rows={rows} inlineDescription showAllergens={false} />
         </div>
@@ -169,7 +170,6 @@ export default function Menu() {
   const { active, chips, wrap, select, nudge } = useMenuNavigation(language);
   return (
     <section id="menu">
-      <MenuSideSquares />
       <MenuTitle text={copy.menu} />
       <div className="chipbar">
         <div className="chipbar-inner" ref={wrap}>

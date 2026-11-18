@@ -10,7 +10,7 @@ assert.equal(p.squareColor, '#c6ab70'); assert.equal(p.backgroundColor, '#090909
 const fineAndCalm = square => {
   assert.ok(square.size >= .8 && square.size <= 1.6, 'Grain must stay fine and visible at 1–1.5 CSS pixels');
   const period = 2 * Math.PI / square.rate;
-  assert.ok(period >= 10 && period <= 22, 'A full fade cycle must take 10–22 seconds');
+  assert.ok(period >= 2.6 && period <= 6.5, 'A full fade cycle must take 2.6–6.5 seconds');
 };
 assert.throws(() => fineAndCalm({ size: 5.7, rate: .4 }), /Grain/);
 assert.throws(() => fineAndCalm({ size: 1.2, rate: 2 * Math.PI * 2 }), /fade cycle/);
@@ -42,13 +42,13 @@ for (const [width, height, fraction] of [[320,568,.1],[390,844,.1],[768,1024,.15
     for (let t = 0; t < 22; t += .13) {
       const alpha = field.brightness(square, t);
       assert.ok(Number.isFinite(alpha) && alpha >= 0 && alpha <= 1);
-      assert.ok(Math.abs(field.brightness(square, t + 1/p.fps) - alpha) < .018, 'Per-frame brightness changes too abruptly');
+      assert.ok(Math.abs(field.brightness(square, t + 1/p.fps) - alpha) < .075, 'Per-frame brightness changes too abruptly');
     }
   }
   const sizes = left.map(s => s.size).sort((a,b) => a-b);
   const periods = left.map(s => 2 * Math.PI / s.rate).sort((a,b) => a-b);
   assert.ok(sizes[Math.floor(sizes.length*.9)] - sizes[Math.floor(sizes.length*.1)] > .3, 'Size variation is too uniform');
-  assert.ok(periods[Math.floor(periods.length*.9)] - periods[Math.floor(periods.length*.1)] > 8, 'Fade durations must differ');
+  assert.ok(periods[Math.floor(periods.length*.9)] - periods[Math.floor(periods.length*.1)] > 2, 'Fade durations must differ');
   assert.ok(new Set(left.map(s=>(s.y+s.size/2).toFixed(5))).size < left.length, 'Squares must share aligned rows');
   assert.ok(left.some(s=>s.y > height*.9), 'The capped field must retain its lower rows');
   assert.ok(left.filter(s => s.x < gutter * .3).length > left.filter(s => s.x > gutter * .7).length, 'Density must diminish toward the content');
@@ -67,7 +67,7 @@ assert.ok(innerSquares.every(s=>s.peak < .42), 'Inner-edge fade must damp even a
 const unchangedGeometry = JSON.stringify(fadeField);
 const temporal = [0,3,6,9].map(t => fadeField.map(s=>field.brightness(s,t)));
 assert.notDeepEqual(temporal[0], temporal[1], 'Three seconds must show a gentle change');
-assert.equal(JSON.stringify(fadeField), unchangedGeometry, 'Animation may not move, resize or regenerate squares');
+assert.equal(JSON.stringify(fadeField), unchangedGeometry, 'The seed geometry must persist as the rendered tile travels');
 
 // Exercise the real painter and lifecycle against deterministic browser surfaces.
 const listeners = new Map(), jobs = new Map(), ios = [], ros = [];
@@ -79,12 +79,12 @@ const target = name => ({
   removeEventListener(type) { listeners.delete(name + ':' + type); },
 });
 const canvases = [0, 1].map(side => ({
-  width: 300, height: 150,
+  width: 300, height: 150, style: {},
   get clientWidth() { reads++; return Math.min(gutter, p.maxFieldWidth); },
   getContext() {
     return available ? {
       setTransform() {}, clearRect() { clears++; }, beginPath() {},
-      rect(x,y,w,h) { assert.ok(x >= 0 && x + w <= canvases[side].width); assert.ok(y >= 0 && y + h <= canvases[side].height); assert.ok([x,y,w,h].every(Number.isInteger), 'Fine grain must land on backing pixels'); rectangles.push([side,x,y,w,h]); },
+      rect(x,y,w,h) { assert.ok(x >= 0 && x + w <= canvases[side].width); assert.ok(y >= 0 && y < canvases[side].height); assert.ok([x,y,w,h].every(Number.isInteger), 'Fine grain must land on backing pixels'); rectangles.push([side,x,y,w,h]); },
       fill() { fills++; },
     } : null;
   },
@@ -95,7 +95,7 @@ const viewport = {
   get clientHeight() { reads++; return height; },
 };
 const document = { ...target('document'), get hidden() { return hidden; } };
-const window = { ...target('window'), devicePixelRatio: 3 };
+const window = { ...target('window'), devicePixelRatio: 3, scrollY: 0 };
 const media = { ...target('media'), get matches() { return reduced; } };
 const runtime = await loadSideSquares({ document, window, matchMedia: () => media,
   requestAnimationFrame(fn) { jobs.set(++serial, fn); return serial; },
@@ -105,7 +105,8 @@ const runtime = await loadSideSquares({ document, window, matchMedia: () => medi
 });
 const fire = name => listeners.get(name).fn();
 const tick = (ms = 1000 / 60) => { clock += ms; const current = [...jobs.values()]; jobs.clear(); current.forEach(fn => fn(clock)); };
-let engine = runtime.mountSideSquares({}, viewport, false);
+const section = { getBoundingClientRect() { reads++; return {top:-window.scrollY,height:24000} } };
+let engine = runtime.mountSideSquares(section, viewport, false);
 assert.equal(jobs.size, 0); assert.equal(clears, 0, 'Nothing is painted outside the menu');
 ios.at(-1).fn([{ isIntersecting: true }]); assert.equal(jobs.size, 1);
 const initialReads = reads;
@@ -115,7 +116,14 @@ assert.equal(reads, initialReads, 'Animation may not read layout');
 assert.equal(clears, engine.stats().frames * 2);
 assert.ok(fills <= engine.stats().frames * 62, 'Opacity grouping must bound fill calls');
 assert.equal(engine.stats().state, 'running'); assert.ok(rectangles.length > 0);
-assert.ok([...listeners.keys()].every(name => !/pointer|touch|mouse|scroll/.test(name)), 'Decoration must not handle input or scrolling');
+assert.ok(listeners.get('window:scroll').options.passive);
+assert.ok([...listeners.keys()].every(name => !/pointer|touch|mouse/.test(name)));
+window.scrollY = 48; fire('window:scroll'); tick();
+assert.equal(canvases[0].style.transform, 'translateY(' + (-48*p.scrollFactor) + 'px)');
+assert.equal(canvases[1].style.transform, canvases[0].style.transform);
+assert.equal(reads, initialReads, 'Scroll must only reuse cached geometry');
+const initialPass=clears; window.scrollY = 180; fire('window:scroll'); tick();
+assert.ok(clears > initialPass, 'Crossing a strip must repaint continuous world coordinates');
 
 engine.setPaused(true); assert.equal(jobs.size, 0);
 let count = clears; for (let i = 0; i < 120; i++) tick(); assert.equal(clears, count);
@@ -129,6 +137,9 @@ assert.equal(engine.stats().state, 'static', 'A pending frame must settle into r
 assert.equal(jobs.size, 0);
 fire('media:change'); assert.equal(jobs.size, 0); assert.equal(engine.stats().state, 'static');
 count = clears; for (let i = 0; i < 120; i++) tick(); assert.equal(clears, count);
+window.scrollY += 12; fire('window:scroll'); tick();
+assert.equal(canvases[0].style.transform, 'translateY(' + -(window.scrollY % p.overscan) + 'px)');
+assert.equal(jobs.size, 0, 'Reduced motion scroll must settle without an animation loop');
 reduced = false; fire('media:change'); tick();
 width = 3440; height = 1440; gutter = width * .3;
 for (let i = 0; i < 20; i++) ros.at(-1).fn();
@@ -141,7 +152,7 @@ assert.ok(canvases.every(c => c.width * c.height === 1));
 // Unavailable Canvas and opening the menu with reduced motion must stay functional.
 for (const mode of ['unavailable', 'reduced', 'dialog']) {
   available = mode !== 'unavailable'; reduced = mode === 'reduced';
-  engine = runtime.mountSideSquares({}, viewport, mode === 'dialog');
+  engine = runtime.mountSideSquares(section, viewport, mode === 'dialog');
   ios.at(-1).fn([{ isIntersecting: true }]);
   assert.equal(jobs.size, 0); engine.dispose(); assert.equal(listeners.size, 0);
 }
@@ -155,4 +166,4 @@ await assert.rejects(access('src/components/menu/MenuDotGrid.tsx'));
 const baseline = await readFile('src/styles/clean.css', 'utf8');
 for (const rule of ['--vr-gutter: 10vw; --vr-content: 80vw', '--vr-gutter:15vw; --vr-content:70vw', '--vr-gutter:20vw; --vr-content:60vw', '--vr-gutter:30vw; --vr-content:40vw']) assert.ok(baseline.includes(rule));
 console.log('SIDE_SQUARES_LAYOUTS ' + JSON.stringify(layouts));
-console.log('BLINKING_SQUARES_OK — aligned rows/columns; fine squares and slow independent 10–22s twinkle; stable seeded occupancy; controlled density falloff; complete field at capped size; 10/15/20/30% side confinement; no input listeners or per-frame layout reads; 20Hz paint cap; one clock; bounded pixels/squares/fills; hidden/offscreen/dialog pause; reduced-motion static frame; complete cleanup.');
+console.log('BLINKING_SQUARES_OK — aligned rows/columns; fine squares and independent 2.6–6.5s twinkle; stable seeded occupancy; controlled density falloff; complete field at capped size; 10/15/20/30% side confinement; scroll-linked tile motion without per-frame layout reads; 20Hz idle paint cap; one clock; bounded pixels/squares/fills; hidden/offscreen/dialog pause; reduced-motion static frame; complete cleanup.');

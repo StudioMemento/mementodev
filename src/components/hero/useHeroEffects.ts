@@ -38,7 +38,8 @@ export function useHeroEffects(sectionRef: RefObject<HTMLElement | null>, logoRe
       if (disposed) return;
       const running=eligible();
       section.dataset.fxState=running?"running":reduced.matches?"reduced":"paused";
-      if (reduced.matches) { logo.dataset.liquidReady="false"; glimmer?.draw(0); }
+      if (!running) glimmer?.release();
+      if (reduced.matches) { logo.dataset.liquidReady="false"; glimmer?.draw(time); }
       if (running) frame=requestAnimationFrame(draw);
     };
     const measure = () => {
@@ -75,8 +76,13 @@ export function useHeroEffects(sectionRef: RefObject<HTMLElement | null>, logoRe
       setHover(overMark(event));
     };
     const leave = () => { pointerX=pointerY=0; setHover(false); };
-    const press = (event: PointerEvent) => { if(event.pointerType!=="mouse") setHover(overMark(event)); };
-    const release = (event: PointerEvent) => { if(event.pointerType!=="mouse") setHover(false); };
+    const press = (event: PointerEvent) => {
+      if (!event.isPrimary || event.button !== 0 || !eligible() || (event.target as Element).closest("a,button")) return;
+      const bounds = section.getBoundingClientRect();
+      glimmer?.press(event.clientX - bounds.left, event.clientY - bounds.top);
+      if (event.pointerType !== "mouse") setHover(overMark(event));
+    };
+    const release = (event: PointerEvent) => { glimmer?.release(); if(event.pointerType!=="mouse") setHover(false); };
     const resize=new ResizeObserver(queueMeasure); resize.observe(section); resize.observe(logo);
     const visibility=new IntersectionObserver(entries=> { inView=entries[0].isIntersecting; sync(); },{threshold:0}); visibility.observe(section);
     // Native dialog state is sparse; observe only structural/open changes.
@@ -86,7 +92,7 @@ export function useHeroEffects(sectionRef: RefObject<HTMLElement | null>, logoRe
     reduced.addEventListener("change",motionChanged);
     window.addEventListener("resize",queueMeasure,{passive:true});
     section.addEventListener("pointermove",pointer,{passive:true}); section.addEventListener("pointerleave",leave);
-    logo.addEventListener("pointerdown",press,{passive:true});
+    section.addEventListener("pointerdown",press,{passive:true});
     window.addEventListener("pointerup",release,{passive:true}); window.addEventListener("pointercancel",release,{passive:true});
     window.addEventListener("scroll",leave,{passive:true});
     canvas.addEventListener("webglcontextlost",onLost); canvas.addEventListener("webglcontextrestored",onRestored);
@@ -98,7 +104,7 @@ export function useHeroEffects(sectionRef: RefObject<HTMLElement | null>, logoRe
       resize.disconnect(); visibility.disconnect(); dialogs.disconnect(); liquid?.dispose();
       document.removeEventListener("visibilitychange",sync); reduced.removeEventListener("change",motionChanged);
       window.removeEventListener("resize",queueMeasure); section.removeEventListener("pointermove",pointer); section.removeEventListener("pointerleave",leave);
-      logo.removeEventListener("pointerdown",press); window.removeEventListener("pointerup",release); window.removeEventListener("pointercancel",release); window.removeEventListener("scroll",leave);
+      section.removeEventListener("pointerdown",press); window.removeEventListener("pointerup",release); window.removeEventListener("pointercancel",release); window.removeEventListener("scroll",leave);
       canvas.removeEventListener("webglcontextlost",onLost); canvas.removeEventListener("webglcontextrestored",onRestored); img.removeEventListener("load",imageReady);
       logo.dataset.liquidReady="false";
       logo.dataset.gold="false";

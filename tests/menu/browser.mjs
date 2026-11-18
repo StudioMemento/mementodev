@@ -35,7 +35,7 @@ try {
   const page=await browser.newPage({viewport:{width,height},hasTouch:width<768||height<=520,isMobile:width<768||height<=520});
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(url);await page.evaluate(()=>document.fonts.ready);
-  await page.evaluate(()=>window.scrollTo({top:document.querySelector('#menu').offsetTop-100,behavior:'instant'}));
+  await page.evaluate(()=>window.scrollTo({top:scrollY+document.querySelector('#menu').getBoundingClientRect().top-100,behavior:'instant'}));
   await page.waitForFunction(titleFitsGutters);
   const heading=await page.locator('.menu-head').evaluate(el=>({text:el.textContent.trim(),children:el.children.length,rect:el.getBoundingClientRect().toJSON(),title:el.querySelector('span').getBoundingClientRect().toJSON(),tracking:parseFloat(getComputedStyle(el.querySelector('span')).letterSpacing),overflow:document.documentElement.scrollWidth>innerWidth}));
   assert.equal(heading.text,'Menù');assert.equal(heading.children,1);assert.equal(heading.overflow,false);assert.ok(heading.tracking>12);assert.ok(await page.evaluate(titleFitsGutters));
@@ -79,8 +79,8 @@ try {
   const trigger=page.locator('[data-menu-item="Burrata e Crudo"] button.nome');
   await trigger.click();await page.locator('dialog.modal-allergens').waitFor({state:'visible'});
   const dialog=await page.locator('.modal-allergens').evaluate(el=>({active:[...el.querySelectorAll('.contains .allergen-code')].map(n=>n.textContent),count:el.querySelectorAll('li').length,bg:getComputedStyle(el).backgroundColor,blur:getComputedStyle(el,'::backdrop').backdropFilter,rows:[...el.querySelectorAll('li')].map(n=>getComputedStyle(n).display),font:parseFloat(getComputedStyle(el.querySelector('li')).fontSize),headerOrder:[...el.querySelector('.modal-header>div').children].map(n=>n.tagName),note:el.querySelector('.allergen-note').textContent,indent:[...el.querySelectorAll('.allergen-text')].map(n=>n.getBoundingClientRect().left),circle:getComputedStyle(el.querySelector('.allergen-code')).borderTopWidth,x:getComputedStyle(el.querySelector('.modal-close')).outlineStyle}));
-  assert.deepEqual(dialog.active,['1','7']);assert.equal(dialog.count,15);assert.equal(dialog.bg,'rgba(0, 0, 0, 0)');assert.ok(dialog.blur.includes('blur'));assert.ok(dialog.rows.every(v=>v==='grid'));assert.ok(dialog.font>=12.5);assert.deepEqual(dialog.headerOrder,['H2']);assert.equal(dialog.note,'Per ulteriori informazioni, chiedi al personale.');const alignedColumns = new Set(dialog.indent.map(x => Math.round(x)));
-  assert.equal(alignedColumns.size, width >= 460 && height <= 340 ? 3 : height <= 560 ? 2 : 1);assert.equal(dialog.circle,'0px');assert.equal(dialog.x,'none');
+  assert.deepEqual(dialog.active,['1','7']);assert.equal(dialog.count,15);assert.equal(dialog.bg,'rgba(0, 0, 0, 0)');assert.ok(dialog.blur.includes('blur'));assert.ok(dialog.rows.every(v=>v==='grid'));assert.ok(dialog.font>=12.5);assert.deepEqual(dialog.headerOrder,['H2']);assert.equal(dialog.note,'Per ulteriori info, chiedi al personale.');const alignedColumns = new Set(dialog.indent.map(x => Math.round(x)));
+  assert.equal(alignedColumns.size, await page.locator('.modal-allergens').evaluate(el=>Number(el.style.getPropertyValue('--allergen-columns'))));assert.equal(dialog.circle,'0px');assert.equal(dialog.x,'none');
   await page.screenshot({path:`${out}/allergens-${width}x${height}.png`});
   await page.locator('.allergen-name').first().click();await page.locator('dialog').waitFor({state:'detached'});
   assert.equal(await trigger.evaluate(el=>document.activeElement===el),true);
@@ -128,15 +128,21 @@ try {
    await page.locator('.lang button').filter({hasText:new RegExp(`^${lang.toUpperCase()}$`)}).click();
    const rows=await page.locator('.drink-row').evaluateAll(els=>els.map(el=>{
     const rect=node=>node.getBoundingClientRect().toJSON();
-    return {name:el.dataset.menuItem,row:rect(el),label:rect(el.querySelector('.label')),grid:rect(el.querySelector('.pricegrid')),dots:el.querySelectorAll('.dots').length,cells:[...el.querySelectorAll('.drink-price-cell')].map(cell=>({cell:rect(cell),label:rect(cell.querySelector('.drink-size-label')),price:rect(cell.querySelector('b')),visibleLabel:getComputedStyle(cell.querySelector('.drink-size-label')).position==='static',overflow:cell.scrollWidth>cell.clientWidth+1}))};
+    return {name:el.dataset.menuItem,row:rect(el),label:rect(el.querySelector('.label')),grid:rect(el.querySelector('.pricegrid')),dots:getComputedStyle(el.querySelector('.dots')).display,
+     header:[...el.closest('.drink-table').querySelectorAll('.drink-size-head>span')].map(rect),
+     group:rect(el.closest('.drink-table').querySelector('.groupline')),
+     cells:[...el.querySelectorAll('.drink-price-cell')].map(cell=>({cell:rect(cell),label:rect(cell.querySelector('.drink-size-label')),price:rect(cell.querySelector('b')),visibleLabel:getComputedStyle(cell.querySelector('.drink-size-label')).position==='static',overflow:cell.scrollWidth>cell.clientWidth+1}))};
    }));
    assert.equal(rows.length,6);
    for(const row of rows){
-    assert.equal(row.dots,0);assert.equal(row.cells.length,3);
-    assert.ok(row.grid.right<=row.row.right+1);
-    for(const cell of row.cells){assert.equal(cell.overflow,false);assert.equal(cell.visibleLabel,width<768);assert.ok(cell.price.right<=row.row.right+1);}
-    if(width<768){assert.ok(row.grid.top>=row.label.bottom+11);assert.ok(Math.abs(row.label.width-row.row.width)<1);assert.ok(row.cells.every(c=>c.price.top>=c.label.bottom));assert.ok(row.cells.every(c=>Math.abs(c.price.bottom-row.cells[0].price.bottom)<1));}
-    else assert.ok(row.grid.left>=row.label.right+23);
+    assert.equal(row.dots,width<768?'none':'block');assert.equal(row.cells.length,3);
+    assert.ok(row.grid.right<=row.row.right+1 && row.grid.left>=row.label.right-1,'Name overlaps a price column');
+    for(const [i,cell] of row.cells.entries()){
+     assert.equal(cell.overflow,false);assert.equal(cell.visibleLabel,false);
+     assert.ok(Math.abs(cell.cell.right-row.header[i].right)<1,'Serving/price columns do not align');
+     assert.ok(Math.abs(row.header[i].top-row.group.top)<14,'Serving labels must share the subgroup heading line');
+     assert.ok(cell.price.right<=row.row.right+1);
+    }
    }
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
    drinks.push({lang,rows});
@@ -151,7 +157,7 @@ try {
    content:document.querySelector('#cat-audaci').getBoundingClientRect().toJSON(),
    surfaces:[...el.querySelectorAll('canvas')].map(c=>({rect:c.getBoundingClientRect().toJSON(),pixels:c.width*c.height})),
    events:getComputedStyle(el.parentElement).pointerEvents,
-   background:getComputedStyle(document.querySelector('#menu')).backgroundColor,
+   background:getComputedStyle(document.querySelector('.menu-atmosphere')).backgroundColor,
   }));
   assert.equal(bands.surfaces.length,2);assert.equal(bands.events,'none');assert.equal(bands.background,'rgb(9, 9, 9)');
   assert.ok(bands.surfaces.reduce((n,c)=>n+c.pixels,0)<=1_600_000);

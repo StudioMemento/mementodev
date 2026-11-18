@@ -12,7 +12,7 @@ const target = (name) => ({
   removeEventListener:(e)=>listeners.delete(name+':'+e),
 });
 let reduced=false,hidden=false,dialog=false;
-const raf=new Map(); let id=0,glimmerDraws=0,liquidDraws=0,disposeCount=0,glimmerSize,liquidSize,lastHover=0;
+const raf=new Map(); let id=0,glimmerDraws=0,liquidDraws=0,disposeCount=0,glimmerSize,liquidSize,lastHover=0,pressAt;
 let sectionBox={left:0,top:0,width:1440,height:900};
 let logoBox={left:540,top:190,width:360,height:360};
 const img={...target('image'),complete:true,naturalWidth:851};
@@ -32,7 +32,7 @@ const context={
   IntersectionObserver:class{constructor(f){intersection=f}observe(){}disconnect(){}},
   MutationObserver:class{constructor(f){mutations=f}observe(){}disconnect(){}},
   useEffect:fn=>{effect=fn},
-  createGlimmer:()=>({resize:g=>{glimmerSize=g},draw:()=>{glimmerDraws++}}),
+  createGlimmer:()=>({resize:g=>{glimmerSize=g},draw:()=>{glimmerDraws++},press:(x,y)=>{pressAt=[x,y]},release:()=>{pressAt=null}}),
   createLiquid:()=>({resize:s=>{liquidSize=s},draw:(_t,_x,_y,h)=>{liquidDraws++;lastHover=h},dispose:()=>{disposeCount++}}),
   HERO_PRESET:{mobileFps:30,desktopFps:40},
   LOGO_MARK:{centerX:425/851,centerY:424.5/851,radius:292/851},
@@ -49,7 +49,11 @@ tick(0);
 assert.equal(glimmerSize.x,540+360*425/851);assert.equal(glimmerSize.y,190+360*424.5/851);assert.equal(liquidSize,360);
 assert.equal(raf.size,0,'No continuous clock before hero enters viewport');
 intersection([{isIntersecting:true}]);assert.equal(section.dataset.fxState,'running');assert.equal(raf.size,1);
-tick(100);tick(140);assert.ok(liquidDraws>0);assert.equal(logo.dataset.liquidReady,'true');
+tick(100);tick(140);
+listeners.get('hero:pointerdown')({pointerType:'mouse',isPrimary:true,button:0,clientX:80,clientY:110,target:{closest:()=>null}});
+assert.deepEqual(pressAt,[80,110]);listeners.get('window:pointerup')({pointerType:'mouse'});assert.equal(pressAt,null);
+listeners.get('hero:pointerdown')({pointerType:'mouse',isPrimary:true,button:0,clientX:80,clientY:110,target:{closest:()=>({})}});
+assert.equal(pressAt,null,'Links and buttons must keep their normal action');assert.ok(liquidDraws>0);assert.equal(logo.dataset.liquidReady,'true');
 listeners.get('hero:pointermove')({pointerType:'mouse',clientX:720,clientY:370});
 assert.equal(logo.dataset.gold,'true');
 for(let t=180;t<=1180;t+=40)tick(t);
@@ -85,7 +89,7 @@ vm.createContext(particleScope);
 vm.runInContext(stripTypeScriptTypes(geometrySrc+'\n'+presetSrc+'\n'+(await readFile('src/components/hero/glimmer.ts','utf8')).replace(/^import .*;\n/gm,'').replace('export type','type').replace('export function','function')),particleScope);
 const renderer=particleScope.createGlimmer(recording);
 for(const g of [{width:1440,height:900,x:720,y:370,logoWidth:360},{width:390,height:844,x:195,y:340,logoWidth:320}]){
- renderer.resize(g);renderer.draw(0);assert.ok(points.length>100);
+ renderer.resize(g);renderer.draw(0);assert.ok(points.filter(p=>p.a>.25).length>125, "Gold dust is too dim at this viewport");
  assert.equal(recording.width,Math.round(g.width*1.5));
  const clearRadius=Number(recording.dataset.hollowRadius);
  assert.ok(Math.abs(clearRadius-g.logoWidth*292/851)<.01,'Hollow must start at visible alpha perimeter');
@@ -94,5 +98,15 @@ for(const g of [{width:1440,height:900,x:720,y:370,logoWidth:360},{width:390,hei
  assert.ok(points.every(p=>p.a>=0&&p.a<=1));
  const first=JSON.stringify(points);renderer.draw(2);assert.notEqual(JSON.stringify(points),first,'Particles are static');
 }
+const scene={width:1440,height:900,x:720,y:370,logoWidth:360};
+function waveFrame(input) {
+ const fx=particleScope.createGlimmer(recording);fx.resize(scene);fx.draw(0);
+ if(input){fx.press(600,440);if(input==='tap')fx.release()}
+ fx.draw(.12);fx.draw(.26);return points.map(p=>({...p}));
+}
+const idle=waveFrame(null),tap=waveFrame('tap'),hold=waveFrame('hold');
+assert.deepEqual(tap.map(p=>p.x),idle.map(p=>p.x),'A tap must keep the field on course');
+assert.ok(tap.some((p,i)=>p.a>idle[i].a+.12),'Tap must create a visible traveling light wave');
+assert.notDeepEqual(hold.map(p=>p.x),idle.map(p=>p.x),'Holding must accelerate the outward travel');
 assert.equal(vm.runInContext('HERO_PRESET.glimmer.speed',particleScope),.25,'Outward speed must stay unchanged');
 console.log('HERO_RUNTIME_OK — logo-relative geometry, DPR cap, live particles, pause/resume, reduced motion, context recovery and complete cleanup. Browser rendering remains a separate check.');

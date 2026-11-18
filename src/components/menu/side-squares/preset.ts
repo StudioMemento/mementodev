@@ -6,8 +6,8 @@ export const SIDE_SQUARES = Object.freeze({
   fadeStart: 0.55,
   minSize: 1,
   maxSize: 1.5,
-  minCycle: 10,
-  maxCycle: 22,
+  minCycle: 2.6,
+  maxCycle: 6.5,
   minPeak: 0.65,
   maxPeak: 1,
   squareColor: "#c6ab70",
@@ -16,4 +16,6 @@ export const SIDE_SQUARES = Object.freeze({
   maxPixels: 1_600_000,
   maxDpr: 2,
   fps: 20,
+  scrollFactor: .78,
+  overscan: 96,
 });

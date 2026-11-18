@@ -1,44 +1,35 @@
-# ViaRoma_3.8_MENU
+# ViaRoma_3.9_MENU
 
-Checkpoint del 18 novembre 2026, basato sulla 3.7. Sorgenti e asset completi per Vercel; nessuna pubblicazione automatica.
+Checkpoint del 18 novembre 2026, basato sulla 3.8. Progetto React e Vite con gli asset originali e il menù prerenderizzato.
 
-## Modifiche
+## Avvio
 
-- Quadrati oro su griglia regolare di 6px, con celle vuote casuali e densità decrescente verso l'interno. Dimensioni 1–1,5px CSS; posizioni ferme, twinkle indipendente di 10–22 secondi.
-- Due fasce laterali entro i margini approvati, con il centro del menù libero. Proporzioni 10–80–10 / 15–70–15 / 20–60–20 / 30–40–30 conservate.
-- Fondo #090909 in tutto il sito, comprese le pagine legali.
-- Acqua, bibite, birre e vini non aprono più il popup allergeni.
-- Il popup mostra il nome del piatto, i 14 allergeni e la voce sui surgelati. Il nome di ogni allergene precede la descrizione. La lista passa da una a due colonne quando lo spazio verticale si riduce e a tre sui telefoni ruotati più bassi.
-- Copy italiano della cucina su due righe da mobile, con interruzione dopo “Anche se incredibile...”.
+Dalla cartella che contiene `package.json`, con Node 24 oppure Node 22.13 o successivo della serie 22, eseguire i comandi seguenti.
 
-Nessuna nuova dipendenza applicativa. Dati del menù, prezzi, immagini, contenuti social e testi delle quattro lingue conservati. L'effetto è originale e non richiede React Bits Pro.
+```sh
+npm ci
+npm run dev
+```
 
-## Avvio e deploy
+Per verificare il progetto e generare la versione di produzione usare `npm run check` e `npm test`. Per Vercel, copiare il contenuto della cartella `ViaRoma_3.9_MENU` nella radice del progetto di sviluppo. La configurazione inclusa usa `npm ci`, `npm run build` e la cartella di output `dist`. La preview mantiene `noindex,nofollow`.
 
-Copiare il contenuto di `ViaRoma_3.8_MENU` nella radice della repository di sviluppo.
+## Modifiche della 3.9
 
-    npm ci
-    npm run dev
-    npm run check
-    npm test
+- La Hero disegna 1.500 particelle oro attorno al marchio. Un tocco genera un’onda di luce e la pressione prolungata accelera il movimento verso l’esterno.
+- Lo slider pizze usa un fondo nero puro. Lo stesso tracciato dorato delle immagini incornicia lo slider e chiude il menù.
+- Le fasce laterali iniziano nel cornicione, seguono lo scorrimento e scintillano anche a pagina ferma.
+- Il popup usa il titolo reale del piatto e lo spazio disponibile per scegliere spaziatura e numero di colonne. In italiano “noci del Brasile” apre una nuova riga e la nota finale recita “Per ulteriori info, chiedi al personale.”
+- Nelle birre alla spina e nei vini della casa i formati stanno sulla riga del titolo e sopra i rispettivi prezzi. Le righe desktop riprendono il tratteggio della carta.
 
-Node 22.13+ nella serie 22 o Node 24+. Vercel: install `npm ci`, build `npm run build`, output `dist`. Nessuna variabile d'ambiente. `noindex,nofollow` conservato.
+## Verifiche in browser
 
-## Performance e verifiche
+Con Playwright e Chromium disponibili nell’ambiente di verifica, avviare l’anteprima con `npm run preview -- --port 4175`. Da un secondo terminale eseguire questi controlli sulla build.
 
-Configurazione dell'effetto: `src/components/menu/side-squares/preset.ts`. Due Canvas 2D, massimo 6000 quadrati e 1,6 milioni di pixel complessivi, DPR massimo 2, 20 ridisegni/s. Il motore viene caricato vicino al menù; si ferma fuori vista, con scheda nascosta o popup aperto. Movimento ridotto: stato statico. Nessun listener del puntatore o calcolo del layout durante il disegno.
+```sh
+node tests/menu/browser.mjs
+node tests/menu/dialog-viewport.mjs
+```
 
-Verificati TypeScript, build client/SSR, prerender, contenuti, interazioni e ciclo di vita dell'effetto. Il painter reale è stato rasterizzato a 390×844, 768×1024, 1440×900 e 3440×1440, a 0, 3 e 6 secondi. I tempi Canvas nativi non misurano gli FPS della pagina o l'hardware mobile.
+`TEST_URL`, `CHROMIUM_PATH`, `PLAYWRIGHT_MODULE` e `QA_DIR` permettono di indicare l’anteprima, il browser, il modulo Playwright e la destinazione dei risultati. Le scelte visive e le misure del checkpoint sono in `docs/MENU_3_9_POLISH.md`.
 
-Il controllo in Chromium 153 sulla build di produzione ha aperto il popup per tutti i 70 piatti in italiano, inglese, tedesco e francese. Le 15 voci, il titolo, la chiusura e la nota del personale risultano visibili senza scorrere in tutte le 39 configurazioni provate. Il campione include 320×480, 320×568, 375×736 e 568×280, oltre a cinque configurazioni con margini di sicurezza emulati. Con testo ingrandito il dialog consente di scorrere fino alla nota.
-
-Per ripetere i test da due terminali, avviare `npm run preview -- --port 4175` dopo la build. Nell'altro terminale usare Playwright e Chromium disponibili nell'ambiente di verifica.
-
-    node tests/menu/browser.mjs
-    node tests/menu/dialog-viewport.mjs
-
-Il primo script controlla interazioni, griglia, prezzi e copy. Il secondo apre ciascuna scheda e misura le dimensioni nel browser. `TEST_URL`, `CHROMIUM_PATH`, `PLAYWRIGHT_MODULE` e `QA_DIR` permettono di indicare un'altra anteprima, il browser, il modulo di test e la cartella dei risultati. Playwright serve esclusivamente per questi controlli.
-
-QA Canvas facoltativa: `node tests/menu/render-squares.mjs` e `node tests/menu/estimate-dialog.mjs`, impostando `SQUARES_CANVAS_MODULE` al percorso di `@napi-rs/canvas`. Per il confronto colore, impostare `SQUARES_REFERENCE_IMAGE` allo screenshot originale 544×780. Canvas e Playwright sono strumenti di verifica, non dipendenze richieste dal deploy.
-
-Misure e limiti: `docs/MENU_3_8_POLISH.md`. I documenti precedenti descrivono checkpoint storici.
+La stima tipografica offline è disponibile con `node tests/menu/estimate-dialog.mjs` e la verifica raster dei particellari con `node tests/menu/render-squares.mjs`. Entrambe accettano `SQUARES_CANVAS_MODULE` per indicare il modulo di test `@napi-rs/canvas`.

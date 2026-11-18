@@ -3,7 +3,8 @@ import { LanguageProvider, useI18n } from "./i18n";
 import { DialogProvider, useDialog } from "./components/DialogContext";
 import { Header, Dock } from "./components/Navigation";
 import Hero from "./components/Hero";
-import { IntroSliders } from "./components/IntroSliders";
+import { Cornicione, PizzaSlider } from "./components/IntroSliders";
+import { MenuSideSquares } from "./components/menu/MenuSideSquares";
 import Menu from "./components/Menu";
 import Gallery from "./components/Gallery";
 import Community from "./components/Community";
@@ -31,8 +32,12 @@ function Page() {
       <Header />
       <main id="main-content">
         <Hero />
-        <IntroSliders />
-        <Menu />
+        <PizzaSlider />
+        <div className="menu-atmosphere">
+          <MenuSideSquares />
+          <Cornicione />
+          <Menu />
+        </div>
         <Gallery />
         <Community />
         <Social />

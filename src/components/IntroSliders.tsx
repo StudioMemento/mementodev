@@ -18,7 +18,7 @@ function Controls({ labels, carousel }: { labels: string[]; carousel: ReturnType
   </div>;
 }
 
-function Oven() {
+export function PizzaSlider() {
   const { t, language } = useI18n();
   const carousel = useCarousel(data.FORNO.length, language);
   return <section className="vr-pizza-carousel pizza-clean" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
@@ -51,7 +51,7 @@ const crustHeadings: Record<Language, [string, string]> = {
   de: ["Ein Pizzarand,", "mit dem gewissen Extra!"],
   fr: ["Une bordure,", "avec un petit plus !"],
 };
-function Cornicione() {
+export function Cornicione() {
   const { t, language } = useI18n();
   const [line1, line2] = crustHeadings[language];
   const section = useIntroVisibility();
@@ -70,4 +70,3 @@ function Cornicione() {
     </div>
   </section>;
 }
-export function IntroSliders() { return <><Oven /><Cornicione /></>; }
