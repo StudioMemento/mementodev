@@ -67,7 +67,7 @@ for(const rows of [data.SPINA.map(b=>({name:b[0],qualifier:b[1],prices:b.slice(2
 }
 const dialogEffects=[];
 let nativeOpen=false;const rootStyle={overflow:'auto'},dialogRef={current:{clientWidth:390,clientHeight:844,scrollHeight:844,scrollWidth:390,style:{setProperty(){}},dataset:{},showModal:()=>{nativeOpen=true},close:()=>{nativeOpen=false}}};
-const dialog=await source('src/components/Dialogs.tsx',{...shared,allergens,privacy:'',cookies:'',legal:'',useRef:()=>dialogRef,useLayoutEffect:fn=>dialogEffects.push(fn),ResizeObserver:class{observe(){} disconnect(){}},document:{documentElement:{style:rootStyle},fonts:{ready:Promise.resolve()}},useDrag:()=>({}),Icon:()=>null,Photo:()=>null,wrap:(v,n)=>(v%n+n)%n});
+const dialog=await source('src/components/Dialogs.tsx',{...shared,allergens,LegalReader:()=>null,useRef:()=>dialogRef,useLayoutEffect:fn=>dialogEffects.push(fn),ResizeObserver:class{observe(){} disconnect(){}},document:{documentElement:{style:rootStyle},fonts:{ready:Promise.resolve()}},useDrag:()=>({}),Icon:()=>null,Photo:()=>null,wrap:(v,n)=>(v%n+n)%n});
 for(const lang of ['it','en','de','fr']){
  currentLang=lang;modal={kind:'allergens',name:row[0],description:row[1],codes:'1 · 7 *'};view=dialog.Dialogs();
  const header=nodes(view,n=>n.props.className==='modal-header')[0];assert.equal(nodes(header,n=>n.type==='h2').length,1);assert.equal(nodes(header,n=>n.type==='p').length,0,'Redundant allergen eyebrow must be removed');

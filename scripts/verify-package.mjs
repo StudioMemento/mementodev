@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_4.0_MENU";
+const name = "ViaRoma_4.1_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -25,11 +25,8 @@ for (let i = 0; i < count; i++) {
   const entry = zip.subarray(p + 46, p + 46 + length).toString("utf8");
   p += 46 + length + extra + comment;
   if (entry.endsWith("/")) continue;
-  assert.ok(
-    entry.startsWith(name + "/"),
-    "Archive must have one project folder",
-  );
-  const file = entry.slice(name.length + 1);
+  assert.ok(!entry.startsWith("/") && !entry.includes("\\") && entry.split("/").every(part => part && part !== "." && part !== ".."), "Invalid archive path");
+  const file = entry;
   names.push(file);
   assert.ok(
     !/(^|\/)(node_modules|\.git|\.vercel|dist|\.ssr|test-results)(\/|$)/.test(
@@ -65,6 +62,17 @@ for (const required of [
   "README.md",
   "THIRD_PARTY.md",
   "src/main.tsx",
+  "src/components/gallery/ribbon.ts",
+  "src/components/gallery/PhotoRibbon.tsx",
+  "src/components/LegalReader.tsx",
+  "src/components/BentoGrid.tsx",
+  "tests/finale/browser.mjs",
+  "public/assets/memento-wordmark.svg",
+  "public/assets/ribbons/esterno-01.webp",
+  "public/assets/ribbons/david-a1ea9444.webp",
+  "public/fr/privacy.html",
+  "public/de/note-legali.html",
+  "public/en/cookie.html",
   "src/App.tsx",
   "src/data/menu.json",
   "public/assets/logo.png",

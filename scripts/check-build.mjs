@@ -19,12 +19,13 @@ for (const url of local) await stat("dist" + url);
 let js = 0,
   css = 0;
 const jsSizes = new Map();
+const cssSizes = new Map();
 for (const file of await readdir("dist/assets")) {
   if (!/\.(js|css)$/.test(file)) continue;
   const bytes = await readFile("dist/assets/" + file),
     gzip = gzipSync(bytes).length;
   if (file.endsWith(".js")) { js += gzip; jsSizes.set(`assets/${file}`, gzip); }
-  else css += gzip;
+  else { css += gzip; cssSizes.set(`assets/${file}`, gzip); }
 }
 // Count the initial static import graph independently from deferred chunks.
 const manifest = JSON.parse(await readFile("dist/.vite/manifest.json", "utf8"));
@@ -47,8 +48,14 @@ const initialJs = initialFiles.reduce((sum, file) => {
 // Original side squares are optional and deferred; prior initial bundle limits stay intact.
 assert.ok(initialJs < 101_000, `Initial JS budget exceeded: ${initialJs}`);
 assert.ok(js < 110_000, `JS budget exceeded: ${js}`);
-// Includes the shared section edges, serving columns and responsive dialog densities.
-assert.ok(css < 9_300, `CSS budget exceeded: ${css}`);
+// Check the stylesheet needed by the first page separately from the on-demand dialog and ribbon styles.
+const initialStyles = new Set([...initialKeys].flatMap(key => manifest[key].css || []));
+const initialCss = [...initialStyles].reduce((sum, file) => sum + cssSizes.get(file), 0);
+assert.ok(initialCss < 9_300, `Initial CSS budget exceeded: ${initialCss}`);
+assert.ok(css < 11_000, `Total CSS budget exceeded: ${css}`);
+const ribbonKey = "src/components/gallery/ribbon.ts";
+assert.ok(manifest[ribbonKey]?.isDynamicEntry && !initialKeys.has(ribbonKey), "Ribbon motion must load on approach");
+assert.ok(jsSizes.get(manifest[ribbonKey].file) < 2_600, "Gallery controller exceeds budget");
 assert.ok(!Object.keys(manifest).some(key=>key.includes('dot-grid')), "Removed Dot Grid remains in the build");
 const sideKey = "src/components/menu/side-squares/controller.ts";
 assert.ok(manifest[sideKey]?.isDynamicEntry, "Side-square engine is not deferred");
@@ -73,4 +80,4 @@ console.log(
   `PRODUCTION_CHECK_OK — prerendered menu; initial JS ${Math.round(initialJs / 1024)} KiB gzip, all JS chunks ${Math.round(js / 1024)} KiB gzip, CSS ${Math.round(css / 1024)} KiB gzip, HTML ${Math.round(gzipSync(html).length / 1024)} KiB gzip.`,
 );
 
-console.log(`BUILD_METRICS ${JSON.stringify({ initialJsGzipBytes: initialJs, allJsGzipBytes: js, cssGzipBytes: css, htmlGzipBytes: gzipSync(html).length, htmlBytes: Buffer.byteLength(html), initialJsFiles: initialFiles.length, totalJsFiles: jsSizes.size })}`);
+console.log(`BUILD_METRICS ${JSON.stringify({ initialJsGzipBytes: initialJs, allJsGzipBytes: js, cssGzipBytes: css, initialCssGzipBytes: initialCss, htmlGzipBytes: gzipSync(html).length, htmlBytes: Buffer.byteLength(html), initialJsFiles: initialFiles.length, totalJsFiles: jsSizes.size })}`);

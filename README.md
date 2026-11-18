@@ -1,35 +1,42 @@
-# ViaRoma_4.0_MENU
+# Via Roma 4.1
 
-Checkpoint del 18 novembre 2026, basato sulla 3.9. Progetto React e Vite con gli asset originali e il menù prerenderizzato.
+Build di sviluppo per Pizzeria Via Roma a Maniago. La 4.1 riparte da `ViaRoma_4.0_MENU` e introduce le sezioni successive alla carta.
 
-## Avvio
+## Avvio e deploy
 
-Dalla cartella che contiene `package.json`, con Node 24 oppure Node 22.13 o successivo della serie 22, eseguire i comandi seguenti.
+Lo ZIP contiene `package.json`, `vercel.json` e i sorgenti direttamente alla radice. Per il progetto Vercel di sviluppo, estrarre il contenuto nella radice della repository. Il preset è Vite. La configurazione usa `npm ci`, `npm run build` e la directory di output `dist`. L’anteprima mantiene `noindex,nofollow`.
+
+Usare Node 24 o Node 22 dalla versione 22.13.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Per verificare il progetto e generare la versione di produzione usare `npm run check` e `npm test`. Per Vercel, copiare il contenuto della cartella `ViaRoma_4.0_MENU` nella radice del progetto di sviluppo. La configurazione inclusa usa `npm ci`, `npm run build` e la cartella di output `dist`. La preview mantiene `noindex,nofollow`.
+## Sezioni finali
 
-## Modifiche della 4.0
+- **Il locale.** Esterno, Bancone, Sala sinistra, Sala destra e Via Roma raccolgono 40 fotografie. Ogni nastro proietta le immagini 4:3 su una curva continua. Il trascinamento parte dalla foto, il click porta uno scatto al centro e le frecce della tastiera permettono di avanzare. Su touch lo scorrimento verticale resta disponibile.
+- **La community.** Dodici foto quadrate in bianco e nero scorrono con il nome dell’autore a sinistra. Un tap o Invio apre lo scatto originale. Le miniature si trovano in `public/assets/ribbons`. L’ordine e le attribuzioni si modificano in `src/data/photos.json`.
+- **Social e recensioni.** I sei collegamenti sono in `src/data/venue-links.ts`. Google apre le recensioni del locale. La tessera con l’indirizzo apre la sua scheda Maps.
+- **Info e contatti.** La mappa illustrata di Maniago affianca orari, stato di apertura nel fuso Europe/Rome, telefono e WhatsApp. Il credito del footer usa il wordmark Memento fornito.
+- **Privacy, Cookie e Note legali.** Il popup carica la pagina nella lingua selezionata. La stessa pagina è raggiungibile direttamente, anche con JavaScript disattivato. I testi italiani si trovano in `public` e quelli tradotti in `public/en`, `public/de` e `public/fr`. Il lettore mantiene il titolo e il pulsante di chiusura in vista durante lo scorrimento.
 
-- Una linea oro piena da 1 px segna l'inizio e la fine dello slider e l'uscita dal menù.
-- La carta distingue i produttori di birra in bottiglia, le sottocategorie delle bevande e le categorie principali con tre diverse spaziature.
-- I titoli italiani sono “Le stuzzicherie”, “I dolci” e “Le bevande”.
-- Nella didascalia di Monte Jouf il ripieno e la base iniziano su righe distinte in tutte le lingue del sito.
-- I chevron dello slider hanno pulsanti da 52 a 64 px e funzionano anche al tocco e da tastiera.
+Le informative sono bozze. Prima della pubblicazione il gestore deve completare i dati societari e il contatto privacy, confermare il trattamento dei dati, i tempi di conservazione, la configurazione dell’hosting e le autorizzazioni per le foto della community.
 
-## Verifiche in browser
-
-Con Playwright e Chromium disponibili nell’ambiente di verifica, avviare l’anteprima con `npm run preview -- --port 4175`. Da un secondo terminale eseguire questi controlli sulla build.
+## Verifiche
 
 ```sh
+npm run check
+npm test
+npm run preview -- --host 127.0.0.1 --port 4175
+```
+
+Con l’anteprima avviata, Playwright e Chromium disponibili nell’ambiente di test, eseguire da un secondo terminale:
+
+```sh
+node tests/finale/browser.mjs
 node tests/menu/browser.mjs
 node tests/menu/dialog-viewport.mjs
 ```
 
-`TEST_URL`, `CHROMIUM_PATH`, `PLAYWRIGHT_MODULE` e `QA_DIR` permettono di indicare l’anteprima, il browser, il modulo Playwright e la destinazione dei risultati. Le scelte visive e le misure del checkpoint sono in `docs/MENU_4_0_POLISH.md`.
-
-La stima tipografica offline è disponibile con `node tests/menu/estimate-dialog.mjs` e la verifica raster dei particellari con `node tests/menu/render-squares.mjs`. Entrambe accettano `SQUARES_CANVAS_MODULE` per indicare il modulo di test `@napi-rs/canvas`.
+`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_4.1_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.

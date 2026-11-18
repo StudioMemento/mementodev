@@ -11,9 +11,8 @@ const hash=b=>createHash('sha256').update(b).digest('hex');
 const baseline=JSON.parse(await readFile('tests/menu/immutable-baseline.json','utf8'));
 assert.notEqual(hash(Buffer.from('same')),hash(Buffer.from('different')));
 for(const [p,h] of Object.entries(baseline))assert.equal(hash(await readFile(p)),h,`Out-of-scope change: ${p}`);
-const normalizeLayout=s=>s.split('\n').filter(line=>!line.startsWith('.allergen-')).join('\n')
- .replace(' .allergen-list li { grid-template-columns:22px minmax(75px,.7fr) minmax(0,1.3fr); gap:10px; } .allergen-name { font-size:12px; overflow-wrap:break-word; } .allergen-description { font-size:13px; }','')
- .replace('/* Native dialogs: an opaque surface, no full-screen filtering or animation. */','/* Native photo/legal surfaces. Allergen presentation is scoped in menu.css. */');
+// The closing gallery and dialog styles now live in their own stylesheets.
+const normalizeLayout = source => source.replace(/\.album,\.vr-community[\s\S]*?(?=@media\(prefers-reduced-motion:reduce\))/,'');
 assert.equal(await readFile('src/styles/clean.css','utf8'),normalizeLayout(await readFile('tests/menu/layout-approved.css','utf8')),'Layout outside allergens changed');
 const approvedI18n = await readFile('tests/menu/i18n-approved.tsx','utf8');
 assert.equal(await readFile('src/i18n.tsx','utf8'),approvedI18n.replace('Chiedi al personale per ulteriori informazioni','Per ulteriori info, chiedi al personale.'),'Unrequested translation/copy changes');
@@ -40,7 +39,7 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_4.0_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_4.1 — preview'));assert.ok(html.includes('noindex,nofollow'));
 assert.equal((html.match(/class="crust-card"/g)||[]).length,3);
 assert.equal((html.match(/class="menu-dot-grid"/g)||[]).length,0);
 const menuMarkup=balanced(html,html.indexOf('<div class="menu-atmosphere">'),'div');

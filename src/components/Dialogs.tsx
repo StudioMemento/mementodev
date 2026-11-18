@@ -1,15 +1,13 @@
+import "../styles/dialogs.css";
 import { useLayoutEffect, useRef } from "react";
 import { useDialog } from "./DialogContext";
 import { useI18n, translateName } from "../i18n";
 import allergens from "../data/allergens.json";
 import { getAllergenInfo } from "../data/allergen-info";
-import privacy from "../data/privacy.html?raw";
-import cookies from "../data/cookie.html?raw";
-import legal from "../data/note-legali.html?raw";
+import { LegalReader } from "./LegalReader";
 import { Chevron, Icon } from "./Icon";
 import { Photo } from "./Photo";
 import { useDrag, wrap } from "../hooks/useDrag";
-const legalTexts = { privacy, cookie: cookies, "note-legali": legal };
 /** Choose the roomiest layout that fits the actual title, language and safe area. */
 function fitAllergens(dialog: HTMLDialogElement) {
   const short = dialog.clientHeight <= 560;
@@ -95,6 +93,13 @@ export default function Dialogs() {
         if (modal.kind === "allergens" || e.target === e.currentTarget) close();
       }}
       onKeyDown={(e) => {
+        if (modal.kind === "legal" && (e.target as HTMLElement).closest(".modal-header")) {
+          const reader = ref.current?.querySelector<HTMLElement>(".legal-scroll");
+          if (reader && reader.scrollHeight > reader.clientHeight) {
+            const offsets: Record<string, number> = { ArrowDown: 40, ArrowUp: -40, PageDown: reader.clientHeight * .9, PageUp: -reader.clientHeight * .9, Home: -reader.scrollHeight, End: reader.scrollHeight };
+            if (e.key in offsets) { e.preventDefault(); reader.scrollBy({ top: offsets[e.key], behavior: "instant" }); }
+          }
+        }
         if (
           modal.kind === "photo" &&
           !e.defaultPrevented &&
@@ -106,7 +111,7 @@ export default function Dialogs() {
       }}
     >
       <section
-        className={`modal-panel ${modal.kind === "allergens" ? "allergen-panel" : ""}`}
+        className={`modal-panel ${modal.kind === "allergens" ? "allergen-panel" : modal.kind === "legal" ? "legal-panel" : ""}`}
       >
         <header className="modal-header">
           <div>
@@ -155,11 +160,10 @@ export default function Dialogs() {
           </>
         )}
         {modal.kind === "legal" && (
-          <article
-            className="legal-body"
-            lang="it"
-            dangerouslySetInnerHTML={{ __html: legalTexts[modal.slug] }}
-          />
+          <LegalReader key={`${language}/${modal.slug}`} slug={modal.slug} navigate={slug => {
+            ref.current?.querySelector<HTMLButtonElement>(".modal-close")?.focus({ preventScroll: true });
+            update({ kind: "legal", slug });
+          }} />
         )}
         {modal.kind === "photo" && (
           <>
