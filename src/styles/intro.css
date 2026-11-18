@@ -1,3 +1,9 @@
+/* The oven controls share one row, with room for all ten dots on narrow phones. */
+.pizza-controls { width:min(calc(100% - 24px),444px); }
+.pizza-arrow { width:clamp(52px,4.5vw,64px); height:clamp(52px,4.5vw,64px); color:var(--vr-highlight); }
+.pizza-arrow svg { width:clamp(44px,3.6vw,56px); height:clamp(44px,3.6vw,56px); }
+.pizza-arrow path { stroke-width:1.5; }
+
 /* Zero-foil Holo Card preset: 15deg tilt / 1.1 scale, no frame or glare. */
 .crust-heading .hero-slogan { width:fit-content; max-width:100%; margin-inline:auto; }
 .crust-card-shell { position:relative; min-width:0; min-height:0; aspect-ratio:2/3; perspective:900px; touch-action:pan-y pinch-zoom; }

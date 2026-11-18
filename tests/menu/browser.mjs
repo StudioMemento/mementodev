@@ -17,6 +17,59 @@ async function waitForFieldState(page, expected) {
   );
 }
 
+async function checkSectionPolish(page, touch) {
+  const layout = await page.evaluate(() => {
+    const rect = el => el.getBoundingClientRect();
+    const gap = (above, below) => rect(below).top - rect(above).bottom;
+    const oven = document.querySelector('#pizza-slider');
+    const atmosphere = document.querySelector('.menu-atmosphere');
+    const edges = [oven, atmosphere, document.querySelector('.menu-side-background')];
+    const sections = [...document.querySelectorAll('#carta > .mcat')];
+    const drinks = document.querySelector('#cat-bevande .mcat-body');
+    const bottles = drinks.querySelector(':scope > .groupline');
+    const producers = [...drinks.querySelectorAll('.drink-bottle-group')];
+    const [draught, wines] = drinks.querySelectorAll('.drink-table');
+    const leaders = [...oven.querySelectorAll('.pizza-arrow')];
+    return {
+      strokes: [getComputedStyle(oven).borderTop, getComputedStyle(oven).borderBottom, getComputedStyle(atmosphere).borderBottom],
+      overlays: edges.flatMap(el => ['::before', '::after'].map(p => getComputedStyle(el, p).backgroundImage)),
+      headings: sections.slice(-3).map(el => el.querySelector('h3').textContent),
+      categoryGaps: sections.slice(1).map((el, i) => gap(sections[i].querySelector('.mcat-body'), el.querySelector('.mcat-head'))),
+      groupGaps: [gap(bottles.previousElementSibling, bottles), gap(producers.at(-1), draught), gap(draught, wines)],
+      breweryGap: gap(producers[0], producers[1]),
+      controls: leaders.map(button => ({width: rect(button).width, height: rect(button).height, glyphHeight: rect(button.querySelector('path')).height})),
+    };
+  });
+  assert.match(layout.strokes[0], /^1px solid rgb/);
+  assert.ok(layout.strokes.every(edge => edge === layout.strokes[0]));
+  assert.ok(layout.overlays.every(background => background === 'none'));
+  assert.deepEqual(layout.headings, ['Le stuzzicherie', 'I dolci', 'Le bevande']);
+  assert.ok(layout.categoryGaps.every(gap => gap >= 115));
+  assert.ok(layout.groupGaps.every(gap => gap >= 55) && layout.breweryGap >= 37);
+  assert.ok(layout.controls.every(b => b.width >= 52 && b.height >= 52 && b.glyphHeight >= 21.5));
+
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  const oven = page.locator('#pizza-slider');
+  await oven.locator('.pizza-controls').evaluate(el => scrollTo({top: scrollY + el.getBoundingClientRect().top - innerHeight * .55, behavior: 'instant'}));
+  const dots = oven.locator('.pizza-dot');
+  const arrows = oven.locator('.pizza-arrow');
+  const waitForActive = index => oven.locator(`.pizza-dot:nth-child(${index + 1})[aria-pressed="true"]`).waitFor();
+  const activate = arrow => touch ? arrow.tap({position:{x:5,y:12}}) : arrow.click({position:{x:5,y:12}});
+  await dots.first().click();
+  await waitForActive(0);
+  await activate(arrows.first());
+  await waitForActive(9);
+  await activate(arrows.last());
+  await waitForActive(0);
+  await arrows.last().focus();
+  await page.keyboard.press('Enter');
+  await waitForActive(1);
+  await arrows.first().focus();
+  await page.keyboard.press('Space');
+  await waitForActive(0);
+  return layout;
+}
+
 function titleFitsGutters() {
   const header = document.querySelector('.menu-head');
   const word = header.querySelector('h2 span');
@@ -43,6 +96,13 @@ try {
   for(const lang of ['de','fr','en','it']){
    await page.locator('.lang button').filter({hasText:new RegExp(`^${lang.toUpperCase()}$`)}).click();
    await page.waitForFunction(titleFitsGutters);
+   const base = await page.locator('.pizza-caption').last().locator('p').evaluate(el => {
+    const split = el.querySelector('br'), first = el.firstChild, second = split?.nextSibling;
+    if (!second || !first) return null;
+    const box = node => { const r = document.createRange(); r.setStart(node,0); r.setEnd(node,1); return r.getBoundingClientRect(); };
+    return {text: second.textContent, below: box(second).top > box(first).bottom};
+   });
+   assert.ok(base?.below && base.text.startsWith({de:'Basis:',fr:'base :',en:'base:',it:'base:'}[lang]), 'Calzone base must start on a fresh line in '+lang);
   }
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.locator('.chips').evaluate(el=>el.scrollTo({left:0,behavior:'instant'}));
@@ -175,7 +235,8 @@ try {
   await page.keyboard.press('Escape');await page.locator('dialog').waitFor({state:'detached'});
   await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
   await waitForFieldState(page, 'paused');
-  results.push({width,height,heading,layout,dialog,dialogFits,kitchen,bottles,note,drinks,bands});await page.close();
+  const polish = await checkSectionPolish(page, width<768||height<=520);
+  results.push({width,height,heading,layout,dialog,dialogFits,kitchen,bottles,note,drinks,bands,polish});await page.close();
  }
  assert.deepEqual(errors,[]);
 } finally {await browser.close();}

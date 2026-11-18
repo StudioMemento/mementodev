@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { Fragment, type CSSProperties } from "react";
 import data from "../data/menu.json";
 import { useI18n, translateDescription, translateName, type Language } from "../i18n";
 import { useCarousel } from "../hooks/useCarousel";
@@ -8,13 +8,13 @@ import { HoloCard } from "./intro/HoloCard";
 import { useIntroVisibility } from "./intro/useIntroVisibility";
 function Controls({ labels, carousel }: { labels: string[]; carousel: ReturnType<typeof useCarousel> }) {
   const { copy } = useI18n();
-  return <div className="pizza-controls" aria-label={copy.navigation}>
-    <button className="pizza-arrow" type="button" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
+  return <div className="pizza-controls" role="group" aria-label={copy.navigation}>
+    <button className="pizza-arrow" type="button" aria-controls="forno" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
     <div className="pizza-dots" role="group" aria-label={copy.menu}>
       {labels.map((label, i) => <button key={label} type="button" className="pizza-dot"
         aria-label={label} aria-pressed={i === carousel.index} onClick={() => carousel.select(i)}><span /></button>)}
     </div>
-    <button className="pizza-arrow" type="button" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
+    <button className="pizza-arrow" type="button" aria-controls="forno" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
   </div>;
 }
 
@@ -38,7 +38,9 @@ export function PizzaSlider() {
     <div className="pizza-copy" id="pizza-copy">
       {data.FORNO.map(([, name, description], i) => <div className="pizza-caption" key={`${i}-${language}`} aria-hidden={i !== carousel.index}>
         <h3>{translateName(name, language)}</h3>
-        <p>{translateDescription(description, language)}</p>
+        <p>{description.split(/ · (?=base:)/).map((line, part) => (
+          <Fragment key={part}>{part > 0 && <br />}{translateDescription(line, language)}</Fragment>
+        ))}</p>
       </div>)}
     </div>
     <Controls labels={data.FORNO.map(r => translateName(r[1], language))} carousel={carousel} />

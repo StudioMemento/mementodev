@@ -1,5 +1,6 @@
-/* ViaRoma_3.9_MENU — original artwork/data, scoped menu and dialog presentation. */
-.menu-atmosphere { position:relative; background:#090909; }
+/* ViaRoma_4.0_MENU — original artwork/data, scoped menu and dialog presentation. */
+.menu-atmosphere { position:relative; background:#090909; border-bottom:var(--section-rule); }
+#pizza-slider { background:#000; border-block:var(--section-rule); }
 #cornicione { position:relative; }
 #menu { position:relative; padding-top:clamp(80px,12svh,160px); padding-bottom:32px; }
 .menu-head,.mcat,.chipbar-inner { width:var(--vr-content); margin-inline:auto; }
@@ -32,12 +33,13 @@
 .can-l .chipchev.l,.can-r .chipchev.r { display:grid; }
 
 .mcat { padding:clamp(64px,8svh,120px) 0 24px; scroll-margin-top:128px; }
+#carta > .mcat + .mcat { margin-block-start:clamp(40px,6svh,88px); }
 .mcat-head { text-align:center; }
 .mcat h3 { font-size:clamp(33px,4.6vw,68px); line-height:1.12; letter-spacing:.12em; font-weight:200; text-transform:uppercase; color:var(--vr-highlight); overflow-wrap:anywhere; }
 .mcat .tag { margin:12px auto 0; max-width:48ch; color:var(--vr-muted); letter-spacing:.015em; font-size:clamp(19px,1.5vw,23px); line-height:1.4; text-wrap:pretty; }
 .kitchen-mobile-break { display:none; }
 .menu-art { width:100%; aspect-ratio:2048/487; position:relative; margin:28px 0; }
-:root { --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); --menu-stroke:linear-gradient(90deg,transparent,rgb(198 171 112 / .3) 20%,rgb(218 193 139 / .65) 50%,rgb(198 171 112 / .3) 80%,transparent); }
+:root { --section-rule:1px solid #766644; --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); --menu-stroke:linear-gradient(90deg,transparent,rgb(198 171 112 / .3) 20%,rgb(218 193 139 / .65) 50%,rgb(198 171 112 / .3) 80%,transparent); }
 .menu-art::before { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-block:1px solid transparent; border-image:var(--menu-stroke) 1; }
 .menu-art-window { position:absolute; inset:0; overflow:hidden; --art-fade:linear-gradient(transparent,rgb(0 0 0 / .12) 2%,rgb(0 0 0 / .38) 5%,rgb(0 0 0 / .74) 9%,#000 14%,#000 86%,rgb(0 0 0 / .74) 91%,rgb(0 0 0 / .38) 95%,rgb(0 0 0 / .12) 98%,transparent); -webkit-mask-image:var(--art-fade); mask-image:var(--art-fade); }
 .menu-art img { width:100%; height:100%; object-fit:contain; }
@@ -59,13 +61,15 @@
 .groupsub strong { font-weight:400; }
 .variant-callout { margin:28px 0 10px; padding-top:12px; font-size:20px; letter-spacing:.015em; }
 .dolci-note { max-width:46ch; margin:28px auto 0; text-align:center; font-size:clamp(22px,1.8vw,28px); line-height:1.45; letter-spacing:.02em; color:var(--vr-highlight); text-wrap:balance; }
-#cat-bevande { --drink-intro:#b59a62; --drink-detail:#a19d96; }
+#cat-bevande { --drink-intro:#b59a62; --drink-detail:#a19d96; --drink-group-gap:clamp(56px,8svh,112px); }
+#cat-bevande .mcat-body > .groupline { margin-block:var(--drink-group-gap) clamp(14px,2svh,22px); }
+.drink-bottle-group + .drink-bottle-group { margin-block-start:clamp(38px,5.8svh,80px); }
 #cat-bevande .groupline { font-size:clamp(16px,1.3vw,21px); font-weight:400; letter-spacing:.09em; color:var(--drink-intro); }
-.drink-bottle-group .groupsub { color:var(--drink-detail); font-size:clamp(16px,1.3vw,20px); line-height:1.4; }
+.drink-bottle-group .groupsub { margin-block:0 8px; color:var(--drink-detail); font-size:clamp(16px,1.3vw,20px); line-height:1.4; }
 .groupsub strong { color:var(--drink-intro); font-weight:500; }
 #cat-bevande .desc,.drink-product .qualifier { color:var(--drink-detail); }
 .drink-bottle-group .item .desc { max-width:none; }
-.drink-table { width:100%; margin:32px 0 22px; }
+.drink-table { width:100%; margin:var(--drink-group-gap) 0 0; }
 .drink-table-head,.drink-row>.row { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,40%); align-items:baseline; column-gap:0; }
 .drink-table-head { padding-bottom:10px; }
 .drink-table-head .groupline { margin:0; }
@@ -159,20 +163,3 @@
 .menu-side-background { position:absolute; inset:0; pointer-events:none; z-index:0; }
 .menu-side-viewport { position:sticky; top:0; height:100svh; width:100%; display:flex; justify-content:space-between; overflow:clip; }
 .menu-side-band { display:block; width:var(--vr-gutter); height:100%; flex:none; contain:paint; will-change:transform; }
-
-
-/* The same tapered gold stroke frames the photographs, oven and menu exit. */
-#pizza-slider { background:#000; }
-#pizza-slider::before,#pizza-slider::after,.menu-atmosphere::after {
-  content:""; position:absolute; left:0; right:0; height:clamp(16px,3vw,36px); pointer-events:none;
-  background:var(--menu-stroke) center top / 100% 1px no-repeat,linear-gradient(to bottom,#090909,transparent);
-}
-#pizza-slider::before { top:0; }
-#pizza-slider::after,.menu-atmosphere::after { bottom:0; transform:scaleY(-1); }
-.menu-atmosphere::after { z-index:2; }
-.menu-side-background::before,.menu-side-background::after {
-  content:""; position:absolute; inset-inline:0; height:clamp(88px,15svh,190px); z-index:1;
-  background:linear-gradient(to bottom,#090909,transparent);
-}
-.menu-side-background::before { top:0; }
-.menu-side-background::after { bottom:0; transform:scaleY(-1); }

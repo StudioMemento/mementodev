@@ -40,7 +40,7 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_3.9_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_4.0_MENU — preview'));assert.ok(html.includes('noindex,nofollow'));
 assert.equal((html.match(/class="crust-card"/g)||[]).length,3);
 assert.equal((html.match(/class="menu-dot-grid"/g)||[]).length,0);
 const menuMarkup=balanced(html,html.indexOf('<div class="menu-atmosphere">'),'div');
@@ -59,6 +59,15 @@ assert.match(kitchen,/Anche se incredibile\.\.\.<br class="kitchen-mobile-break"
 assert.ok(!css.includes('.menu-art:hover')&&!css.includes('.menu-art::after'),'Obsolete artwork hover layers remain');
 const head=balanced(html,html.indexOf('<header class="menu-head"'),'header');
 assert.equal(text(head),'Menù');assert.equal((head.match(/<h2/g)||[]).length,1);
+for(const [id,title] of [['stuzzicherie','Le stuzzicherie'],['dolci','I dolci'],['bevande','Le bevande']]){
+ const section=balanced(html,html.indexOf('<section class="mcat fx on has-art" id="cat-'+id+'"'),'section');
+ assert.ok(section.includes('<h3><span>'+title+'</span></h3>'),'Missing article on '+id);
+}
+const captions=balanced(html,html.indexOf('<div class="pizza-copy"'),'div');
+const monte=balanced(captions,captions.lastIndexOf('<div class="pizza-caption"'),'div');
+assert.ok(monte.includes('<h3>Monte Jouf</h3>'));
+assert.ok(monte.includes('ricotta<br/>base: pomodoro'),'Filling and base must start on separate lines');
+assert.equal((captions.match(/<br\/?>/g)||[]).length,1,'Unrelated pizza captions must retain their original flow');
 const rail=balanced(html,html.indexOf('<nav class="chips scrollable"'),'nav');
 assert.deepEqual([...rail.matchAll(/<button[^>]+data-go="[^"]+"[^>]*>(.*?)<\/button>/g)].map(m=>text(m[1])),['Classiche','Audaci','Bianche','Calzoni','Cucina','Snack','Dolci','Bevande']);
 const items=[...html.matchAll(/<div class="item\b[^>]*data-menu-item="([^"]*)"/g)];
