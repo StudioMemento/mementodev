@@ -20,8 +20,8 @@ export function Photo({
   sizes?: string;
 }) {
   const meta = images[src];
-  // A new URL prevents cached 4K files from surviving the FHD release.
-  const assetUrl = (path: string) => `/${path}${path.startsWith("assets/gallery/") ? "?v=25" : ""}`;
+  const revision = src.startsWith("assets/pizze/") ? "?v=47" : src.startsWith("assets/gallery/") ? "?v=25" : "";
+  const assetUrl = (path: string) => "/" + path + revision;
   return (
     <img
       src={enabled ? assetUrl(src) : undefined}

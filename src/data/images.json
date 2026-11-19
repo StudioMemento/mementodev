@@ -421,26 +421,30 @@
   "assets/pizze/deliziosa.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 289448,
-    "sha256": "11edcedbb6820201304f2ef27d01c0ae00efb4019607d6439c0411ad78b62280"
+    "bytes": 200442,
+    "sha256": "fa2c7308352c69a7a08f21915c0e7d137d30ddac4962ba6b2ea9e552f81a2d14",
+    "small": "assets/pizze/deliziosa-768.webp"
   },
   "assets/pizze/burrata-e-crudo.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 204002,
-    "sha256": "a621b637e0bf028c6ff3b0384439a2d71f31cff566467b367dbb26523d731d2e"
+    "bytes": 227614,
+    "sha256": "3c3cf1bd0396e9adac344146f7e49806935fe9c694dc0775e7c8d4dba5eb1e93",
+    "small": "assets/pizze/burrata-e-crudo-768.webp"
   },
   "assets/pizze/saporita.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 289264,
-    "sha256": "97f553578f9c25f79da4e09df679452ad1185649b0690057eaa15212e0b25448"
+    "bytes": 255756,
+    "sha256": "b348dbc19a23ba6c0e2ff1e0fca3da357c989bc91a0ec71bf108ad6ef2539184",
+    "small": "assets/pizze/saporita-768.webp"
   },
   "assets/pizze/friarielli-e-salsiccia.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 211334,
-    "sha256": "8e052d343f9124d5cde5004411217309e76072a50bf6896af3e67fd092f162ab"
+    "bytes": 257660,
+    "sha256": "94ed47f47088899410536cf7e8d8151601ea6691ff045149256c5b253b9431d7",
+    "small": "assets/pizze/friarielli-e-salsiccia-768.webp"
   },
   "assets/pizze/cornice-ripieno.webp": {
     "width": 1100,
@@ -451,20 +455,23 @@
   "assets/pizze/alpina.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 266660,
-    "sha256": "8a3f1bb42d431b83d9652c5f89c369027d919fb1fd41e74dd1f95af2867b24a0"
+    "bytes": 257410,
+    "sha256": "23f7b4476039ef0b7e5cb3488bd3c516e7cd7ad50f148c3a80fbb29753d34454",
+    "small": "assets/pizze/alpina-768.webp"
   },
   "assets/pizze/povera.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 127036,
-    "sha256": "e9926bf7b7d7cfcee0d3c0f669aaf1677c77998bc397302e61f8d955ceb7cb0b"
+    "bytes": 208754,
+    "sha256": "96c1b7c9a4a3dc38f079af843524104dee2cb52c16b24b56453cdfa457f300a8",
+    "small": "assets/pizze/povera-768.webp"
   },
   "assets/pizze/bufalina.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 211850,
-    "sha256": "147cd2636fe52e6d781d6b2f1c58a226294414dc5635c93e0b3aab4d67e8ffc6"
+    "bytes": 241600,
+    "sha256": "6aa85c4c938510d67ec275e93d239e7c1f99d0fa8c8e5ae4276e9f432a446f6c",
+    "small": "assets/pizze/bufalina-768.webp"
   },
   "assets/pizze/monte-jouf.webp": {
     "width": 1100,
@@ -475,13 +482,232 @@
   "assets/pizze/via-roma.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 246884,
-    "sha256": "5dfb69487a0d7c8eee8adda1f9a1ed7e30d1c8ada68aa42cd6739a57c352697f"
+    "bytes": 243848,
+    "sha256": "189d927347dee731f2dde08119c5f1bec0a7844846f67fa1ace46a6cb29d75ee",
+    "small": "assets/pizze/via-roma-768.webp"
   },
   "assets/pizze/margherita.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 211244,
-    "sha256": "9f22e3a53dd4ca1b4ecb04efd0c35d4a0da120cb9dd2334f0841880320681399"
+    "bytes": 216966,
+    "sha256": "5af8ae3c4998b526daf42c6d88c748ec223f38ff169b6fd9ec1d7b4825f67837",
+    "small": "assets/pizze/margherita-768.webp"
+  },
+  "assets/pizze/marinara-classica.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 273614,
+    "sha256": "9730a9d96c9c9abec42f9c1ffc3d9e4a2bbec2ef2728e850f4213dfd1e300921",
+    "small": "assets/pizze/marinara-classica-768.webp"
+  },
+  "assets/pizze/marinara-d-oro.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 243460,
+    "sha256": "7b3a7c8ac7e222bb3fb96c050a8be004e7d5b726422146998b172c0051cbe3b7",
+    "small": "assets/pizze/marinara-d-oro-768.webp"
+  },
+  "assets/pizze/margherita-affumicata.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 256718,
+    "sha256": "d590f0a18d2c4ddd1adbbeac0b49f6be46ca58371c51ce36f6b84783dc17d45a",
+    "small": "assets/pizze/margherita-affumicata-768.webp"
+  },
+  "assets/pizze/primo-amore.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 233890,
+    "sha256": "7ffe1df2edb851077a275284442b7c9406c29278a27538011b7aa10f30332a97",
+    "small": "assets/pizze/primo-amore-768.webp"
+  },
+  "assets/pizze/siciliana.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 249740,
+    "sha256": "1cc3dfd67801a1df583554216c9100bfc6570bab9180b50b56fee6a757186fd3",
+    "small": "assets/pizze/siciliana-768.webp"
+  },
+  "assets/pizze/diavola.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 231652,
+    "sha256": "51741efc0f3c97bd23a27c8098dbeeb48d566aae26a5de25f22c0ad61ae118eb",
+    "small": "assets/pizze/diavola-768.webp"
+  },
+  "assets/pizze/prosciutto-e-funghi.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 214130,
+    "sha256": "2c796bd12f472cc454b618b768c5a7f410c33dcee6cb0322c1a5a9dbb76567d6",
+    "small": "assets/pizze/prosciutto-e-funghi-768.webp"
+  },
+  "assets/pizze/capricciosa.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 255260,
+    "sha256": "a14eeb5dcaa68ebf43c8cf7014607b0f21094e693e1a972d8881028fc2082f8b",
+    "small": "assets/pizze/capricciosa-768.webp"
+  },
+  "assets/pizze/tonno-e-cipolla.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 251196,
+    "sha256": "2d546c301f9bf53c07ac466df958263b4500a91c34c2eacc733258e54db37473",
+    "small": "assets/pizze/tonno-e-cipolla-768.webp"
+  },
+  "assets/pizze/formaggi.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 219678,
+    "sha256": "ffafe465c850872afc2b71f3c325708190865c3ae34c0a0b899c5f56b17cbf9b",
+    "small": "assets/pizze/formaggi-768.webp"
+  },
+  "assets/pizze/verdure.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 266508,
+    "sha256": "4fe1e12a1ba087d10e0047f2eca38797c9b7be265a47452be163b3ee0a6bdc27",
+    "small": "assets/pizze/verdure-768.webp"
+  },
+  "assets/pizze/rucola-grana-e-pomodorini.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 226154,
+    "sha256": "064e399b65d978e3433539da3dda1d644311f65e19f0f9273607eb83489fbc22",
+    "small": "assets/pizze/rucola-grana-e-pomodorini-768.webp"
+  },
+  "assets/pizze/parmigiana.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 235094,
+    "sha256": "b672da9a3d2ca2f1d4acde785752acdaa70b9b40c70a18cc584c3c7fadb00a6a",
+    "small": "assets/pizze/parmigiana-768.webp"
+  },
+  "assets/pizze/grassa.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 241912,
+    "sha256": "cd9e811406019468221522440b8b7367de0b2140af3c85a0c03bb1e3db8bfcf4",
+    "small": "assets/pizze/grassa-768.webp"
+  },
+  "assets/pizze/maglio.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 263880,
+    "sha256": "e9bd47a61ce483ebecf201b051ffc73b37f393335a1ccde6130f60ad41eecbfd",
+    "small": "assets/pizze/maglio-768.webp"
+  },
+  "assets/pizze/san-daniele.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 199746,
+    "sha256": "5d366258ae54d0fe3c9da59578cd29eecb8a67e577c205c121f371c4420221b3",
+    "small": "assets/pizze/san-daniele-768.webp"
+  },
+  "assets/pizze/primavera.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 216708,
+    "sha256": "fa4cefaf35e584df37e7433fe978c82c0659af4adbbe4ae7a7b4ae54ea4fa5fd",
+    "small": "assets/pizze/primavera-768.webp"
+  },
+  "assets/pizze/brie-speck-e-ricotta.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 246808,
+    "sha256": "bbba76eb1b3ae2c3d6697ec192003e42bdb4218eae52e00ffb169e8eee219002",
+    "small": "assets/pizze/brie-speck-e-ricotta-768.webp"
+  },
+  "assets/pizze/raf.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 255288,
+    "sha256": "8d6fb61cc839dd338ecbc49bcc69e5c5f690c4827acbf9d2bd74e67512a91d70",
+    "small": "assets/pizze/raf-768.webp"
+  },
+  "assets/pizze/valtellina.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 258822,
+    "sha256": "b9da3d534c41b9786b8a4be136bd3b6ebeb60f4a2fbe3fbcd7d533449c2345da",
+    "small": "assets/pizze/valtellina-768.webp"
+  },
+  "assets/pizze/greca.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 249790,
+    "sha256": "a5e3bf403c41ec4b0131c330a38a9caff83daacd4ab412b1dc64c213fe1dfaf7",
+    "small": "assets/pizze/greca-768.webp"
+  },
+  "assets/pizze/estiva.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 238764,
+    "sha256": "14191cc768f42636fa43a9f697eedc718845d2734c4be343c04cf132f3484e23",
+    "small": "assets/pizze/estiva-768.webp"
+  },
+  "assets/pizze/tramontina.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 271972,
+    "sha256": "6a80663ed49c5e6b10dbabc15727a22100d5796cb583578c12b232bb4b18b50a",
+    "small": "assets/pizze/tramontina-768.webp"
+  },
+  "assets/pizze/friuli.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 256512,
+    "sha256": "a4f5d8842832d8432bad3186cd339051c154ebefd05ca96307b331eb21474df6",
+    "small": "assets/pizze/friuli-768.webp"
+  },
+  "assets/pizze/genovese.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 258894,
+    "sha256": "70b4f3abfcec27e4ab6385b49e82a1426e6d0388725811cd1bbc3069c9e4a23c",
+    "small": "assets/pizze/genovese-768.webp"
+  },
+  "assets/pizze/caprina.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 241536,
+    "sha256": "8cbf3b5015ec2556f4044ae9b17e47127ee4d06f81ba44babd4e81d966eae1ec",
+    "small": "assets/pizze/caprina-768.webp"
+  },
+  "assets/pizze/sarah.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 256558,
+    "sha256": "dd6a9f8d05d2dde251e6f9688ce2d6d3156f6181724afc04407544c4ac9272a7",
+    "small": "assets/pizze/sarah-768.webp"
+  },
+  "assets/pizze/golosa.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 243550,
+    "sha256": "ea5cfa4a8e31e1ebc7d0873e49351a4961812259c169e7f608746921fef7dc54",
+    "small": "assets/pizze/golosa-768.webp"
+  },
+  "assets/pizze/carbonara.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 254588,
+    "sha256": "ac5ea5d5161d61efd3d5f15c7345c54f9dc717bf32bd2eb2c1135373b1162d94",
+    "small": "assets/pizze/carbonara-768.webp"
+  },
+  "assets/pizze/frico.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 241958,
+    "sha256": "2bc919cb388384b3cdbb69404880d95a0891e0cdbba868b084722a03f7f5ed5a",
+    "small": "assets/pizze/frico-768.webp"
+  },
+  "assets/pizze/delicata.webp": {
+    "width": 1100,
+    "height": 1100,
+    "bytes": 244120,
+    "sha256": "7d040756f4fc7528ee8961a8712b2c801257230366782805ae54713f5b2828eb",
+    "small": "assets/pizze/delicata-768.webp"
   }
 }

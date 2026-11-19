@@ -24,8 +24,43 @@ async function checkLegalText(article) {
       const lines = [...range.getClientRects()].filter(rect => rect.width > 0);
       return lines.length === 1 && lines[0].width < width;
     });
-    return { noOverflow, intact, headings: el.querySelectorAll("h2").length };
+    const language = (el.closest("[lang]")?.lang || document.documentElement.lang).slice(0,2);
+    const shortWords = {
+      it: "e ed o oppure ma che quando il lo la i gli le un una uno",
+      en: "and or but if the an a",
+      de: "und oder aber wenn der die das dem den des ein eine",
+      fr: "et ou mais que le la les des un une"
+    };
+    const protectedWords = new Set(shortWords[language].split(" "));
+    const typography = [];
+    for (const paragraph of el.querySelectorAll("p")) {
+      const reader = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+      const chars = [];
+      let text = "", node;
+      while ((node = reader.nextNode())) {
+        for (let i = 0; i < node.length; i++) chars.push([node,i]);
+        text += node.data;
+      }
+      function line(index) {
+        const range = document.createRange(), [node,offset] = chars[index];
+        range.setStart(node,offset); range.setEnd(node,offset+1);
+        return range.getBoundingClientRect().top;
+      }
+      for (const boundary of text.matchAll(/\.\s+(?=[A-ZÀ-Ÿ])/gu)) {
+        if (line(boundary.index + boundary[0].length) <= line(boundary.index) + 2)
+          typography.push("sentence: " + text.slice(boundary.index - 12,boundary.index + 18));
+      }
+      for (const word of text.matchAll(/(?<![\p{L}’'-])[\p{L}]+(?=\s+\S)/gu)) {
+        if (!protectedWords.has(word[0].toLowerCase())) continue;
+        const end = word.index + word[0].length;
+        const space = text.slice(end).match(/^\s+/u)[0];
+        if (Math.abs(line(end-1) - line(end+space.length)) > 2)
+          typography.push("wrap: " + text.slice(word.index,end+space.length+16));
+      }
+    }
+    return { noOverflow, intact, typography, headings: el.querySelectorAll("h2").length };
   });
+  assert.deepEqual(report.typography,[]);
   assert.ok(report.noOverflow && report.intact && report.headings >= 3, JSON.stringify(report));
 }
 
@@ -49,8 +84,8 @@ async function testViewport(width,height,touch) {
         assert.equal(button.w,button.h);
         assert.ok(button.w >= (touch ? 44 : 36));
         assert.equal(button.radius,"50%");
-        assert.equal(button.line,"1px");
-        assert.equal(neutral(button.ring),!button.active);
+        assert.equal(button.line,button.active ? "1px" : "0px");
+        if (button.active) assert.equal(neutral(button.ring),false);
         assert.equal(neutral(button.color),!button.active);
       }
       assert.ok(neutral(await page.locator(".lang").evaluate(el=>getComputedStyle(el).borderTopColor)));
@@ -101,10 +136,14 @@ async function testViewport(width,height,touch) {
       if(!touch) await page.locator('.vr-dock a[href="tel:+390427541232"]').hover();
       const tiles=await page.locator(".vr-dock a").evaluateAll(all=>all.map(a=>{
         const s=getComputedStyle(a.firstElementChild);
-        return { active:a.hasAttribute("aria-current"), ink:s.color, border:s.borderTopColor };
+        const icon = a.querySelector(".dock-tile > *");
+        const gold = icon.tagName.toLowerCase()==="svg"
+          ? getComputedStyle(icon.querySelector("path")).stroke.includes("dock-gold")
+          : getComputedStyle(icon,"::before").backgroundImage.includes("linear-gradient");
+        return { active:a.hasAttribute("aria-current"), ink:s.color, border:s.borderTopColor, gold };
       }));
       assert.equal(tiles.filter(t=>t.active).length,1);
-      assert.ok(tiles.every(t=>neutral(t.border) && neutral(t.ink)!==t.active));
+      assert.ok(tiles.every(t=>neutral(t.border) && neutral(t.ink)!==t.active && t.gold===t.active));
     }
     for(const progress of [0,.5,1]) {
       await page.evaluate(f=>scrollTo({top:(document.documentElement.scrollHeight-innerHeight)*f,behavior:"instant"}),progress);
@@ -120,7 +159,7 @@ async function testViewport(width,height,touch) {
     });
     assert.equal(footer.divider,footer.stacked ? "1px" : "0px");
     assert.equal(footer.stacked, width<=767 || touch && width<=1000 && height<=540);
-    assert.ok(footer.wordmark>=79.9);
+    assert.ok(footer.wordmark>=89.9);
     if(width===390) {
       for(const language of languages) {
         await page.locator('.lang button[data-lang="'+language+'"]').click();

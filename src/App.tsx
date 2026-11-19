@@ -6,6 +6,7 @@ import Hero from "./components/Hero";
 import { Cornicione, PizzaSlider } from "./components/IntroSliders";
 import { MenuSideSquares } from "./components/menu/MenuSideSquares";
 import Menu from "./components/Menu";
+import { Takeaway } from "./components/Takeaway";
 import Gallery from "./components/Gallery";
 import { FinaleAtmosphere } from "./components/FinaleAtmosphere";
 import Community from "./components/Community";
@@ -38,6 +39,7 @@ function Page() {
           <MenuSideSquares />
           <Cornicione />
           <Menu />
+          <Takeaway />
         </div>
         <div className="final-sections">
           <FinaleAtmosphere />

@@ -5,7 +5,20 @@ export function Icon({
   name: string;
   className?: string;
 }) {
-  if (name === "house") return <svg className={className} viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v11h5v-6h4v6h5V9" fill="none" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  if (name === "house") return (
+    <svg className={className} viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+      <defs>
+        <linearGradient id="dock-gold" x1="0%" y1="0%" x2="100%" y2="65%">
+          <stop offset="8%" stopColor="#a98242" />
+          <stop offset="32%" stopColor="#f5dc9d" />
+          <stop offset="40%" stopColor="#ffefc5" />
+          <stop offset="62%" stopColor="#be984e" />
+          <stop offset="83%" stopColor="#ebd092" />
+        </linearGradient>
+      </defs>
+      <path d="m3 10 9-7 9 7M5 9v11h5v-6h4v6h5V9" fill="none" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
   return <i className={`ph-thin ph-${name} ${className}`} aria-hidden="true" />;
 }
 export function Chevron({

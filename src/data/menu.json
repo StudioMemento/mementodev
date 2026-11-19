@@ -569,14 +569,74 @@
   ],
   "FORNO": [
     [
+      "assets/pizze/marinara-classica.webp",
+      "Marinara Classica",
+      "pomodoro, aglio, olio, origano"
+    ],
+    [
+      "assets/pizze/marinara-d-oro.webp",
+      "Marinara d'Oro",
+      "passata di pomodorino giallo, aglio, origano"
+    ],
+    [
       "assets/pizze/margherita.webp",
       "Margherita Classica",
       "pomodoro, mozzarella, basilico"
     ],
     [
+      "assets/pizze/margherita-affumicata.webp",
+      "Margherita Affumicata",
+      "pomodoro, provola affumicata in cottura, bufala affumicata fuori cottura, pepe, basilico"
+    ],
+    [
       "assets/pizze/bufalina.webp",
       "Bufalina",
       "pomodoro, mozzarella di Bufala in cottura, basilico"
+    ],
+    [
+      "assets/pizze/primo-amore.webp",
+      "Primo Amore",
+      "pomodoro, mozzarella di Bufala in cottura, pomodorini, basilico"
+    ],
+    [
+      "assets/pizze/siciliana.webp",
+      "Siciliana",
+      "pomodoro, mozzarella, capperi, olive, acciughe, origano"
+    ],
+    [
+      "assets/pizze/diavola.webp",
+      "Diavola",
+      "pomodoro, mozzarella, salame piccante"
+    ],
+    [
+      "assets/pizze/prosciutto-e-funghi.webp",
+      "Prosciutto e Funghi",
+      "pomodoro, mozzarella, prosciutto, funghi"
+    ],
+    [
+      "assets/pizze/capricciosa.webp",
+      "Capricciosa",
+      "pomodoro, mozzarella, prosciutto, funghi, carciofi"
+    ],
+    [
+      "assets/pizze/tonno-e-cipolla.webp",
+      "Tonno e Cipolla",
+      "pomodoro, mozzarella, tonno, cipolla"
+    ],
+    [
+      "assets/pizze/formaggi.webp",
+      "Formaggi",
+      "pomodoro, mozzarella, formaggi misti"
+    ],
+    [
+      "assets/pizze/verdure.webp",
+      "Verdure",
+      "pomodoro, mozzarella, verdure miste"
+    ],
+    [
+      "assets/pizze/rucola-grana-e-pomodorini.webp",
+      "Rucola, Grana e Pomodorini",
+      "pomodoro, mozzarella, rucola, pomodorini, Grana Padano in scaglie"
     ],
     [
       "assets/pizze/burrata-e-crudo.webp",
@@ -589,9 +649,54 @@
       "bordo ripieno di Gorgonzola, pomodoro, mozzarella, porcini, speck"
     ],
     [
+      "assets/pizze/parmigiana.webp",
+      "Parmigiana",
+      "pomodoro, mozzarella, provola affumicata, Grana in cottura, melanzane fritte, basilico"
+    ],
+    [
       "assets/pizze/deliziosa.webp",
       "Deliziosa",
       "bordo ripieno di ricotta, pomodoro, mozzarella di Bufala in cottura, pomodorini, prosciutto crudo San Daniele"
+    ],
+    [
+      "assets/pizze/grassa.webp",
+      "Grassa",
+      "pomodoro, mozzarella, würstel, pancetta, salamino, salsiccia"
+    ],
+    [
+      "assets/pizze/maglio.webp",
+      "Maglio",
+      "pomodoro, mozzarella, cipolla rossa, salsiccia, patate al forno"
+    ],
+    [
+      "assets/pizze/san-daniele.webp",
+      "San Daniele",
+      "pomodoro, mozzarella, prosciutto crudo San Daniele"
+    ],
+    [
+      "assets/pizze/primavera.webp",
+      "Primavera",
+      "pomodoro, mozzarella di Bufala in cottura, rucola, pomodorini, Grana a scaglie, prosciutto crudo San Daniele"
+    ],
+    [
+      "assets/pizze/brie-speck-e-ricotta.webp",
+      "Brie, Speck e Ricotta",
+      "pomodoro, mozzarella, ricotta affumicata, brie, speck"
+    ],
+    [
+      "assets/pizze/raf.webp",
+      "Raf",
+      "pomodoro, mozzarella, salsiccia, Gorgonzola, porcini, mozzarella di Bufala fuori cottura, rucola"
+    ],
+    [
+      "assets/pizze/valtellina.webp",
+      "Valtellina",
+      "pomodoro, mozzarella, bresaola, rucola, Grana Padano in scaglie"
+    ],
+    [
+      "assets/pizze/greca.webp",
+      "Greca",
+      "pomodoro, olive, cipolla rossa, pomodorini, feta, rucola"
     ],
     [
       "assets/pizze/saporita.webp",
@@ -599,14 +704,44 @@
       "pomodoro, mozzarella, porro, guanciale, formaggio salato, miele piccante"
     ],
     [
+      "assets/pizze/estiva.webp",
+      "Estiva",
+      "pomodoro, mozzarella, prosciutto crudo, pomodorini, pesto, burrata"
+    ],
+    [
+      "assets/pizze/tramontina.webp",
+      "Tramontina",
+      "pomodoro, mozzarella, formaggio salato, polenta, pitina"
+    ],
+    [
+      "assets/pizze/friuli.webp",
+      "Friuli",
+      "pomodoro, mozzarella, salame, radicchio, montasio"
+    ],
+    [
+      "assets/pizze/genovese.webp",
+      "Genovese",
+      "passata di pomodorino giallo, bufala in cottura, pesto genovese, pomodorini semi dry"
+    ],
+    [
+      "assets/pizze/caprina.webp",
+      "Caprina",
+      "mozzarella, crema di olive nere, formaggio di capra, mandorle, pomodorini semi dry"
+    ],
+    [
+      "assets/pizze/sarah.webp",
+      "Sarah",
+      "pomodoro, mozzarella, patate al forno, brie, salamino"
+    ],
+    [
       "assets/pizze/via-roma.webp",
       "Via Roma",
       "mozzarella di Bufala in cottura, pomodorini semi dry, olive nere, ricotta affumicata"
     ],
     [
-      "assets/pizze/friarielli-e-salsiccia.webp",
-      "Friarielli e Salsiccia",
-      "mozzarella, friarielli, salsiccia, provola affumicata"
+      "assets/pizze/golosa.webp",
+      "Golosa",
+      "passata di peperoni, mozzarella, 'nduja, salsiccia, patate al forno"
     ],
     [
       "assets/pizze/povera.webp",
@@ -614,9 +749,24 @@
       "mozzarella, mortadella, burrata, granella di pistacchio"
     ],
     [
-      "assets/pizze/monte-jouf.webp",
-      "Monte Jouf",
-      "ripieno: mozzarella, zucchine, pepe, ricotta · base: pomodoro, mozzarella, pancetta, patate"
+      "assets/pizze/carbonara.webp",
+      "Carbonara",
+      "mozzarella, guanciale, tuorlo d'uovo, pecorino, pepe nero"
+    ],
+    [
+      "assets/pizze/frico.webp",
+      "Frico",
+      "mozzarella, fonduta di montasio, cipolla, patate"
+    ],
+    [
+      "assets/pizze/friarielli-e-salsiccia.webp",
+      "Friarielli e Salsiccia",
+      "mozzarella, friarielli, salsiccia, provola affumicata"
+    ],
+    [
+      "assets/pizze/delicata.webp",
+      "Delicata",
+      "mozzarella, lardo alle erbe, noci, miele, Gorgonzola"
     ]
   ]
 }

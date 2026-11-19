@@ -52,13 +52,14 @@ async function checkSectionPolish(page, touch) {
   const oven = page.locator('#pizza-slider');
   await oven.locator('.pizza-controls').evaluate(el => scrollTo({top: scrollY + el.getBoundingClientRect().top - innerHeight * .55, behavior: 'instant'}));
   const dots = oven.locator('.pizza-dot');
+  assert.equal(await dots.count(),40);
   const arrows = oven.locator('.pizza-arrow');
   const waitForActive = index => oven.locator(`.pizza-dot:nth-child(${index + 1})[aria-pressed="true"]`).waitFor();
   const activate = arrow => touch ? arrow.tap({position:{x:5,y:12}}) : arrow.click({position:{x:5,y:12}});
   await dots.first().click();
   await waitForActive(0);
   await activate(arrows.first());
-  await waitForActive(9);
+  await waitForActive((await dots.count())-1);
   await activate(arrows.last());
   await waitForActive(0);
   await arrows.last().focus();
@@ -96,13 +97,10 @@ try {
   for(const lang of ['de','fr','en','it']){
    await page.locator('.lang button').filter({hasText:new RegExp(`^${lang.toUpperCase()}$`)}).click();
    await page.waitForFunction(titleFitsGutters);
-   const base = await page.locator('.pizza-caption').last().locator('p').evaluate(el => {
-    const split = el.querySelector('br'), first = el.firstChild, second = split?.nextSibling;
-    if (!second || !first) return null;
-    const box = node => { const r = document.createRange(); r.setStart(node,0); r.setEnd(node,1); return r.getBoundingClientRect(); };
-    return {text: second.textContent, below: box(second).top > box(first).bottom};
-   });
-   assert.ok(base?.below && base.text.startsWith({de:'Basis:',fr:'base :',en:'base:',it:'base:'}[lang]), 'Calzone base must start on a fresh line in '+lang);
+   const last = page.locator('.pizza-caption').last();
+   assert.equal(await last.locator('h3').textContent(),'Delicata');
+   assert.ok((await last.locator('p').textContent()).length > 12);
+
   }
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.locator('.chips').evaluate(el=>el.scrollTo({left:0,behavior:'instant'}));
@@ -133,7 +131,7 @@ try {
    await art.hover();const after=await art.evaluate(snapshot);
    assert.deepEqual(after,before,'Image hover changed the image or stroke/fade geometry');
    assert.equal(before.frame.borderTopWidth,'1px');assert.equal(before.frame.borderBottomWidth,'1px');assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');assert.equal(before.after,'none');
-   assert.equal(before.image.filter,'none');assert.equal(before.containerFilter,'none');
+   assert.equal(before.mask,'none');assert.equal(before.image.filter,'none');assert.equal(before.containerFilter,'none');
   }
   await page.screenshot({path:`${out}/audaci-${width}x${height}.png`});
   const trigger=page.locator('[data-menu-item="Burrata e Crudo"] button.nome');

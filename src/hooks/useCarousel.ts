@@ -8,10 +8,10 @@ export function useCarousel(count: number, language: string) {
   const rootRef = useRef<HTMLElement>(null), stageRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [renderCount, setRenderCount] = useState(count);
-  const [loaded, setLoaded] = useState(() => new Set([0, 1, count - 1]));
+  const [preload, setPreload] = useState(1);
   const { modal } = useDialog();
   const model = useRef(createMotion());
-  const state = useRef({ visible: false, hovered: false, focused: false, reduced: false, modal: false, step: 300, radius: 3, preload: 3, index: 0, frame: 0, last: 0, holdUntil: 0 });
+  const state = useRef({ visible: false, hovered: false, focused: false, reduced: false, modal: false, step: 300, radius: 3, index: 0, frame: 0, last: 0, holdUntil: 0 });
   const pointer = useRef<{ id: number; x: number; y: number; start: number; active: boolean; lastX: number; time: number; velocity: number } | null>(null);
   const wake = useRef<() => void>(() => {}), paint = useRef<() => void>(() => {});
   const select = useCallback((logical: number) => {
@@ -32,28 +32,27 @@ export function useCarousel(count: number, language: string) {
     const s = state.current, m = model.current;
     const cards = Array.from(stage.querySelectorAll<HTMLElement>("[data-carousel-card]"));
     const captions = Array.from(root.querySelectorAll<HTMLElement>(".pizza-caption"));
+    let lastCaption = -1;
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false, timer = 0;
     const render = () => {
       cards.forEach((card, i) => {
         const d = loopDistance(i, m.position, cards.length), visible = Math.abs(d) < s.radius;
-        card.style.visibility = visible ? "visible" : "hidden";
+        const visibility = visible ? "visible" : "hidden";
+        if (card.style.visibility !== visibility) card.style.visibility = visibility;
         if (visible) card.style.transform = `translate3d(calc(-50% + ${(d * s.step).toFixed(3)}px),0,0)`;
         const active = Math.abs(d) < .5;
         if (card.dataset.active !== String(active)) { card.dataset.active = String(active); card.ariaHidden = String(!active); }
       });
-      captions.forEach((caption, i) => { caption.style.opacity = captionOpacity(loopDistance(i, m.position, count)).toFixed(4); });
       const next = wrap(Math.round(m.position), count);
-      if (next !== s.index) { s.index = next; setIndex(next); }
-      const loadKey = `${next}:${s.preload}`;
-      if (stage.dataset.loadedCenter !== loadKey) {
-        stage.dataset.loadedCenter = loadKey;
-        setLoaded(previous => {
-          const nextSet = new Set(previous);
-          for (let d = -s.preload; d <= s.preload; d++) nextSet.add(wrap(next + d, count));
-          return nextSet.size === previous.size ? previous : nextSet;
-        });
+      // The fade occupies less than half a slide on either side of the center.
+      if (lastCaption !== next) {
+        if (lastCaption >= 0) captions[lastCaption].style.opacity = "0";
+        else captions.forEach(caption => { caption.style.opacity = "0"; });
+        lastCaption = next;
       }
+      captions[next].style.opacity = captionOpacity(loopDistance(next, m.position, count)).toFixed(4);
+      if (next !== s.index) { s.index = next; setIndex(next); }
     };
     const eligible = () => s.visible && !document.hidden && !s.modal;
     const autoplay = () => !s.reduced && !s.hovered && !s.focused && !pointer.current;
@@ -79,7 +78,8 @@ export function useCarousel(count: number, language: string) {
     const resize = () => {
       const cardWidth = cards[0]?.getBoundingClientRect().width || 300;
       const layout = carouselWindow(stage.getBoundingClientRect().width, cardWidth, count);
-      s.step = layout.step; s.radius = layout.radius; s.preload = layout.preload;
+      s.step = layout.step; s.radius = layout.radius;
+      setPreload(layout.preload);
       setRenderCount(layout.renderCount);
       render();
     };
@@ -115,7 +115,9 @@ export function useCarousel(count: number, language: string) {
     wake.current();
   };
   return {
-    rootRef, stageRef, index, renderCount, select, move, isLoaded: (i: number) => loaded.has(i),
+    rootRef, stageRef, index, renderCount, select, move,
+    // Keep only the visible belt and its overscan attached, even after a full tour.
+    isLoaded: (i: number) => Math.abs(loopDistance(i, index, count)) <= preload,
     rootBind: {
       onPointerEnter(e: PointerEvent<HTMLElement>) { if (e.pointerType === "mouse") { state.current.hovered = true; wake.current(); } },
       onPointerLeave(e: PointerEvent<HTMLElement>) { if (e.pointerType === "mouse") { state.current.hovered = false; if (pointer.current && !pointer.current.active) pointer.current = null; wake.current(); } },

@@ -46,9 +46,11 @@
   background:var(--vr-logo-gold); mask:url("/assets/flame.png") center / 28px auto no-repeat;
 }
 .site-brand:focus-visible::after,.site-brand:active::after { opacity:1; }
-.lang button { border:1px solid #393939; transition:background-color .25s; }
-.lang button.on { color:var(--vr-highlight); background:#c6ab7026; border-color:#dac18b52; }
+.lang button { border:0; transition:background-color .25s; }
+.lang button.on { color:var(--vr-highlight); background:#c6ab7026; border:1px solid #dac18b52; }
 .vr-dock a[aria-current] .dock-tile { color:var(--vr-highlight); }
+.vr-dock a[aria-current] .dock-tile svg path { stroke:url(#dock-gold); }
+.vr-dock a[aria-current] .dock-tile i::before { display:inline-block; background:var(--vr-logo-gold); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 .vr-dock a:focus-visible,.lang button:focus-visible { outline-color:#eee; }
 .lang button:focus-visible { outline-offset:-2px; }
 @media(hover:hover) {
@@ -74,5 +76,7 @@ input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:te
   .hero-glimmer,.hero-liquid,.hero-logo::after,.vr-edge-blur { display:none; }
   .hero-logo[data-liquid-ready=true] > img { opacity:1; }
   .vr-dock a[aria-current] .dock-tile,.lang button.on { outline:2px solid Highlight; outline-offset:-2px; }
+  .vr-dock a[aria-current] .dock-tile svg path { stroke:Highlight; }
+  .vr-dock a[aria-current] .dock-tile i::before { background:none; -webkit-text-fill-color:Highlight; }
   .vr-scroll-progress > span { background:Highlight; forced-color-adjust:none; }
 }
