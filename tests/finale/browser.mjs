@@ -17,12 +17,13 @@ async function center(locator) {
 async function position(stage) {
   return stage.locator(".ribbon-card").first().evaluate(el => el.style.transform);
 }
-async function touchSwipe(page, from, to) {
+async function touchSwipe(page, from, to, afterMove) {
   const cdp = await page.context().newCDPSession(page);
   const points = { x: from.x, y: from.y };
   await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [points] });
   for (let i = 1; i <= 6; i++) {
     await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: from.x + (to.x - from.x) * i / 6, y: from.y + (to.y - from.y) * i / 6 }] });
+    if (afterMove) await afterMove();
   }
   await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
   await cdp.detach();
@@ -61,10 +62,27 @@ async function galleries(page, touch) {
   const rect = await stage.boundingBox();
   const x = rect.x + rect.width / 2, y = rect.y + rect.height / 2;
   const before = await position(stage);
-  if (touch) await touchSwipe(page, {x, y}, {x:x-110, y:y+2});
+  if (touch) {
+    const initialY = await page.evaluate(() => scrollY);
+    for (const dx of [112,-110]) {
+      const frames = [];
+      const prior = await position(stage);
+      await touchSwipe(page,{x,y},{x:x+dx,y:y+(dx>0?14:-12)},async()=>{
+        frames.push(await page.evaluate(()=>[scrollY,visualViewport.pageTop]));
+      });
+      assert.notEqual(await position(stage),prior);
+      assert.ok(frames.flat().every(v=>Math.abs(v-initialY)<=1),"Horizontal movement must hold the page still");
+    }
+  }
   else { await page.mouse.move(x,y); await page.mouse.down(); await page.mouse.move(x-110,y+1,{steps:7}); await page.mouse.up(); }
   assert.notEqual(await position(stage), before);
   assert.equal(await page.locator("dialog[open]").count(), 0);
+
+  if(touch) {
+    const priorY=await page.evaluate(()=>scrollY);
+    await touchSwipe(page,{x,y},{x:x+2,y:y-110});
+    await page.waitForFunction(prior=>scrollY>prior+15,priorY);
+  }
 
   const strip = page.locator("#customer .ribbon-stage");
   await center(strip); await page.waitForSelector("#customer [data-enhanced]"); await center(strip); await strip.focus();
@@ -148,16 +166,26 @@ async function contactAndLegal(page, touch) {
   assert.equal(await page.locator(".phone-tile").getAttribute("href"),"tel:+390427541232");
   assert.equal(await page.locator(".wa-tile").getAttribute("href"),"https://wa.me/393802453757");
   assert.equal(await page.locator(".wa-tile img").getAttribute("src"),"/assets/social/whatsapp.webp");
-  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/phone.webp");
+  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/smartphone.webp");
   assert.equal(await page.locator(".studio-credit").getAttribute("href"),"https://mementostudio.it");
   assert.deepEqual(await links.locator(".tile-bottom > span:first-child").allTextContents(),["Instagram","Facebook","Google Reviews","Tripadvisor","Restaurant Guru","Sluurpy"]);
   await center(page.locator("#social"));await Promise.all((await links.locator("img").all()).map(el=>el.evaluate(im=>im.decode())));
+  for (const image of (await links.locator("img").all()).slice(0,2)) {
+    const inset = await image.evaluate(im => {
+      const r=im.getBoundingClientRect();
+      const rendered=Math.max(r.height, r.width*im.naturalHeight/im.naturalWidth);
+      const y=(r.height-rendered)*parseFloat(getComputedStyle(im).objectPosition.split(" ")[1])/100;
+      // The two emblems occupy the band from 23% to 63% in their original square images.
+      return [(y+.23*rendered)/r.height,(y+.63*rendered)/r.height];
+    });
+    assert.ok(inset[0]>.08 && inset[1]<.8,"Keep both social marks fully inside their 2:1 frames");
+  }
   const first=links.first();
   await page.mouse.move(1,1); await tick(page);
-  assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter.includes("grayscale(1)")));
+  assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter === "brightness(1)"));
   if (!touch) {
     await first.hover(); await tick(page);
-    assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter.includes("grayscale(0)")));
+    assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter === "brightness(1.14)"));
     assert.equal(await first.evaluate(el=>getComputedStyle(el).color),"rgb(240, 212, 147)");
     assert.equal(await first.locator(".tile-arrow").evaluate(el=>getComputedStyle(el).color),"rgb(240, 212, 147)");
     assert.equal(await first.locator("canvas").count(),0,"Reduced motion disables particle animation");
@@ -176,6 +204,8 @@ async function contactAndLegal(page, touch) {
       const path=await link.getAttribute("href");
       const response=await page.request.get(new URL(path,url).toString()); assert.ok(response.ok());
       const html=await response.text();
+      assert.doesNotMatch(html, /legal-draft|bozza per la revisione/i);
+      assert.equal(await text.locator(".legal-draft").count(), 0);
       assert.equal(await text.evaluate((e,html)=>new DOMParser().parseFromString(html,"text/html").querySelector(".legal-text").innerHTML===e.innerHTML,html),true);
       const dims=await dialog.evaluate(d=>{
         const v=d.querySelector(".legal-scroll"),rail=d.querySelector(".vr-scroll-progress");
@@ -236,22 +266,22 @@ async function finalLayout(page) {
       return [titleGap(room),rect(room.querySelector("h2")).top-rect(prev).bottom];
     });
     const lines=[...document.querySelectorAll("#table-title .spread-line")].map(el=>({text:el.textContent, top:rect(el).top,bottom:rect(el).bottom}));
-    const tiles=document.querySelectorAll(".bento-tile:not(.hours-tile)");
+    const tiles=document.querySelectorAll(".bento-grid a");
     const outer=[...document.querySelectorAll(".bento-grid,.footer-row")];
     const bento=[...document.querySelectorAll(".bento-grid")].map(grid=>[...grid.children].map(el=>{
       const r=rect(el);return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};
     }));
-    return {validTitles:titles.length===8 && titles.every(atGutters),lines, pairs,
+    return {validTitles:titles.length===8 && titles.every(atGutters),lines, pairs, mobile:innerWidth<=700, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:getComputedStyle(document.querySelector("#customer")).borderTopWidth,
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
       blockSizes:[...document.querySelectorAll("#social,#dove")].every(el=>rect(el).height+1>=innerHeight),
       validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
-      shortSides:[...tiles].every(el=>{const r=rect(el);return ok(r.width,r.height)&&r.width>=44;}),
+      shortSides:[...tiles].every(el=>{const r=rect(el);return Math.min(r.width,r.height)>=44;}),
       overflow:document.documentElement.scrollWidth>innerWidth};
   });
   assert.ok(result.validTitles && result.validEdges && result.blockSizes && result.shortSides && !result.overflow, JSON.stringify(result));
-  assert.equal(result.menuPad >= 96,true); assert.equal(result.rules,"0px");
+  assert.equal(result.menuPad >= 164 && result.firstGap >= 122,true); assert.equal(result.rules,"0px");
   assert.deepEqual(result.lines.map(l=>l.text),["Ricordi condivisi","dalla community"]);
   assert.ok(result.lines[1].top >= result.lines[0].bottom-1);
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
@@ -260,9 +290,25 @@ async function finalLayout(page) {
   assert.equal(social.length,6);assert.equal(visit.length,5);
   const [ig,fb,...reviews]=social, [map,logo,hours,wa,phone]=visit;
   const close=(a,b)=>Math.abs(a-b)<1.6;
-  assert.ok(close(ig.t,fb.t)&&close(ig.w,fb.w)&&reviews.every(r=>r.t>ig.b&&close(r.t,reviews[0].t)&&ig.w>r.w*1.98));
-  assert.ok(close(map.t,logo.t)&&close(map.w,logo.w)&&close(map.w,ig.w)&&logo.l>map.l);
-  assert.ok(close(hours.w,map.w)&&close(hours.h,wa.h)&&close(wa.t,hours.t)&&close(wa.w,phone.w)&&close(wa.t,phone.t)&&hours.t>map.b);
+  const square=tile=>close(tile.w,tile.h);
+  const wide=tile=>Math.abs(tile.w/tile.h-2)<.12;
+  assert.ok([ig,fb].every(tile=>close(tile.w,2*tile.h)) && reviews.every(square));
+  assert.ok([map,wa,phone].every(square) && [logo,hours].every(wide));
+  assert.ok(close(logo.w,hours.w) && close(wa.t,phone.t) && close(wa.w,phone.w) && phone.l>wa.r);
+  assert.ok(close(logo.l,hours.l) && close(hours.l,wa.l) && close(hours.r,phone.r) && hours.t>logo.b && wa.t>hours.b);
+  if(result.mobile) {
+    assert.ok(fb.t>ig.b && reviews[0].t>fb.b && close(ig.l,fb.l) && close(ig.r,fb.r));
+    assert.ok(close(reviews[0].t,reviews[1].t) && close(reviews[2].t,reviews[3].t) && reviews[2].t>reviews[1].b);
+    assert.ok(logo.t>map.b && close(map.w,logo.w) && close(map.l,logo.l));
+  } else {
+    assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews.every(r=>r.t>ig.b && close(r.t,reviews[0].t)));
+    assert.ok(close(map.t,logo.t) && logo.l>map.r && close(map.b,phone.b));
+  }
+  const aligned=await page.locator(".hours-copy").evaluate(el=>{
+    const time=el.firstElementChild.getBoundingClientRect(), day=el.lastElementChild.getBoundingClientRect();
+    return day.left>=time.right-1 && day.top<time.bottom && day.bottom>time.top;
+  });
+  assert.ok(aligned, "Closing day and opening hours should share a line");
   assert.equal(await page.locator(".opening-time").innerText(),"18:00 - 23:00");
   assert.equal(await page.locator(".hours-copy p").innerText(),"Chiuso il lunedì");
   assert.equal(await page.locator("#openState,.status-tile").count(),0);
@@ -273,7 +319,9 @@ async function finalLayout(page) {
     const blur=document.querySelector(".vr-edge-blur--bottom"), dock=document.querySelector(".vr-dock");
     const links=[...el.querySelectorAll("a")];
     const row=el.querySelector(".footer-row").getBoundingClientRect(), left=el.querySelector("p").getBoundingClientRect(), nav=el.querySelector("nav").getBoundingClientRect(), credit=el.querySelector(".studio-credit").getBoundingClientRect();
-    return Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
+    const title=el.querySelector(".studio-credit span"), wordmark=el.querySelector(".studio-credit img").getBoundingClientRect();
+    const text=title.getBoundingClientRect();
+    return title.textContent==="DESIGN & DEV" && text.right<=wordmark.left && Math.abs((text.top+text.bottom)-(wordmark.top+wordmark.bottom))<2 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
       Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
       links.every(a=>{ const r=a.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
   });

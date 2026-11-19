@@ -12,7 +12,5 @@ h2 { margin:0 0 4px; font-size:1.07em; color:var(--gold); font-weight:500; }
 p { margin:0; }
 a { color:var(--gold); text-underline-offset:3px; }
 a:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
-.legal-draft { font-size:.87em; color:#c3b79d; margin-top:24px; padding-top:14px; border-top:1px solid #c6ab7033; }
-.legal-draft strong { font-weight:500; }
 nav { display:flex; flex-wrap:wrap; gap:0 20px; margin-top:26px; }
 nav [aria-current] { text-decoration:none; }

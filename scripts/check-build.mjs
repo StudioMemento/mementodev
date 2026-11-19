@@ -55,7 +55,8 @@ assert.ok(initialCss < 9_300, `Initial CSS budget exceeded: ${initialCss}`);
 assert.ok(css < 11_000, `Total CSS budget exceeded: ${css}`);
 const ribbonKey = "src/components/gallery/ribbon.ts";
 assert.ok(manifest[ribbonKey]?.isDynamicEntry && !initialKeys.has(ribbonKey), "Ribbon motion must load on approach");
-assert.ok(jsSizes.get(manifest[ribbonKey].file) < 2_600, "Gallery controller exceeds budget");
+// Includes local touch-axis handling for WebKit as well as pointer and wheel input.
+assert.ok(jsSizes.get(manifest[ribbonKey].file) < 2_800, "Gallery controller exceeds budget");
 assert.ok(!Object.keys(manifest).some(key=>key.includes('dot-grid')), "Removed Dot Grid remains in the build");
 const sideKey = "src/components/menu/side-squares/controller.ts";
 assert.ok(manifest[sideKey]?.isDynamicEntry, "Side-square engine is not deferred");

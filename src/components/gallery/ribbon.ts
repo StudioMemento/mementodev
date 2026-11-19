@@ -1,4 +1,5 @@
 import "../../styles/ribbon-motion.css";
+import { bindRibbonDrag } from "./ribbon-drag";
 import { wrap } from "../../hooks/useDrag";
 
 export type Variant = "panorama" | "flat";
@@ -8,8 +9,6 @@ const perspective = 1800;
 const angularSpeed = 4 * Math.PI / 180;
 const momentum = 0.5;
 const scrollEase = 0.3;
-
-type PointerDrag = { id: number; x: number; y: number; lastX: number; time: number; horizontal: boolean };
 
 /** Show each photo once. The wrapped distance moves a card across the seam only outside the frame. */
 function distance(index: number, position: number, count: number) {
@@ -30,8 +29,8 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
   let visible = false, paused = false;
   let hovered = matchMedia("(hover: hover)").matches && stage.matches(":hover");
   let keyboard = stage.matches(":focus-visible");
-  let pointer: PointerDrag | null = null;
-  let skipClick = false, frame = 0, previous = 0;
+  let interacting = false;
+  let frame = 0, previous = 0;
 
   const widths = cards.map(() => 1);
   const centers = cards.map((_, i) => i);
@@ -103,9 +102,9 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
     render();
   }
 
-  const canDrift = () => !motion.matches && !hovered && !keyboard && !paused && !pointer;
+  const canDrift = () => !motion.matches && !hovered && !keyboard && !paused && !interacting;
   function refresh() {
-    if (!visible || document.hidden || pointer || stage.hasAttribute("data-obscured") || (!canDrift() && goal === null && !velocity)) {
+    if (!visible || document.hidden || interacting || stage.hasAttribute("data-obscured") || (!canDrift() && goal === null && !velocity)) {
       cancelAnimationFrame(frame); frame = 0; previous = 0;
     } else if (!frame) frame = requestAnimationFrame(advance);
   }
@@ -137,51 +136,16 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
     if (motion.matches) { velocity = 0; if (goal !== null) { position = goal; goal = null; render(); } }
     refresh();
   }
-  function release(event: PointerEvent, cancelled = false) {
-    if (!pointer || pointer.id !== event.pointerId) return;
-    const dragging = pointer.horizontal;
-    const stale = performance.now() - pointer.time > 100;
-    pointer = null;
-    skipClick = dragging && !cancelled;
-    if (!dragging || cancelled || stale || motion.matches) velocity = 0;
-    else velocity *= momentum;
-    stage.classList.remove("is-dragging");
-    if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
-    refresh();
-  }
-
-  stage.addEventListener("pointerdown", e => {
-    if (!e.isPrimary || e.button !== 0) return;
-    skipClick = false; velocity = 0; goal = null; keyboard = false;
-    pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, lastX: e.clientX, time: performance.now(), horizontal: false };
-    refresh();
-  }, { signal });
-  stage.addEventListener("pointermove", e => {
-    if (!pointer || pointer.id !== e.pointerId) return;
-    const dx = e.clientX - pointer.x, dy = e.clientY - pointer.y;
-    if (!pointer.horizontal) {
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 6) return;
-      if (Math.abs(dy) > Math.abs(dx)) { release(e, true); return; }
-      pointer.horizontal = true;
-      stage.setPointerCapture(e.pointerId); stage.classList.add("is-dragging");
-    }
-    const now = performance.now();
-    const change = (pointer.lastX - e.clientX) / pitch;
-    position = wrap(position + change, cards.length);
-    const speed = change / Math.max(.012, (now - pointer.time) / 1000);
-    velocity = .4 * velocity + .6 * Math.max(-9, Math.min(9, speed));
-    pointer.lastX = e.clientX; pointer.time = now;
-    render();
-  }, { signal });
-  window.addEventListener("pointerup", e => release(e), { signal });
-  window.addEventListener("pointercancel", e => release(e, true), { signal });
-  stage.addEventListener("lostpointercapture", e => { if (e.target === stage) release(e, true); }, { signal });
-  stage.addEventListener("click", e => {
-    if (!skipClick) return;
-    skipClick = false;
-    // Some touch browsers omit the click after a drag. Always allow a later keyboard or assistive activation.
-    if (e.detail !== 0) { e.preventDefault(); e.stopPropagation(); }
-  }, { capture: true, signal });
+  bindRibbonDrag(stage, signal, {
+    begin() { interacting = true; keyboard = false; goal = null; velocity = 0; refresh(); },
+    move(pixels, seconds) {
+      const change = pixels / pitch;
+      position = wrap(position + change, cards.length);
+      velocity = .4 * velocity + .6 * Math.max(-9, Math.min(9, change / seconds));
+      render();
+    },
+    end(coast) { interacting = false; velocity = coast && !motion.matches ? velocity * momentum : 0; refresh(); },
+  });
   stage.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") { hovered = true; refresh(); } }, { signal });
   stage.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") { hovered = false; refresh(); } }, { signal });
   stage.addEventListener("focusin", e => { keyboard = (e.target as HTMLElement).matches(":focus-visible"); refresh(); }, { signal });

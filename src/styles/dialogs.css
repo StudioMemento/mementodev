@@ -24,7 +24,6 @@
 .legal-text h2 { font-size:1.06em; font-weight:500; color:var(--vr-highlight); margin:0 0 4px; }
 .legal-text p + p { margin-top:7px; }
 .legal-text a { color:#e8ce97; text-decoration:underline; text-underline-offset:3px; }
-.legal-draft { font-size:.86em; line-height:1.5; color:#c3b79d; margin-top:20px; padding-top:12px; border-top:1px solid var(--vr-line); }
 .legal-panel .vr-scroll-progress[hidden] { display:none; }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .modal-legal::backdrop { background:rgb(9 9 9 / .97); } }
 @media(forced-colors:active) { .legal-panel .modal-close:focus-visible { outline:2px solid Highlight; } }

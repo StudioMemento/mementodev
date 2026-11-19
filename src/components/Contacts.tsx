@@ -20,7 +20,7 @@ function Footer() {
           }}>{label}</a>)}
       </nav>
       <a className="studio-credit" href="https://mementostudio.it" target="_blank" rel="noopener noreferrer">
-        <span lang="en">DESIGN &amp; DEVELOPMENT</span>
+        <span lang="en">DESIGN &amp; DEV</span>
         <img src="/assets/memento-wordmark.svg" width="202" height="9" loading="lazy" alt="Memento Studio" />
       </a>
     </div>
@@ -35,7 +35,7 @@ export default function Contacts() {
       <BentoGrid className="visit-bento">
         <a className="bento-tile map-tile" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.d_maps} · Via Roma 47, 33085 Maniago (PN)`}>
           <img className="tile-art" src="/assets/maniago.webp" srcSet="/assets/maniago-640.webp 640w, /assets/maniago.webp 1254w"
-            sizes="(min-width: 2400px) 20vw, (min-width: 1200px) 30vw, (min-width: 768px) 35vw, 40vw" width="1254" height="1254" alt="" loading="lazy" decoding="async" />
+            sizes="(max-width: 700px) 80vw, (min-width: 2400px) 24vw, (min-width: 1200px) 36vw, (min-width: 768px) 42vw, 48vw" width="1254" height="1254" alt="" loading="lazy" decoding="async" />
           <span className="tile-bottom"><span><strong>Via Roma 47</strong><small>33085 Maniago (PN)</small></span><TileArrow /></span>
         </a>
         <div className="bento-tile sign-tile">
@@ -49,7 +49,7 @@ export default function Contacts() {
           <span className="tile-bottom"><span><span className="action-label">WhatsApp</span><small>380 2453 757</small></span><TileArrow /></span>
         </a>
         <a className="bento-tile contact-tile phone-tile" href="tel:+390427541232">
-          <img className="tile-art" src="/assets/social/phone.webp" width="512" height="512" loading="lazy" decoding="async" alt="" />
+          <img className="tile-art" src="/assets/social/smartphone.webp" width="512" height="512" loading="lazy" decoding="async" alt="" />
           <span className="tile-bottom"><span><span className="action-label">{ui.call}</span><small>0427 541232</small></span><TileArrow /></span>
         </a>
       </BentoGrid>

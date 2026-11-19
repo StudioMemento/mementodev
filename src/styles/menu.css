@@ -2,7 +2,7 @@
 .menu-atmosphere { position:relative; background:#090909; border-bottom:var(--section-rule); }
 #pizza-slider { background:#000; border-block:var(--section-rule); }
 #cornicione { position:relative; }
-#menu { position:relative; padding-top:clamp(80px,12svh,160px); padding-bottom:clamp(96px,16svh,240px); }
+#menu { position:relative; padding-top:clamp(80px,12svh,160px); padding-bottom:clamp(164px,30svh,438px); }
 .menu-head,.mcat,.chipbar-inner { width:var(--vr-content); margin-inline:auto; }
 .menu-head { text-align:center; margin-bottom:clamp(32px,6vw,72px); }
 .menu-head h2 { font-size:var(--menu-title-size,calc(var(--vr-content) * .25)); font-weight:200; line-height:1.12; letter-spacing:.26em; text-transform:uppercase; color:var(--vr-highlight); }
