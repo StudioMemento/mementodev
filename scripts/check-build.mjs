@@ -53,6 +53,9 @@ const initialStyles = new Set([...initialKeys].flatMap(key => manifest[key].css 
 const initialCss = [...initialStyles].reduce((sum, file) => sum + cssSizes.get(file), 0);
 assert.ok(initialCss < 9_300, `Initial CSS budget exceeded: ${initialCss}`);
 assert.ok(css < 11_000, `Total CSS budget exceeded: ${css}`);
+const edgeKey = "src/components/bento/effects.ts";
+assert.ok(manifest[edgeKey]?.isDynamicEntry && !initialKeys.has(edgeKey), "Finale field must load on approach");
+assert.ok(jsSizes.get(manifest[edgeKey].file) < 3000, "Combined edge and card particles exceed their deferred budget");
 const ribbonKey = "src/components/gallery/ribbon.ts";
 assert.ok(manifest[ribbonKey]?.isDynamicEntry && !initialKeys.has(ribbonKey), "Ribbon motion must load on approach");
 // Includes local touch-axis handling for WebKit as well as pointer and wheel input.

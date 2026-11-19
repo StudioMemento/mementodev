@@ -47,17 +47,16 @@ export function bindRibbonDrag(stage: HTMLElement, signal: AbortSignal, handlers
     handlers.move(gesture.lastX - x, Math.max(.012, (now - gesture.time) / 1000));
     gesture.lastX = x; gesture.time = now;
   }
-  stage.addEventListener("touchstart", e => {
+  function touch(e: TouchEvent) {
+    const starting = e.type === "touchstart";
+    if (!starting && gesture?.kind !== "touch") return;
     if (e.touches.length !== 1) { finish(true); return; }
-    const t = e.touches[0];
-    begin(t.identifier, t.clientX, t.clientY, "touch");
-  }, passive);
-  stage.addEventListener("touchmove", e => {
-    if (gesture?.kind !== "touch") return;
-    if (e.touches.length !== 1) { finish(true); return; }
-    const t = e.touches[0];
-    if (t.identifier === gesture.id) move(t.clientX, t.clientY, e);
-  }, { signal, passive: false });
+    const finger = e.touches[0];
+    if (starting) begin(finger.identifier, finger.clientX, finger.clientY, "touch");
+    else if (finger.identifier === gesture?.id) move(finger.clientX, finger.clientY, e);
+  }
+  stage.addEventListener("touchstart", touch, passive);
+  stage.addEventListener("touchmove", touch, { signal, passive: false });
   function endTouch(e: TouchEvent) {
     if (gesture?.kind === "touch" && Array.from(e.changedTouches).some(t => t.identifier === gesture?.id)) finish(e.type === "touchcancel");
   }

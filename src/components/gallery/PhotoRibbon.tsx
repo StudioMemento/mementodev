@@ -1,4 +1,5 @@
-import { useEffect, useId, useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useCallback, useId, useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useOnApproach } from "../../hooks/useOnApproach";
 import { useI18n } from "../../i18n";
 import metadata from "../../data/images.json";
 import { closingCopy } from "../../data/closing-copy";
@@ -12,25 +13,21 @@ type Props = { photos: GalleryPhoto[]; title: string; variant: Variant };
 export function PhotoRibbon({ photos, title, variant }: Props) {
   const { language } = useI18n();
   const { modal } = useDialog();
-  const stage = useRef<HTMLDivElement>(null);
   const engine = useRef<RibbonController | null>(null);
+  const announcement = useRef<HTMLSpanElement>(null);
   const helpId = useId();
   const flat = variant === "flat";
 
-  useEffect(() => {
-    const element = stage.current;
-    if (!element) return;
-    let disposed = false;
-    const near = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      near.disconnect();
-      void import("./ribbon").then(({ mountRibbon }) => {
-        if (!disposed) engine.current = mountRibbon(element, variant);
-      }).catch(() => { /* The native horizontal strip remains available. */ });
-    }, { rootMargin: "550px 0px" });
-    near.observe(element);
-    return () => { disposed = true; near.disconnect(); engine.current?.destroy(); engine.current = null; };
+  const loadRibbon = useCallback(async () => {
+    const { mountRibbon } = await import("./ribbon");
+    return (element: HTMLDivElement) => {
+      const paceReference = variant === "flat" ? element.closest("main")?.querySelector<HTMLElement>(".panorama .ribbon-card") : null;
+      const controller = mountRibbon(element, variant, announcement.current!, paceReference);
+      engine.current = controller;
+      return () => { controller.destroy(); engine.current = null; };
+    };
   }, [variant]);
+  const stage = useOnApproach(loadRibbon, "550px 0px");
 
   useLayoutEffect(() => {
     stage.current?.toggleAttribute("data-obscured", Boolean(modal));
@@ -66,7 +63,7 @@ export function PhotoRibbon({ photos, title, variant }: Props) {
           </button>;
         })}
       </div>
-      <span className="sr-only ribbon-announcement" aria-live="polite" aria-atomic="true" />
+      <span ref={announcement} className="sr-only ribbon-announcement" aria-live="polite" aria-atomic="true" />
     </div>
   </div>;
 }

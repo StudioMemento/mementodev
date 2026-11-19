@@ -1,3 +1,4 @@
+import "../../styles/bento-motion.css";
 type Speck = {
   birth: number; life: number; x: number; y: number; phase: number; radius: number; size: number;
   released?: number; exitAlpha?: number;
@@ -50,6 +51,9 @@ export function bindParticles(grid: HTMLElement) {
       f.sources.delete(source);
       if (!f.sources.size) for (const p of f.specks) {
         if (p.released !== undefined) continue;
+        // Start the tail at the position and opacity that were actually painted.
+        // Input can arrive midway through a long frame on mobile.
+        p.birth += Math.max(0, now - last);
         p.exitAlpha = opacity(p, now);
         p.released = now;
       }

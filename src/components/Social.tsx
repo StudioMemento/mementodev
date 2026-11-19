@@ -10,7 +10,7 @@ export default function Social() {
     <BentoGrid className="social-bento">
       {socialProfiles.map(({ id, href, name }) => <a key={id} className={`bento-tile social-tile platform-${id}`}
         href={href} target="_blank" rel="noopener noreferrer">
-        <img className="tile-art" src={`/assets/social/${id}.webp`} width="640" height="640" loading="lazy" decoding="async" alt="" />
+        <img className="tile-art" src={`/assets/social/${id}.webp?v=45`} width="640" height="640" loading="lazy" decoding="async" alt="" />
         <span className="tile-bottom"><span>{name}</span><TileArrow /></span>
       </a>)}
     </BentoGrid>

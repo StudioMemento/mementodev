@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { galleryPace, edgeField, fieldInput } from "./motion.mjs";
 import { readFile } from "node:fs/promises";
 
 const playwright = process.env.PLAYWRIGHT_MODULE || (process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES
@@ -121,6 +122,9 @@ async function galleries(page, touch) {
   assert.equal(await page.locator(blocked).count(), 0, "Gallery photos only scroll");
   assert.ok(Math.abs(await page.evaluate(() => scrollY) - startY) < 2);
   await strip.focus();
+  await page.keyboard.press("Home");
+  assert.equal(await strip.evaluate(el=>getComputedStyle(el).outlineStyle),"none");
+  assert.equal(await strip.locator(".is-current .photo-byline").evaluate(el=>getComputedStyle(el).textDecorationLine),"underline");
   const stripBounds = await strip.boundingBox();
   const gap = await strip.locator(".ribbon-track").evaluate(el => parseFloat(getComputedStyle(el).columnGap));
   const ratios = new Set();
@@ -165,27 +169,29 @@ async function contactAndLegal(page, touch) {
   assert.equal(await page.locator(".map-tile").getAttribute("href"),"https://maps.google.com/?cid=7212905066552907909");
   assert.equal(await page.locator(".phone-tile").getAttribute("href"),"tel:+390427541232");
   assert.equal(await page.locator(".wa-tile").getAttribute("href"),"https://wa.me/393802453757");
-  assert.equal(await page.locator(".wa-tile img").getAttribute("src"),"/assets/social/whatsapp.webp");
-  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/smartphone.webp");
+  assert.equal(await page.locator(".wa-tile img").getAttribute("src"),"/assets/social/whatsapp.webp?v=45");
+  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/smartphone.webp?v=45");
   assert.equal(await page.locator(".studio-credit").getAttribute("href"),"https://mementostudio.it");
   assert.deepEqual(await links.locator(".tile-bottom > span:first-child").allTextContents(),["Instagram","Facebook","Google Reviews","Tripadvisor","Restaurant Guru","Sluurpy"]);
   await center(page.locator("#social"));await Promise.all((await links.locator("img").all()).map(el=>el.evaluate(im=>im.decode())));
-  for (const image of (await links.locator("img").all()).slice(0,2)) {
-    const inset = await image.evaluate(im => {
-      const r=im.getBoundingClientRect();
-      const rendered=Math.max(r.height, r.width*im.naturalHeight/im.naturalWidth);
-      const y=(r.height-rendered)*parseFloat(getComputedStyle(im).objectPosition.split(" ")[1])/100;
-      // The two emblems occupy the band from 23% to 63% in their original square images.
-      return [(y+.23*rendered)/r.height,(y+.63*rendered)/r.height];
+  for (const image of await links.locator("img").all()) {
+    const inside = await image.evaluate(im => {
+      const tile=im.parentElement, r=im.getBoundingClientRect(), box=tile.getBoundingClientRect();
+      const label=tile.querySelector(".tile-bottom > span").getBoundingClientRect();
+      const canvas=document.createElement("canvas"); canvas.width=canvas.height=24;
+      const ctx=canvas.getContext("2d"); ctx.drawImage(im,0,0,24,24);
+      return getComputedStyle(im).objectFit==="contain" && r.top>box.top && r.bottom<label.top+2
+        && r.left>box.left && r.right<box.right && ctx.getImageData(0,0,1,1).data[3]===0;
     });
-    assert.ok(inset[0]>.08 && inset[1]<.8,"Keep both social marks fully inside their 2:1 frames");
+    assert.ok(inside, "Transparent emblem must fit above its label");
   }
   const first=links.first();
   await page.mouse.move(1,1); await tick(page);
-  assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter === "brightness(1)"));
+  assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter === "saturate(0.8) brightness(1)"));
   if (!touch) {
     await first.hover(); await tick(page);
-    assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter === "brightness(1.14)"));
+    assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter === "saturate(1) brightness(1.1)"));
+    assert.equal(await first.evaluate(el=>getComputedStyle(el,"::after").opacity),"1");
     assert.equal(await first.evaluate(el=>getComputedStyle(el).color),"rgb(240, 212, 147)");
     assert.equal(await first.locator(".tile-arrow").evaluate(el=>getComputedStyle(el).color),"rgb(240, 212, 147)");
     assert.equal(await first.locator("canvas").count(),0,"Reduced motion disables particle animation");
@@ -238,11 +244,18 @@ async function contactAndLegal(page, touch) {
 async function contactTextFits(page) {
   const clipped=await page.locator(".bento-grid .bento-tile").evaluateAll(tiles=>tiles.flatMap(tile=>{
     const bounds=tile.getBoundingClientRect();
-    return [...tile.querySelectorAll("strong,small,.hours-copy p,.action-label,.social-tile .tile-bottom > span:first-child")].filter(label=>{
+    return [...tile.querySelectorAll("strong,small,.hours-note,.action-label,.social-tile .tile-bottom > span:first-child")].filter(label=>{
       const range=document.createRange();range.selectNodeContents(label);
       return [...range.getClientRects()].some(r=>r.left<bounds.left-1 || r.right>bounds.right+1 || r.top<bounds.top-1 || r.bottom>bounds.bottom+1);
     }).map(label=>label.textContent);
   }));
+  assert.ok(await page.locator(".hours-tile").evaluate(el=>{
+    const time=el.querySelector(".opening-time").getBoundingClientRect(), note=el.querySelector(".hours-note");
+    const first=note.firstElementChild.getBoundingClientRect(), last=note.lastElementChild.getBoundingClientRect();
+    const box=el.getBoundingClientRect();
+    return first.top>=time.bottom && Math.abs(time.left-first.left)<1.5 && Math.abs(time.right-last.right)<1.5
+      && Math.abs((time.right+time.left)-(box.right+box.left))<2 && time.left-box.left>box.width*.055;
+  }),"Centered, equal-width hours and closing day in every language");
   assert.deepEqual(clipped,[],"Labels must fit the card");
 }
 
@@ -271,9 +284,9 @@ async function finalLayout(page) {
     const bento=[...document.querySelectorAll(".bento-grid")].map(grid=>[...grid.children].map(el=>{
       const r=rect(el);return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};
     }));
-    return {validTitles:titles.length===8 && titles.every(atGutters),lines, pairs, mobile:innerWidth<=700, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
+    return {validTitles:titles.length===8 && titles.every(atGutters),lines, pairs, mobile:innerWidth<=700, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
-      rules:getComputedStyle(document.querySelector("#customer")).borderTopWidth,
+      rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row,.footer-row nav")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
       blockSizes:[...document.querySelectorAll("#social,#dove")].every(el=>rect(el).height+1>=innerHeight),
       validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
@@ -281,7 +294,7 @@ async function finalLayout(page) {
       overflow:document.documentElement.scrollWidth>innerWidth};
   });
   assert.ok(result.validTitles && result.validEdges && result.blockSizes && result.shortSides && !result.overflow, JSON.stringify(result));
-  assert.equal(result.menuPad >= 164 && result.firstGap >= 122,true); assert.equal(result.rules,"0px");
+  assert.equal(result.menuPad >= 164 && result.firstGap >= 122,true); assert.ok(result.rules,"Section and footer separators removed");
   assert.deepEqual(result.lines.map(l=>l.text),["Ricordi condivisi","dalla community"]);
   assert.ok(result.lines[1].top >= result.lines[0].bottom-1);
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
@@ -292,25 +305,25 @@ async function finalLayout(page) {
   const close=(a,b)=>Math.abs(a-b)<1.6;
   const square=tile=>close(tile.w,tile.h);
   const wide=tile=>Math.abs(tile.w/tile.h-2)<.12;
-  assert.ok([ig,fb].every(tile=>close(tile.w,2*tile.h)) && reviews.every(square));
+  assert.ok([ig,fb].every(result.squareSocial?square:wide) && reviews.every(square));
   assert.ok([map,wa,phone].every(square) && [logo,hours].every(wide));
   assert.ok(close(logo.w,hours.w) && close(wa.t,phone.t) && close(wa.w,phone.w) && phone.l>wa.r);
   assert.ok(close(logo.l,hours.l) && close(hours.l,wa.l) && close(hours.r,phone.r) && hours.t>logo.b && wa.t>hours.b);
   if(result.mobile) {
-    assert.ok(fb.t>ig.b && reviews[0].t>fb.b && close(ig.l,fb.l) && close(ig.r,fb.r));
+    assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews[0].t>fb.b && close(ig.l,reviews[0].l) && close(fb.r,reviews[1].r));
     assert.ok(close(reviews[0].t,reviews[1].t) && close(reviews[2].t,reviews[3].t) && reviews[2].t>reviews[1].b);
     assert.ok(logo.t>map.b && close(map.w,logo.w) && close(map.l,logo.l));
   } else {
     assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews.every(r=>r.t>ig.b && close(r.t,reviews[0].t)));
     assert.ok(close(map.t,logo.t) && logo.l>map.r && close(map.b,phone.b));
   }
-  const aligned=await page.locator(".hours-copy").evaluate(el=>{
-    const time=el.firstElementChild.getBoundingClientRect(), day=el.lastElementChild.getBoundingClientRect();
-    return day.left>=time.right-1 && day.top<time.bottom && day.bottom>time.top;
-  });
-  assert.ok(aligned, "Closing day and opening hours should share a line");
   assert.equal(await page.locator(".opening-time").innerText(),"18:00 - 23:00");
-  assert.equal(await page.locator(".hours-copy p").innerText(),"Chiuso il lunedì");
+  assert.equal(await page.locator(".hours-note").textContent(),"CHIUSO IL LUNEDÌ");
+  assert.equal(await page.locator(".hours-copy p .sr-only").textContent(),"Chiuso il lunedì");
+  assert.ok(await page.locator(".hours-tile").evaluate(el=>{
+    const style=getComputedStyle(el), wa=getComputedStyle(document.querySelector(".wa-tile"));
+    return style.backgroundColor===wa.backgroundColor && style.backgroundImage===wa.backgroundImage;
+  }),"Identical substrate under the hours and WhatsApp");
   assert.equal(await page.locator("#openState,.status-tile").count(),0);
   await contactTextFits(page);
   const footer=page.locator(".visit-footer");
@@ -321,16 +334,26 @@ async function finalLayout(page) {
     const row=el.querySelector(".footer-row").getBoundingClientRect(), left=el.querySelector("p").getBoundingClientRect(), nav=el.querySelector("nav").getBoundingClientRect(), credit=el.querySelector(".studio-credit").getBoundingClientRect();
     const title=el.querySelector(".studio-credit span"), wordmark=el.querySelector(".studio-credit img").getBoundingClientRect();
     const text=title.getBoundingClientRect();
-    return title.textContent==="DESIGN & DEV" && text.right<=wordmark.left && Math.abs((text.top+text.bottom)-(wordmark.top+wordmark.bottom))<2 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
+    return title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && text.right<=wordmark.left && Math.abs((text.top+text.bottom)-(wordmark.top+wordmark.bottom))<2 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
       Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
       links.every(a=>{ const r=a.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
   });
   assert.ok(correct,"Footer columns, hit targets and dock clearance");
 }
 
-async function particles(page) {
+async function particles() {
+  const page=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:"no-preference"});
+  await page.clock.install({time:new Date("2026-01-01T00:00:00Z")});
+  await page.addInitScript(()=>{let seed=1907;Math.random=()=>((seed=Math.imul(1664525,seed)+1013904223>>>0)/4294967296);});
+  await page.goto(url,{waitUntil:"domcontentloaded"}); await page.evaluate(()=>document.fonts.ready);
+  await page.clock.pauseAt(new Date("2026-01-01T01:00:00Z"));
+  await page.clock.runFor(32);
+  const hover = async tile => {
+    await center(tile); await page.clock.runFor(32);
+    const r=await tile.boundingBox(); await page.mouse.move(r.x+r.width*.6,r.y+r.height*.6);
+  };
   const tile=page.locator(".platform-instagram");
-  await center(tile);await tile.hover();
+  await hover(tile);
   const field=tile.locator("canvas.tile-particles");
   await field.waitFor();
   const sample = () => field.evaluate(c=>{
@@ -339,17 +362,20 @@ async function particles(page) {
     for(let i=3;i<data.length;i+=4) if(data[i]) { light+=data[i];pixels++; y+=Math.floor((i/4)/c.width)*data[i]; }
     return {light,pixels,y};
   });
-  await page.waitForTimeout(260);const start=await sample();
-  await page.waitForTimeout(1150);const peak=await sample();
+  await page.clock.runFor(260);const start=await sample();
+  await page.clock.runFor(1150);const peak=await sample();
   assert.ok(peak.pixels>start.pixels && peak.light>start.light,"Particle count and intensity grow gradually");
-  await page.mouse.move(2,2);await page.waitForTimeout(850);const mid=await sample();
-  await page.waitForTimeout(950);const tail=await sample();
+  await page.mouse.move(2,2);await page.clock.runFor(850);const mid=await sample();
+  await page.clock.runFor(950);const tail=await sample();
   assert.ok(mid.light>tail.light && tail.light>0 && tail.y/tail.light<mid.y/mid.light,"Particles ascend and fade after exit");
-  await field.waitFor({state:"detached",timeout:1800});
+  await page.clock.runFor(1150);assert.equal(await field.count(),1,"The exit lasts the full three seconds");
+  await page.clock.runFor(110);assert.equal(await field.count(),0);
+  await page.clock.resume();
   const logo=page.locator(".sign-tile");
   await center(logo);await logo.hover();await logo.locator("canvas").waitFor();
   await page.waitForTimeout(650);assert.equal(await logo.locator(".sign-mark").evaluate(e=>getComputedStyle(e,"::after").opacity),"1");
   await page.mouse.move(1,1);await page.waitForTimeout(700);assert.equal(await logo.locator(".sign-mark").evaluate(e=>getComputedStyle(e,"::after").opacity),"0");
+  await page.close();
 }
 
 async function run(layout) {
@@ -390,14 +416,17 @@ try {
     }
   }
   await compact.close();console.log("FIT_OK · compact landscape through ultrawide, exact menu gutters, two-line heading and panoramic edge coverage");
+  await particles();
   const page=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:"no-preference"});
-  await page.goto(url);
+  await page.goto(url,{waitUntil:"domcontentloaded"});
   const room=page.locator("#album-bancone .ribbon-stage");
   await center(room);await page.waitForSelector("#album-bancone [data-enhanced]");await center(room);
   const first=await position(room);await page.waitForFunction(before=>document.querySelector("#album-bancone .ribbon-card").style.transform!==before,first);
   await room.hover();await tick(page);const held=await position(room);await page.waitForTimeout(130);assert.equal(await position(room),held);
   await page.mouse.move(2,2);await page.waitForFunction(before=>document.querySelector("#album-bancone .ribbon-card").style.transform!==before,held);
   await page.evaluate(()=>scrollTo({top:0,behavior:"instant"}));await tick(page);const outside=await position(room);await page.waitForTimeout(130);assert.equal(await position(room),outside);
-  await particles(page);
-  await page.close();console.log("MOTION_OK · gallery drift, offscreen pause, rising particles with a 3 s exit");
+  await galleryPace(page); await edgeField(page);
+  await page.close();
+  await fieldInput(browser,url);
+  console.log("MOTION_OK · gallery drift, offscreen pause, rising particles with a 3 s exit");
 } finally { await browser.close(); }

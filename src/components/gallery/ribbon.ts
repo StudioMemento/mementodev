@@ -6,7 +6,7 @@ export type Variant = "panorama" | "flat";
 export type RibbonController = { focusCard(index: number): void; refresh(): void; destroy(): void };
 
 const perspective = 1800;
-const angularSpeed = 4 * Math.PI / 180;
+const angularSpeed = 3.2 * Math.PI / 180;
 const momentum = 0.5;
 const scrollEase = 0.3;
 
@@ -15,17 +15,19 @@ function distance(index: number, position: number, count: number) {
   return wrap(index - position + count / 2, count) - count / 2;
 }
 
-export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonController {
+export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: HTMLElement, paceReference?: HTMLElement | null): RibbonController {
   const track = stage.querySelector<HTMLElement>(".ribbon-track")!;
-  const cards = Array.from(track.querySelectorAll<HTMLElement>(".ribbon-card"));
+  const cards = Array.from(track.children) as HTMLElement[];
   const images = cards.map(card => card.querySelector("img")!);
-  const announcement = stage.querySelector<HTMLElement>(".ribbon-announcement")!;
   const panorama = variant === "panorama";
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
   const listeners = new AbortController();
   const signal = listeners.signal;
+  const options = { signal };
   let position = 0, goal: number | null = null, velocity = 0;
   let width = 1, cardWidth = 1, pitch = 1, focal = 1, stepAngle = 1, halfAngle = 0;
+  let driftRate = 0, viewAngle = 0;
+  let activeCard: HTMLElement | undefined;
   let visible = false, paused = false;
   let hovered = matchMedia("(hover: hover)").matches && stage.matches(":hover");
   let keyboard = stage.matches(":focus-visible");
@@ -36,46 +38,58 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
   const centers = cards.map((_, i) => i);
   function nearest(at: number) {
     if (panorama) return wrap(Math.round(at), cards.length);
-    let best = 0;
-    for (let i = 1; i < centers.length; i++) {
-      if (Math.abs(distance(centers[i], at, cards.length)) < Math.abs(distance(centers[best], at, cards.length))) best = i;
+    let best = 0, closest = Infinity;
+    for (let i = 0; i < centers.length; i++) {
+      const offset = Math.abs(distance(centers[i], at, cards.length));
+      if (offset < closest) { best = i; closest = offset; }
     }
     return best;
   }
 
   function render() {
+    const side = 2 * Math.sin(halfAngle) / cardWidth, depth = Math.cos(halfAngle);
     for (let i = 0; i < cards.length; i++) {
       const card = cards[i];
       const delta = distance(centers[i], position, cards.length);
       const angle = delta * stepAngle;
-      const within = panorama ? Math.abs(angle) < Math.atan(width / (2 * focal)) + halfAngle + .015
-                              : Math.abs(delta * pitch) < (width + widths[i]) / 2 + 1;
-      const near = panorama ? Math.abs(angle) < Math.atan(width / (2 * focal)) + halfAngle + stepAngle : Math.abs(delta * pitch) < (width + widths[i]) / 2 + pitch;
+      const offset = Math.abs(panorama ? angle : delta * pitch);
+      const edge = panorama ? viewAngle : (width + widths[i]) / 2;
+      const within = offset < edge + (panorama ? .015 : 1);
+      const near = offset < edge + (panorama ? stepAngle : pitch);
       if (near && images[i].loading !== "eager") images[i].loading = "eager";
       card.style.visibility = within ? "visible" : "hidden";
       if (!within) continue;
       if (!panorama) {
-        card.style.transform = `translate(-50%, -50%) translateX(${delta * pitch}px)`;
+        card.style.transform = `translateX(${delta * pitch}px)`;
         continue;
       }
       // Project the four corners of a tangent panel on the inside of a cylinder.
       const sin = Math.sin(angle), cos = Math.cos(angle);
-      const side = 2 * Math.sin(halfAngle) / cardWidth, depth = Math.cos(halfAngle);
-      card.style.transform = `translate(-50%, -50%) matrix3d(${focal * cos * side},0,0,${-sin * side},0,1,0,0,0,0,1,0,${focal * sin * depth},0,0,${cos * depth})`;
+      card.style.transform = `matrix3d(${focal * cos * side},0,0,${-sin * side},0,1,0,0,0,0,1,0,${focal * sin * depth},0,0,${cos * depth})`;
       card.style.opacity = String(1 - Math.min(1, Math.abs(2 * focal * Math.tan(angle) / width)) ** 1.6 * .45);
     }
-    stage.dataset.active = String(nearest(position));
+    const index = nearest(position);
+    if (activeCard !== cards[index]) {
+      activeCard?.classList.remove("is-current");
+      activeCard = cards[index];
+      activeCard.classList.add("is-current");
+      stage.dataset.active = String(index);
+    }
   }
 
   function measure() {
     width = Math.max(1, stage.clientWidth);
     cardWidth = Math.max(1, cards[0].offsetWidth);
     pitch = cardWidth + 4;
+    // Angular motion and the flat track share the same screen velocity at the optical center.
+    const venueWidth = paceReference?.offsetWidth || cardWidth;
+    focal = Math.min(perspective, venueWidth * 2.15, Math.max(venueWidth * 1.12, width * .54));
     if (!panorama) {
       // Distances use one average pitch, so a full lap still contains exactly N units.
       const gap = parseFloat(getComputedStyle(track).columnGap);
       for (let i = 0; i < cards.length; i++) widths[i] = parseFloat(getComputedStyle(cards[i]).width);
       pitch = widths.reduce((sum, w) => sum + w + gap, 0) / cards.length;
+      driftRate = focal * angularSpeed / pitch;
       let edge = -widths[0] / 2;
       for (let i = 0; i < cards.length; i++) {
         centers[i] = (edge + widths[i] / 2) / pitch;
@@ -85,24 +99,26 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
       return;
     }
     // Keep the seven-photo rooms continuous even on shallow ultrawide screens.
-    focal = Math.min(perspective, cardWidth * 2.15, Math.max(cardWidth * 1.12, width * .54));
     stepAngle = 2 * Math.atan(pitch / (2 * focal));
+    driftRate = angularSpeed / stepAngle;
     halfAngle = Math.atan(cardWidth / (2 * focal));
+    viewAngle = Math.atan(width / (2 * focal)) + halfAngle;
     // Trim the straight chords to one continuous, symmetrical aperture.
-    const upper: string[] = [], lower: string[] = [];
+    const outline: string[] = [];
     const height = Math.max(1, stage.clientHeight);
-    for (let i = 0; i <= 32; i++) {
-      const fraction = i / 32;
-      const x = (fraction - .5) * width / focal;
-      const halfHeight = cardWidth * .375 * Math.hypot(1, x) / height * 100;
-      upper.push(`${fraction * 100}% ${50 - halfHeight}%`);
-      lower.unshift(`${fraction * 100}% ${50 + halfHeight}%`);
+    for (const edge of [-1, 1]) {
+      for (let i = 0; i <= 32; i++) {
+        const fraction = edge < 0 ? i / 32 : 1 - i / 32;
+        const x = (fraction - .5) * width / focal;
+        const halfHeight = cardWidth * .375 * Math.hypot(1, x) / height * 100;
+        outline.push(`${fraction * 100}% ${50 + edge * halfHeight}%`);
+      }
     }
-    track.style.clipPath = `polygon(${upper.concat(lower).join(",")})`;
+    track.style.clipPath = `polygon(${outline.join(",")})`;
     render();
   }
 
-  const canDrift = () => !motion.matches && !hovered && !keyboard && !paused && !interacting;
+  const canDrift = () => !motion.matches && !hovered && !keyboard && !paused;
   function refresh() {
     if (!visible || document.hidden || interacting || stage.hasAttribute("data-obscured") || (!canDrift() && goal === null && !velocity)) {
       cancelAnimationFrame(frame); frame = 0; previous = 0;
@@ -121,7 +137,7 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
       velocity *= Math.exp(-5.7 * dt);
       if (Math.abs(velocity) < .012) velocity = 0;
     } else if (canDrift()) {
-      position += dt * (panorama ? angularSpeed / stepAngle : 24 / pitch);
+      position += dt * driftRate;
     }
     if (goal === null) position = wrap(position, cards.length);
     render(); refresh();
@@ -129,8 +145,7 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
   function focusCard(index: number) {
     velocity = 0;
     goal = position + distance(centers[index], position, cards.length);
-    if (motion.matches) { position = goal; goal = null; render(); }
-    refresh();
+    resetMotion();
   }
   function resetMotion() {
     if (motion.matches) { velocity = 0; if (goal !== null) { position = goal; goal = null; render(); } }
@@ -146,20 +161,23 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
     },
     end(coast) { interacting = false; velocity = coast && !motion.matches ? velocity * momentum : 0; refresh(); },
   });
-  stage.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") { hovered = true; refresh(); } }, { signal });
-  stage.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") { hovered = false; refresh(); } }, { signal });
-  stage.addEventListener("focusin", e => { keyboard = (e.target as HTMLElement).matches(":focus-visible"); refresh(); }, { signal });
-  stage.addEventListener("focusout", e => { if (!stage.contains(e.relatedTarget as Node | null)) { keyboard = false; refresh(); } }, { signal });
+  function hover(e: PointerEvent) {
+    if (e.pointerType === "mouse") { hovered = e.type === "pointerenter"; refresh(); }
+  }
+  stage.addEventListener("pointerenter", hover, options);
+  stage.addEventListener("pointerleave", hover, options);
+  stage.addEventListener("focusin", e => { keyboard = (e.target as HTMLElement).matches(":focus-visible"); refresh(); }, options);
+  stage.addEventListener("focusout", e => { if (!stage.contains(e.relatedTarget as Node | null)) { keyboard = false; refresh(); } }, options);
   stage.addEventListener("keydown", e => {
     const current = nearest(goal ?? position);
     if (e.key === " ") { e.preventDefault(); paused = !paused; keyboard = paused; hovered = false; refresh(); return; }
-    if (panorama && e.key === "Enter" && e.target === stage) { e.preventDefault(); cards[wrap(current, cards.length)].click(); return; }
+    if (panorama && e.key === "Enter" && e.target === stage) { e.preventDefault(); cards[current].click(); return; }
     const targets: Record<string, number> = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 0, End: cards.length - 1 };
     if (!(e.key in targets)) return;
     e.preventDefault(); keyboard = true;
     const index = wrap(targets[e.key], cards.length);
     focusCard(index); announcement.textContent = cards[index].getAttribute("aria-label");
-  }, { signal });
+  }, options);
   stage.addEventListener("wheel", e => {
     if (e.ctrlKey || (!e.shiftKey && Math.abs(e.deltaX) <= Math.abs(e.deltaY))) return;
     const amount = e.deltaX || e.deltaY;
@@ -173,12 +191,16 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
   const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; refresh(); });
   stage.dataset.enhanced = "true";
   measure(); resize.observe(stage); observer.observe(stage);
-  document.addEventListener("visibilitychange", refresh, { signal });
-  motion.addEventListener("change", resetMotion, { signal });
+  if (paceReference) resize.observe(paceReference);
+  document.addEventListener("visibilitychange", refresh, options);
+  motion.addEventListener("change", resetMotion, options);
   return { focusCard, refresh, destroy() {
     listeners.abort(); resize.disconnect(); observer.disconnect(); cancelAnimationFrame(frame);
     delete stage.dataset.enhanced; delete stage.dataset.active;
     stage.classList.remove("is-dragging"); track.style.removeProperty("clip-path");
-    for (const card of cards) { card.style.removeProperty("transform"); card.style.removeProperty("visibility"); card.style.removeProperty("opacity"); }
+    activeCard?.classList.remove("is-current");
+    for (const card of cards) {
+      for (const key of ["transform", "visibility", "opacity"]) card.style.removeProperty(key);
+    }
   } };
 }

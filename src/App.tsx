@@ -7,6 +7,7 @@ import { Cornicione, PizzaSlider } from "./components/IntroSliders";
 import { MenuSideSquares } from "./components/menu/MenuSideSquares";
 import Menu from "./components/Menu";
 import Gallery from "./components/Gallery";
+import { FinaleAtmosphere } from "./components/FinaleAtmosphere";
 import Community from "./components/Community";
 import Social from "./components/Social";
 import Contacts from "./components/Contacts";
@@ -38,10 +39,13 @@ function Page() {
           <Cornicione />
           <Menu />
         </div>
-        <Gallery />
-        <Community />
-        <Social />
-        <Contacts />
+        <div className="final-sections">
+          <FinaleAtmosphere />
+          <Gallery />
+          <Community />
+          <Social />
+          <Contacts />
+        </div>
       </main>
       <Dock />
       <DialogHost />

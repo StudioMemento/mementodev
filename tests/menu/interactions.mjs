@@ -41,11 +41,17 @@ let effect,width=320,fontSize=80,ratio=3,tracking=.26,fitWrites=0,fontReady;
 const label={getBoundingClientRect:()=>({width:fontSize*(ratio+tracking)})};
 const heading={firstElementChild:label,get clientWidth(){return width},style:{setProperty:(key,value)=>{assert.equal(key,'--menu-title-size');fontSize=parseFloat(value);fitWrites++}}};
 const fits=[];
-const title=await source('src/components/menu/MenuTitle.tsx',{useRef:()=>({current:heading}),useLayoutEffect:fn=>{effect=fn},ResizeObserver:class{constructor(fn){this.fn=fn;fits.push(this)}observe(){}disconnect(){this.disconnected=true}},getComputedStyle:()=>({fontSize:`${fontSize}px`,letterSpacing:`${fontSize*tracking}px`}),document:{fonts:{ready:{then:fn=>{fontReady=fn}}}}});
+let fitFrame;
+const titleFrames={
+  requestAnimationFrame(fn){ assert.equal(fitFrame,undefined); fitFrame=fn; return 1 },
+  cancelAnimationFrame(){fitFrame=undefined}
+};
+function paintTitle(){const draw=fitFrame;fitFrame=undefined;draw?.()}
+const title=await source('src/components/menu/MenuTitle.tsx',{...titleFrames,useRef:()=>({current:heading}),useLayoutEffect:fn=>{effect=fn},ResizeObserver:class{constructor(fn){this.fn=fn;fits.push(this)}observe(){}disconnect(){this.disconnected=true}},getComputedStyle:()=>({fontSize:`${fontSize}px`,letterSpacing:`${fontSize*tracking}px`}),document:{fonts:{ready:{then:fn=>{fontReady=fn}}}}});
 title.useTitleFit('Menù');let cleanup=effect();assert.ok(Math.abs(fontSize*ratio-width)<.001);const firstWrites=fitWrites;fits.at(-1).fn();assert.equal(fitWrites,firstWrites);
-ratio=3.85;fontReady();assert.ok(Math.abs(fontSize*ratio-width)<.001);width=1200;fits.at(-1).fn();assert.ok(Math.abs(fontSize*ratio-width)<.001);
+ratio=3.85;fontReady();assert.ok(Math.abs(fontSize*ratio-width)<.001);width=1200;fits.at(-1).fn();fits.at(-1).fn();assert.notEqual(fitFrame,undefined);paintTitle();assert.ok(Math.abs(fontSize*ratio-width)<.001);
 cleanup();const oldReady=fontReady;ratio=8;title.useTitleFit('Die Speisekarte');cleanup=effect();assert.ok(Math.abs(fontSize*ratio-width)<.001);
-width=0;fits.at(-1).fn();assert.ok(Number.isFinite(fontSize));const lastWrites=fitWrites;cleanup();fontReady();oldReady();assert.equal(fitWrites,lastWrites);assert.ok(fits.at(-1).disconnected);
+width=0;fits.at(-1).fn();paintTitle();assert.ok(Number.isFinite(fontSize));width=960;fits.at(-1).fn();const lastWrites=fitWrites;cleanup();assert.equal(fitFrame,undefined);fontReady();oldReady();assert.equal(fitWrites,lastWrites);assert.ok(fits.at(-1).disconnected);
 // Execute item handlers and the real dialog render/cancel/click handlers.
 const allergen=await source('src/data/allergen-info.ts',{});const getAllergenInfo=vm.runInContext('getAllergenInfo',allergen);
 const data=JSON.parse(await readFile('src/data/menu.json','utf8')),allergens=JSON.parse(await readFile('src/data/allergens.json','utf8'));
