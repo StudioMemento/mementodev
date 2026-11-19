@@ -2,6 +2,8 @@ import data from "../data/photos.json";
 import { useI18n } from "../i18n";
 import { PhotoRibbon } from "./gallery/PhotoRibbon";
 
+import { SpreadTitle } from "./SpreadTitle";
+
 const rooms = ["esterno", "bancone", "sala_sinistra", "sala_destra", "via_roma"] as const;
 
 export default function Gallery() {
@@ -14,7 +16,7 @@ export default function Gallery() {
           src, caption: `${title} · ${copy.photo} ${index + 1}`,
         }));
         return <section className="venue-room" key={room} id={`album-${room}`} aria-labelledby={`title-${room}`}>
-          <h2 className="section-gold room-title" id={`title-${room}`}><span>{title}</span></h2>
+          <SpreadTitle id={`title-${room}`} text={title} />
           <PhotoRibbon photos={photos} title={title} variant="panorama" />
         </section>;
       })}

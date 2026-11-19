@@ -2,7 +2,7 @@ import "../../styles/ribbon-motion.css";
 import { wrap } from "../../hooks/useDrag";
 
 export type Variant = "panorama" | "flat";
-export type RibbonController = { focusCard(index: number): void; refresh(): void; destroy(): void };
+export type RibbonController = { focusCard(index: number, immediate?: boolean): void; refresh(): void; destroy(): void };
 
 const perspective = 1800;
 const angularSpeed = 4 * Math.PI / 180;
@@ -61,7 +61,8 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
     width = Math.max(1, stage.clientWidth);
     cardWidth = Math.max(1, cards[0].offsetWidth);
     pitch = cardWidth + (panorama ? 4 : Math.round(cardWidth * .04));
-    focal = Math.min(perspective, Math.max(cardWidth * 1.12, width * .54));
+    // Keep the seven-photo rooms continuous even on shallow ultrawide screens.
+    focal = Math.min(perspective, cardWidth * 2.15, Math.max(cardWidth * 1.12, width * .54));
     stepAngle = 2 * Math.atan(pitch / (2 * focal));
     halfAngle = Math.atan(cardWidth / (2 * focal));
     if (panorama) {
@@ -104,10 +105,10 @@ export function mountRibbon(stage: HTMLElement, variant: Variant): RibbonControl
     if (goal === null) position = wrap(position, cards.length);
     render(); refresh();
   }
-  function focusCard(index: number) {
+  function focusCard(index: number, immediate = false) {
     velocity = 0;
     goal = position + distance(index, position, cards.length);
-    if (motion.matches) { position = goal; goal = null; render(); }
+    if (immediate || motion.matches) { position = goal; goal = null; render(); }
     refresh();
   }
   function resetMotion() {

@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_4.1_Vercel";
+const name = "ViaRoma_4.2_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -65,6 +65,10 @@ for (const required of [
   "src/components/gallery/ribbon.ts",
   "src/components/gallery/PhotoRibbon.tsx",
   "src/components/LegalReader.tsx",
+  "src/components/gallery/PhotoFocus.tsx",
+  "src/components/SpreadTitle.tsx",
+  "public/assets/bento-stars.svg",
+  ...["instagram", "facebook", "google", "tripadvisor", "guru", "sluurpy"].map(id => `public/assets/social/${id}.webp`),
   "src/components/BentoGrid.tsx",
   "tests/finale/browser.mjs",
   "public/assets/memento-wordmark.svg",
