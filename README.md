@@ -1,6 +1,6 @@
-# Via Roma 4.5
+# Via Roma 4.6
 
-Build di sviluppo per Pizzeria Via Roma a Maniago. La 4.5 aggiorna lo scorrimento delle gallerie, le otto icone, gli orari e il fondo animato della parte finale.
+Build di sviluppo per Pizzeria Via Roma a Maniago. La 4.6 riprende l’oro satinato della precedente icona Instagram per gli otto marchi e pittogrammi. Aggiorna gli orari, la firma su mobile, la lettura delle pagine legali e i controlli di navigazione.
 
 ## Avvio e deploy
 
@@ -36,8 +36,9 @@ Con l’anteprima avviata, Playwright e Chromium disponibili nell’ambiente di 
 
 ```sh
 node tests/finale/browser.mjs
+node tests/finale/navigation.mjs
 node tests/menu/browser.mjs
 node tests/menu/dialog-viewport.mjs
 ```
 
-`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_4.5_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.
+`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_4.6_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.

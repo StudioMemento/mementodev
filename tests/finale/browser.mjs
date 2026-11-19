@@ -169,8 +169,8 @@ async function contactAndLegal(page, touch) {
   assert.equal(await page.locator(".map-tile").getAttribute("href"),"https://maps.google.com/?cid=7212905066552907909");
   assert.equal(await page.locator(".phone-tile").getAttribute("href"),"tel:+390427541232");
   assert.equal(await page.locator(".wa-tile").getAttribute("href"),"https://wa.me/393802453757");
-  assert.equal(await page.locator(".wa-tile img").getAttribute("src"),"/assets/social/whatsapp.webp?v=45");
-  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/smartphone.webp?v=45");
+  assert.equal(await page.locator(".wa-tile img").getAttribute("src"),"/assets/social/whatsapp.webp?v=46");
+  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/smartphone.webp?v=46");
   assert.equal(await page.locator(".studio-credit").getAttribute("href"),"https://mementostudio.it");
   assert.deepEqual(await links.locator(".tile-bottom > span:first-child").allTextContents(),["Instagram","Facebook","Google Reviews","Tripadvisor","Restaurant Guru","Sluurpy"]);
   await center(page.locator("#social"));await Promise.all((await links.locator("img").all()).map(el=>el.evaluate(im=>im.decode())));
@@ -187,10 +187,10 @@ async function contactAndLegal(page, touch) {
   }
   const first=links.first();
   await page.mouse.move(1,1); await tick(page);
-  assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter === "saturate(0.8) brightness(1)"));
+  assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter.startsWith("saturate(0.8) brightness(1) drop-shadow(")));
   if (!touch) {
     await first.hover(); await tick(page);
-    assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter === "saturate(1) brightness(1.1)"));
+    assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter.startsWith("saturate(1) brightness(1.1) drop-shadow(")));
     assert.equal(await first.evaluate(el=>getComputedStyle(el,"::after").opacity),"1");
     assert.equal(await first.evaluate(el=>getComputedStyle(el).color),"rgb(240, 212, 147)");
     assert.equal(await first.locator(".tile-arrow").evaluate(el=>getComputedStyle(el).color),"rgb(240, 212, 147)");
@@ -286,7 +286,9 @@ async function finalLayout(page) {
     }));
     return {validTitles:titles.length===8 && titles.every(atGutters),lines, pairs, mobile:innerWidth<=700, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
-      rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row,.footer-row nav")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
+      rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
+      footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderBottomWidth,
+      stackedFooter:matchMedia("(max-width:767px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches,
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
       blockSizes:[...document.querySelectorAll("#social,#dove")].every(el=>rect(el).height+1>=innerHeight),
       validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
@@ -294,7 +296,8 @@ async function finalLayout(page) {
       overflow:document.documentElement.scrollWidth>innerWidth};
   });
   assert.ok(result.validTitles && result.validEdges && result.blockSizes && result.shortSides && !result.overflow, JSON.stringify(result));
-  assert.equal(result.menuPad >= 164 && result.firstGap >= 122,true); assert.ok(result.rules,"Section and footer separators removed");
+  assert.equal(result.menuPad >= 164 && result.firstGap >= 122,true); assert.ok(result.rules,"The finale sections have no separators");
+  assert.equal(result.footerRule,result.stackedFooter?"1px":"0px","Only the stacked footer separates the links from the signature");
   assert.deepEqual(result.lines.map(l=>l.text),["Ricordi condivisi","dalla community"]);
   assert.ok(result.lines[1].top >= result.lines[0].bottom-1);
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));

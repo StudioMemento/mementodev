@@ -1,0 +1,158 @@
+import assert from "node:assert/strict";
+
+const engine = process.env.BROWSER_ENGINE || "chromium";
+const playwright = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
+const executablePath = process.env.BROWSER_PATH || (engine === "chromium" ? process.env.CHROMIUM_PATH : undefined);
+const browser = await playwright[engine].launch({ headless: true, executablePath });
+const url = process.env.TEST_URL || "http://127.0.0.1:4175/";
+const viewports = [[320,568,true], [390,844,true], [844,390,true], [768,1024,true], [1440,900,false]];
+const languages = ["it","en","de","fr"];
+const slugs = ["privacy","cookie","note-legali"];
+
+function neutral(color) {
+  const parts = color.match(/[\d.]+/g).map(Number);
+  return parts[0] === parts[1] && parts[1] === parts[2];
+}
+
+async function checkLegalText(article) {
+  const report = await article.evaluate(el => {
+    const width = el.getBoundingClientRect().width;
+    const noOverflow = el.scrollWidth <= Math.ceil(width) + 1;
+    const units = Array.from(el.querySelectorAll(".legal-unit, a[href^='tel:']"));
+    const intact = units.every(unit => {
+      const range = document.createRange(); range.selectNodeContents(unit);
+      const lines = [...range.getClientRects()].filter(rect => rect.width > 0);
+      return lines.length === 1 && lines[0].width < width;
+    });
+    return { noOverflow, intact, headings: el.querySelectorAll("h2").length };
+  });
+  assert.ok(report.noOverflow && report.intact && report.headings >= 3, JSON.stringify(report));
+}
+
+async function testViewport(width,height,touch) {
+  const options={ viewport:{width,height}, hasTouch:touch, isMobile:touch, reducedMotion:"reduce" };
+  const context=await browser.newContext(options);
+  try {
+    const page=await context.newPage();
+    await page.goto(url,{waitUntil:"domcontentloaded"});
+    await page.evaluate(() => document.fonts.ready);
+    for(const language of languages) {
+      await page.locator('.lang button[data-lang="'+language+'"]').click();
+      await page.waitForFunction(lang => document.documentElement.lang === lang,language);
+      const buttons=await page.locator(".lang button").evaluateAll(all => all.map(button => {
+        const r=button.getBoundingClientRect(), style=getComputedStyle(button);
+        return {active:button.getAttribute("aria-pressed")==="true",color:style.color,
+          ring:style.borderTopColor, line:style.borderTopWidth, w:r.width,h:r.height,radius:style.borderTopLeftRadius};
+      }));
+      assert.equal(buttons.filter(button=>button.active).length,1);
+      for(const button of buttons) {
+        assert.equal(button.w,button.h);
+        assert.ok(button.w >= (touch ? 44 : 36));
+        assert.equal(button.radius,"50%");
+        assert.equal(button.line,"1px");
+        assert.equal(neutral(button.ring),!button.active);
+        assert.equal(neutral(button.color),!button.active);
+      }
+      assert.ok(neutral(await page.locator(".lang").evaluate(el=>getComputedStyle(el).borderTopColor)));
+      const hours=await page.locator(".hours-copy").evaluate(el=>{
+        const time=el.querySelector("strong"), note=el.querySelector(".hours-note");
+        const a=time.getBoundingClientRect(), b=note.getBoundingClientRect(), tile=el.parentElement.getBoundingClientRect();
+        return {weight:getComputedStyle(time).fontWeight,gap:b.top-a.bottom,
+          centered:Math.abs(a.left+a.right-tile.left-tile.right)<2,
+          edges:Math.abs(a.left-b.left)+Math.abs(a.right-b.right)<2};
+      });
+      assert.ok(hours.weight==="200" && hours.gap >= 7.5 && hours.centered && hours.edges, JSON.stringify(hours));
+    }
+    const italian=page.locator('.lang button[data-lang="it"]');
+    if (!touch) {
+      await italian.hover();
+      const idle=await italian.evaluate(el=>({color:getComputedStyle(el).color,fill:getComputedStyle(el).backgroundColor}));
+      assert.ok(neutral(idle.color) && neutral(idle.fill));
+    }
+    await italian.click();
+    if (width===390) {
+      await page.setViewportSize({width:height,height:width});
+      assert.ok(await page.locator(".lang button").evaluateAll(buttons=>buttons.every(el=>{
+        const r=el.getBoundingClientRect();return r.width===r.height;
+      })));
+      await page.setViewportSize({width,height});
+    }
+    const flame=page.locator(".site-brand");
+    if(!touch) {
+      await flame.hover();
+      assert.equal(await flame.evaluate(el=>getComputedStyle(el,"::after").opacity),"1");
+      await page.mouse.move(width/2,150);
+      assert.equal(await flame.evaluate(el=>getComputedStyle(el,"::after").opacity),"0");
+    }
+    await page.keyboard.press("Tab");
+    await flame.focus();
+    const flameStyle=await flame.evaluate(el=>{
+      const after=getComputedStyle(el,"::after");
+      return { opacity:after.opacity, gold:after.backgroundImage,mask:after.maskImage || after.webkitMaskImage };
+    });
+    assert.equal(flameStyle.opacity,"1"); assert.ok(flameStyle.gold.includes("gradient") && flameStyle.mask.includes("/assets/flame.png"));
+    await flame.blur();
+    for (const [id,ratio] of [["home",0],["menu",null],["gallery",null],["dove",1]]) {
+      await page.evaluate(({id,ratio})=>{
+        const y=ratio===null ? document.getElementById(id).getBoundingClientRect().top+scrollY : (document.documentElement.scrollHeight-innerHeight)*ratio;
+        scrollTo({top:y,behavior:"instant"});
+      },{id,ratio});
+      await page.waitForFunction(id=>document.querySelector(".vr-dock a[aria-current]")?.getAttribute("href")==="#"+id,id);
+      if(!touch) await page.locator('.vr-dock a[href="tel:+390427541232"]').hover();
+      const tiles=await page.locator(".vr-dock a").evaluateAll(all=>all.map(a=>{
+        const s=getComputedStyle(a.firstElementChild);
+        return { active:a.hasAttribute("aria-current"), ink:s.color, border:s.borderTopColor };
+      }));
+      assert.equal(tiles.filter(t=>t.active).length,1);
+      assert.ok(tiles.every(t=>neutral(t.border) && neutral(t.ink)!==t.active));
+    }
+    for(const progress of [0,.5,1]) {
+      await page.evaluate(f=>scrollTo({top:(document.documentElement.scrollHeight-innerHeight)*f,behavior:"instant"}),progress);
+      await page.waitForFunction(f=>{
+        const s=getComputedStyle(document.querySelector(".vr-scroll-progress > span"));
+        return s.backgroundImage.includes("linear-gradient") && Math.abs(new DOMMatrix(s.transform).m22-f)<.01;
+      },progress);
+    }
+    const footer=await page.locator(".footer-row").evaluate(el=>{
+      const nav=el.querySelector("nav"), credit=el.querySelector(".studio-credit"), mark=credit.querySelector("img");
+      return {divider:getComputedStyle(nav).borderBottomWidth, wordmark:mark.getBoundingClientRect().width,
+        stacked:nav.getBoundingClientRect().bottom<=credit.getBoundingClientRect().top};
+    });
+    assert.equal(footer.divider,footer.stacked ? "1px" : "0px");
+    assert.equal(footer.stacked, width<=767 || touch && width<=1000 && height<=540);
+    assert.ok(footer.wordmark>=79.9);
+    if(width===390) {
+      for(const language of languages) {
+        await page.locator('.lang button[data-lang="'+language+'"]').click();
+        for (const slug of slugs) {
+          await page.locator('.footer-row nav a[href$="/'+slug+'.html"]').click();
+          const article=page.locator("dialog[open] article.legal-text");
+          await article.waitFor(); await checkLegalText(article);
+          await page.locator("dialog[open] .modal-close").click();
+        }
+      }
+    }
+    if(width===320 || width===1440) {
+      const staticContext=await browser.newContext({...options,javaScriptEnabled:false});
+      try {
+        const page=await staticContext.newPage();
+        for(const lang of languages) for(const slug of slugs) {
+          const path=(lang==="it"?"":lang+"/")+slug+".html";
+          const response=await page.goto(new URL(path,url).href);
+          assert.ok(response.ok()); await page.evaluate(()=>document.fonts.ready);
+          const article=page.locator("article.legal-text");
+          await checkLegalText(article);
+          if (width===320) {
+            await article.evaluate(el=>{ el.style.fontSize="200%"; });
+            assert.ok(await article.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+          }
+          assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+        }
+      } finally { await staticContext.close(); }
+    }
+    console.log(engine,width,height,"OK");
+  } finally { await context.close(); }
+}
+try {
+  for(const [w,h,t] of viewports) await testViewport(w,h,t);
+} finally { await browser.close(); }

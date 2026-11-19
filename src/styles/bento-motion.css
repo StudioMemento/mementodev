@@ -1,6 +1,6 @@
 .sign-mark::after {
   content:""; position:absolute; inset:0; opacity:var(--gold); transition:opacity .55s;
-  background:linear-gradient(120deg,#a98242 8%,#f5dc9d 32%,#ffefc5 40%,#be984e 62%,#ebd092 83%);
+  background:var(--vr-logo-gold);
   mask:url("/assets/logo.png") center / contain no-repeat;
 }
 .bento-tile::after {

@@ -1,10 +1,9 @@
 /* ViaRoma_1_HERO — scoped visual layer; existing type/layout stays in clean.css. */
 :root {
   --vr-carbon: #090909;
-  --vr-satin: #252524;
   --vr-gold-muted: #a89b7b;
   --vr-highlight: #dac18b; /* sampled from LE CLASSICHE, matches .mcat h3 */
-  --vr-highlight-rgb: 218,193,139;
+  --vr-logo-gold:linear-gradient(120deg,#a98242 8%,#f5dc9d 32%,#ffefc5 40%,#be984e 62%,#ebd092 83%);
   --vr-hero-gradient-speed: 5s;
 }
 .vr-hero { position:relative; isolation:isolate; background:var(--vr-carbon); }
@@ -36,44 +35,44 @@
 .vr-edge-blur--top { top:0; height:calc(clamp(6rem,14vh,9rem) + env(safe-area-inset-top)); }
 .vr-edge-blur--bottom { bottom:0; height:calc(clamp(7rem,16vh,10rem) + env(safe-area-inset-bottom)); }
 .vr-edge-blur > div { position:absolute; inset:0; background:transparent; }
-/* Neutral translucent satin. Explicit prefixed blur for Safari; no blend modes,
- * color boosting or refraction. Alpha belongs to the material, not the icons. */
+/* The pill and dock share neutral glass. Only the selected glyph and language carry gold. */
 .dock-tile,.lang {
-  overflow:hidden; isolation:isolate;
-  color:var(--vr-ivory); border-color:rgb(168 155 123 / .35);
-  background:linear-gradient(150deg,rgb(37 37 36 / .66),rgb(37 37 36 / .44) 55%,rgb(37 37 36 / .56));
-  box-shadow:inset 0 1px 0 rgb(241 236 225 / .12),0 2px 8px rgb(9 9 9 / .15);
-  transition:border-color .45s ease,color .45s ease,box-shadow .45s ease;
+  overflow:hidden; isolation:isolate; color:#dedede; border-color:#505050;
+  background:linear-gradient(145deg,#252525c9,#191919a8); box-shadow:inset 0 1px #ffffff1c,0 2px 8px #0002;
   -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
 }
-.lang { position:relative; }
-.lang button { position:relative; color:var(--vr-ivory); transition:color .45s ease,background-color .45s ease,box-shadow .45s ease; }
-.lang button.on { color:var(--vr-highlight); background:rgb(198 171 112 / .14); box-shadow:inset 0 -1px 0 rgb(218 193 139 / .26); }
-.dock-tile::before {
-  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
-  background:radial-gradient(ellipse 85% 100% at 50% 120%,rgba(var(--vr-highlight-rgb),.25) 0%,rgba(var(--vr-highlight-rgb),.1) 40%,rgba(var(--vr-highlight-rgb),0) 80%);
-  opacity:0; transform:translateY(9px); transition:opacity .55s ease,transform .65s cubic-bezier(.22,1,.36,1);
+.site-brand::after {
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .35s;
+  background:var(--vr-logo-gold); mask:url("/assets/flame.png") center / 28px auto no-repeat;
 }
-.dock-tile :is(i,svg) { position:relative; z-index:1; }
-.vr-dock a[aria-current] .dock-tile { color:var(--vr-highlight); border-color:#8c7e61; box-shadow:inset 0 1px 0 #ffffff21,inset 0 -1px 0 #dac18b33,0 2px 8px #00000026; }
-.vr-dock a[aria-current] .dock-tile::before { opacity:1; transform:translateY(0); }
-@media(hover:hover) { .lang button:hover { color:var(--vr-highlight); background-color:rgb(198 171 112 / .09); } .vr-dock a:hover .dock-tile { border-color:#a1906d; color:var(--vr-highlight); } .vr-dock a:not([aria-current]):hover .dock-tile::before { opacity:.35; transform:translateY(2px); } }
+.site-brand:focus-visible::after,.site-brand:active::after { opacity:1; }
+.lang button { border:1px solid #393939; transition:background-color .25s; }
+.lang button.on { color:var(--vr-highlight); background:#c6ab7026; border-color:#dac18b52; }
+.vr-dock a[aria-current] .dock-tile { color:var(--vr-highlight); }
+.vr-dock a:focus-visible,.lang button:focus-visible { outline-color:#eee; }
+.lang button:focus-visible { outline-offset:-2px; }
+@media(hover:hover) {
+  .site-brand:hover::after { opacity:1; }
+  .lang button:not(.on):hover { background:#ffffff12; }
+  .vr-dock a:hover .dock-tile { border-color:#888; }
+}
 /* Native scrolling is intact; only its scrollbar is replaced. */
 html,body { scrollbar-width:none; -ms-overflow-style:none; }
 html::-webkit-scrollbar,body::-webkit-scrollbar { display:none; width:0; height:0; }
 body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:text; -webkit-touch-callout:default; }
 .vr-scroll-progress { position:fixed; z-index:70; top:0; right:0; width:2px; height:100vh; height:100dvh; pointer-events:none; }
-.vr-scroll-progress > span { display:block; width:100%; height:100%; background:var(--vr-highlight); transform:scaleY(0); transform-origin:top; }
+.vr-scroll-progress > span { display:block; width:100%; height:100%; background:linear-gradient(180deg,transparent,#dac18b30 42%,#c6ab7085 82%,#f0d69c); transform:scaleY(0); transform-origin:top; }
 @media(prefers-reduced-motion:reduce) {
   .hero-slogan { animation:none; }
-  .dock-tile,.dock-tile::before,.lang button,.hero-logo,.hero-logo::after { transition:none; }
+  .site-brand::after,.lang button,.hero-logo,.hero-logo::after { transition:none; }
 }
 /* Keep optical blur when the OS reports reduced transparency: the old rule hid it entirely on the review browser. */
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .vr-edge-blur { display:none; } .dock-tile,.lang { background:rgb(37 37 36 / .88); } }
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .vr-edge-blur { display:none; } .dock-tile,.lang { background:#252525e0; } }
 @media(forced-colors:active) {
   .hero-slogan { color:CanvasText; -webkit-text-fill-color:CanvasText; background:none; text-shadow:none; }
   .hero-glimmer,.hero-liquid,.hero-logo::after,.vr-edge-blur { display:none; }
   .hero-logo[data-liquid-ready=true] > img { opacity:1; }
-  .vr-dock a[aria-current] .dock-tile { outline:2px solid Highlight; }
+  .vr-dock a[aria-current] .dock-tile,.lang button.on { outline:2px solid Highlight; outline-offset:-2px; }
+  .vr-scroll-progress > span { background:Highlight; forced-color-adjust:none; }
 }

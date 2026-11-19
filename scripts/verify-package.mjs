@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_4.5_Vercel";
+const name = "ViaRoma_4.6_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -88,6 +88,7 @@ for (const required of [
   "public/assets/logo.png",
   "public/assets/fonts/jost-300.woff2",
   "public/legal.css",
+  "public/legal-text.css",
   "docs/QA_V25.md",
   "docs/LAYOUT_V25.md",
   "src/styles/clean.css",
