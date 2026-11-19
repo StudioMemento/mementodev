@@ -7,9 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-export type LightboxPhoto = { src: string; caption: string };
 export type ModalState =
-  | { kind: "photo"; photos: LightboxPhoto[]; index: number }
   | { kind: "allergens"; name: string; description: string; codes: string }
   | { kind: "legal"; slug: "privacy" | "cookie" | "note-legali" };
 const DialogContext = createContext<{

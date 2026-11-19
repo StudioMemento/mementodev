@@ -1,4 +1,4 @@
-# Risorse e licenze — Via Roma 4.2
+# Risorse e licenze — Via Roma 4.3
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.
@@ -14,6 +14,6 @@ Il tilt delle card cornicione implementa in modo dedicato il preset Holo Card in
 
 Il background 3.5–3.8 è un'implementazione originale Canvas 2D, autorizzata dall'utente, ispirata alla reference visiva Blinking Squares. Non include il sorgente React Bits Pro e non richiede la sua licenza o il registro shadcn. Dot Grid e tutto il relativo codice derivato sono stati rimossi. Nessuna nuova dipendenza npm.
 
-Le gallerie e il bento della 4.1 riprendono i preset visivi Panorama, Flat e Magic Bento indicati dal committente. Il codice di proiezione e interazione è implementato nel progetto. Le miniature derivano dalle 40 foto del locale e dai 12 scatti della community. Il wordmark Memento usa i tracciati del file fornito DEV_20_Typo.svg.
+Le gallerie e il bento della 4.1 riprendono i preset visivi Panorama, Flat e Magic Bento indicati dal committente. Il codice di proiezione e interazione è implementato nel progetto. Le miniature panoramiche derivano dalle 40 foto del locale. La galleria della community usa gli scatti originali e le relative varianti responsive. Il wordmark Memento usa i tracciati del file fornito DEV_20_Typo.svg.
 
-Le sei immagini in `public/assets/social` sono interpretazioni grafiche generate per la versione 4.2. I marchi delle piattaforme appartengono ai rispettivi titolari.
+Le otto immagini in `public/assets/social` sono visual generati per la 4.3 e ottimizzati in WebP. Comprendono le sei piattaforme, telefono e WhatsApp. I marchi delle piattaforme appartengono ai rispettivi titolari.

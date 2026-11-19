@@ -5,9 +5,7 @@ import { useI18n, translateName } from "../i18n";
 import allergens from "../data/allergens.json";
 import { getAllergenInfo } from "../data/allergen-info";
 import { LegalReader } from "./LegalReader";
-import { Chevron, Icon } from "./Icon";
-import { Photo } from "./Photo";
-import { useDrag, wrap } from "../hooks/useDrag";
+import { Icon } from "./Icon";
 /** Choose the roomiest layout that fits the actual title, language and safe area. */
 function fitAllergens(dialog: HTMLDialogElement) {
   const short = dialog.clientHeight <= 560;
@@ -60,22 +58,9 @@ export default function Dialogs() {
     void document.fonts.ready.then(fit);
     return () => { active = false; resize.disconnect(); };
   }, [modal, language]);
-  const step = (d: number) => {
-    if (modal?.kind === "photo")
-      update({ ...modal, index: wrap(modal.index + d, modal.photos.length) });
-  };
-  const drag = useDrag(step);
   if (!modal) return null;
-  const title =
-    modal.kind === "allergens"
-      ? translateName(modal.name, language)
-      : modal.kind === "photo"
-        ? modal.photos[modal.index].caption
-        : modal.slug === "privacy"
-          ? copy.privacy
-          : modal.slug === "cookie"
-            ? copy.cookies
-            : ui.legal_notes;
+  const title = modal.kind === "allergens" ? translateName(modal.name, language)
+    : ({ privacy: copy.privacy, cookie: copy.cookies, "note-legali": ui.legal_notes })[modal.slug];
   const info =
     modal.kind === "allergens"
       ? getAllergenInfo(modal.name, modal.description, modal.codes)
@@ -100,18 +85,10 @@ export default function Dialogs() {
             if (e.key in offsets) { e.preventDefault(); reader.scrollBy({ top: offsets[e.key], behavior: "instant" }); }
           }
         }
-        if (
-          modal.kind === "photo" &&
-          !e.defaultPrevented &&
-          (e.key === "ArrowLeft" || e.key === "ArrowRight")
-        ) {
-          e.preventDefault();
-          step(e.key === "ArrowLeft" ? -1 : 1);
-        }
       }}
     >
       <section
-        className={`modal-panel ${modal.kind === "allergens" ? "allergen-panel" : modal.kind === "legal" ? "legal-panel" : ""}`}
+        className={`modal-panel ${modal.kind === "allergens" ? "allergen-panel" : "legal-panel"}`}
       >
         <header className="modal-header">
           <div>
@@ -164,37 +141,6 @@ export default function Dialogs() {
             ref.current?.querySelector<HTMLButtonElement>(".modal-close")?.focus({ preventScroll: true });
             update({ kind: "legal", slug });
           }} />
-        )}
-        {modal.kind === "photo" && (
-          <>
-            <div className="lightbox-image" {...drag}>
-              <Photo
-                src={modal.photos[modal.index].src}
-                alt={modal.photos[modal.index].caption}
-                eager
-                sizes="96vw"
-              />
-            </div>
-            <div className="lightbox-controls">
-              <button
-                type="button"
-                onClick={() => step(-1)}
-                aria-label={copy.previous}
-              >
-                <Chevron direction="left" />
-              </button>
-              <span aria-live="polite">
-                {modal.index + 1} / {modal.photos.length}
-              </span>
-              <button
-                type="button"
-                onClick={() => step(1)}
-                aria-label={copy.next}
-              >
-                <Chevron direction="right" />
-              </button>
-            </div>
-          </>
         )}
       </section>
     </dialog>

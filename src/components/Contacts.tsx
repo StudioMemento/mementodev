@@ -1,43 +1,17 @@
-import { useEffect, useState } from "react";
 import { useI18n } from "../i18n";
 import { closingCopy } from "../data/closing-copy";
 import { legalPath } from "../data/legal-path";
 import { mapUrl } from "../data/venue-links";
 import { useDialog } from "./DialogContext";
-import { BentoGrid } from "./BentoGrid";
-import { Icon } from "./Icon";
+import { BentoGrid, TileArrow } from "./BentoGrid";
 import { SpreadTitle } from "./SpreadTitle";
-
-export function isRestaurantOpen(date: Date) {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/Rome", weekday: "short", hour: "2-digit", hourCycle: "h23",
-  }).formatToParts(date);
-  const day = parts.find(p => p.type === "weekday")?.value;
-  const hour = Number(parts.find(p => p.type === "hour")?.value);
-  return day !== "Mon" && hour >= 18 && hour < 23;
-}
-
-function OpeningStatus() {
-  const { ui } = useI18n();
-  const [isOpen, setOpen] = useState<boolean | null>(null);
-  useEffect(() => {
-    const update = () => { if (!document.hidden) setOpen(isRestaurantOpen(new Date())); };
-    update();
-    const timer = setInterval(update, 15000);
-    document.addEventListener("visibilitychange", update);
-    return () => { clearInterval(timer); document.removeEventListener("visibilitychange", update); };
-  }, []);
-  return <div className="bento-tile status-tile" id="openState" role="status" data-state={isOpen == null ? "pending" : isOpen ? "open" : "closed"}>
-    <i className="status-dot" aria-hidden="true" /><span data-status-label>{isOpen == null ? "—" : isOpen ? ui.open_now : ui.closed_now}</span>
-  </div>;
-}
 
 function Footer() {
   const { ui, copy, language } = useI18n();
   const { open } = useDialog();
   return <footer className="visit-footer" role="contentinfo">
     <div className="footer-row">
-      <p>© 2026 Pizzeria Via Roma</p>
+      <p><span>© 2026</span> <span>Pizzeria Via Roma</span></p>
       <nav aria-label={ui.legal_notes}>
         {([["privacy", copy.privacy], ["cookie", copy.cookies], ["note-legali", ui.legal_notes]] as const).map(([slug, label]) =>
           <a key={slug} href={legalPath(language, slug)} aria-haspopup="dialog" onClick={event => {
@@ -61,21 +35,23 @@ export default function Contacts() {
       <BentoGrid className="visit-bento">
         <a className="bento-tile map-tile" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.d_maps} · Via Roma 47, 33085 Maniago (PN)`}>
           <img className="tile-art" src="/assets/maniago.webp" srcSet="/assets/maniago-640.webp 640w, /assets/maniago.webp 1254w"
-            sizes="(max-width: 620px) 62vw, 36vw" width="1254" height="1254" alt="" loading="lazy" decoding="async" />
-          <span className="tile-bottom"><span><strong>Via Roma 47</strong><small>33085 Maniago (PN)</small></span><Icon className="tile-arrow" name="arrow-up-right" /></span>
+            sizes="(min-width: 2400px) 20vw, (min-width: 1200px) 30vw, (min-width: 768px) 35vw, 40vw" width="1254" height="1254" alt="" loading="lazy" decoding="async" />
+          <span className="tile-bottom"><span><strong>Via Roma 47</strong><small>33085 Maniago (PN)</small></span><TileArrow /></span>
         </a>
-        <div className="bento-tile sign-tile"><img src="/assets/logo.png" width="851" height="851" alt="Pizzeria Via Roma" loading="lazy" decoding="async" /></div>
-        <OpeningStatus />
-        <a className="bento-tile contact-tile phone-tile" href="tel:+390427541232">
-          <span className="tile-label">{ui.call}</span><strong>0427 541232</strong>
-        </a>
-        <a className="bento-tile contact-tile wa-tile" href="https://wa.me/393802453757" target="_blank" rel="noopener noreferrer">
-          <span className="tile-label">WhatsApp</span><strong>380 2453 757</strong>
-        </a>
-        <div className="bento-tile hours-tile">
-          <span className="tile-label">{t.d_orari}</span><div><strong className="opening-time">18:00 – 23:00</strong>
-            <p className="opening-days">{ui.opening_days}<span>{ui.closed_day}</span></p></div>
+        <div className="bento-tile sign-tile">
+          <span className="sign-mark"><img src="/assets/logo.png" width="851" height="851" alt="Pizzeria Via Roma" loading="lazy" decoding="async" /></span>
         </div>
+        <div className="bento-tile hours-tile" role="group" aria-label={t.d_orari}>
+          <div className="hours-copy"><strong className="opening-time">18:00 - 23:00</strong><p>{ui.closed_day}</p></div>
+        </div>
+        <a className="bento-tile contact-tile wa-tile" href="https://wa.me/393802453757" target="_blank" rel="noopener noreferrer">
+          <img className="tile-art" src="/assets/social/whatsapp.webp" width="512" height="512" loading="lazy" decoding="async" alt="" />
+          <span className="tile-bottom"><span><span className="action-label">WhatsApp</span><small>380 2453 757</small></span><TileArrow /></span>
+        </a>
+        <a className="bento-tile contact-tile phone-tile" href="tel:+390427541232">
+          <img className="tile-art" src="/assets/social/phone.webp" width="512" height="512" loading="lazy" decoding="async" alt="" />
+          <span className="tile-bottom"><span><span className="action-label">{ui.call}</span><small>0427 541232</small></span><TileArrow /></span>
+        </a>
       </BentoGrid>
     </section>
     <Footer />

@@ -1,7 +1,6 @@
 import { useI18n } from "../i18n";
 import { socialProfiles } from "../data/venue-links";
-import { BentoGrid } from "./BentoGrid";
-import { Icon } from "./Icon";
+import { BentoGrid, TileArrow } from "./BentoGrid";
 import { SpreadTitle } from "./SpreadTitle";
 
 export default function Social() {
@@ -12,7 +11,7 @@ export default function Social() {
       {socialProfiles.map(({ id, href, name }) => <a key={id} className={`bento-tile social-tile platform-${id}`}
         href={href} target="_blank" rel="noopener noreferrer">
         <img className="tile-art" src={`/assets/social/${id}.webp`} width="640" height="640" loading="lazy" decoding="async" alt="" />
-        <span className="tile-bottom"><span>{name}</span><Icon className="tile-arrow" name="arrow-up-right" /></span>
+        <span className="tile-bottom"><span>{name}</span><TileArrow /></span>
       </a>)}
     </BentoGrid>
   </section>;

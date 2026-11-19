@@ -35,10 +35,12 @@ async function galleries(page, touch) {
   for (const [key, photos] of Object.entries(original.GALLERY_ALBUMS))
     assert.equal(await page.locator(`#album-${key} .ribbon-card`).count(), photos.length);
   assert.equal(await rooms.locator(".photo-controls,.photo-expand,[aria-live] + button").count(), 0);
-  assert.equal(await page.locator("#customer .photo-byline").count(), 12);
+  assert.equal(await page.locator("#customer .photo-byline").count(), 11);
   assert.deepEqual(await page.locator("#customer .photo-byline").allTextContents(), original.CUSTOMER.map(p => p.name));
-  assert.equal(await page.locator("#table-title").getAttribute("aria-label"), "Ricordi condivisi dalla community!");
+  assert.equal(await page.locator("#table-title").getAttribute("aria-label"), "Ricordi condivisi dalla community");
 
+  assert.ok(original.CUSTOMER.every(p=>!p.src.includes("carina-30dddd1c")));
+  assert.equal(await page.locator("#customer img[src*='carina-30dddd1c']").count(), 0);
   const stage = rooms.first().locator(".ribbon-stage");
   await center(stage); await page.waitForSelector("#album-esterno [data-enhanced]");
   await center(stage); await stage.focus(); await page.keyboard.press("Home");
@@ -93,40 +95,47 @@ async function galleries(page, touch) {
     await touchSwipe(page,{x:sx,y:sy},{x:sx-95,y:sy+1});
     assert.equal(await page.locator(".photo-focus,dialog[open]").count(), 0, "Horizontal swipes must not open the photo");
   }
-  await strip.focus(); await page.keyboard.press("Home");
+  const blocked = ".photo-focus,dialog[open],#customer [aria-haspopup],#customer button";
+  await strip.focus(); await page.keyboard.press("Home"); await center(strip);
   const startY = await page.evaluate(() => scrollY);
   await page.keyboard.press("Enter");
-  const focus = page.locator(".photo-focus"), image = focus.locator(".focus-figure img"), caption = focus.locator("figcaption");
-  await image.waitFor();
-  assert.equal(await page.locator("dialog[open]").count(), 0);
-  assert.equal(await caption.textContent(), original.CUSTOMER[0].name);
-  assert.equal(await strip.getAttribute("inert"), "");
-  assert.ok(await focus.evaluate(node => node.parentElement.contains(node) && getComputedStyle(node).backgroundColor === "rgb(9, 9, 9)"));
-  assert.equal(await focus.locator(".focus-side").count(), 2);
-  assert.ok(await focus.locator(".focus-side img").first().evaluate(im => Number(getComputedStyle(im).opacity) < .4));
-  await page.keyboard.press("ArrowRight"); assert.equal(await caption.textContent(), original.CUSTOMER[1].name);
-  assert.ok((await image.getAttribute("src")).endsWith(original.CUSTOMER[1].src));
-  const aspect = await image.evaluate(async im => {
-    await im.decode(); const rect=im.getBoundingClientRect();
-    return [rect.width / rect.height, im.naturalWidth / im.naturalHeight, rect.left + rect.width / 2, innerWidth / 2];
-  });
-  assert.ok(Math.abs(aspect[0]-aspect[1])<.01 && Math.abs(aspect[2]-aspect[3])<1);
-  await focus.locator(".focus-side.after").click(); assert.equal(await caption.textContent(),original.CUSTOMER[2].name);
-  if (touch) {
-    const b=await image.boundingBox(), x=b.x+b.width*.65, y=b.y+b.height*.55;
-    await touchSwipe(page,{x,y},{x:x-65,y:y+1});
-    assert.equal(await caption.textContent(),original.CUSTOMER[3].name);
-  }
-  await page.keyboard.press("Escape"); await focus.waitFor({state:"detached"});
-  assert.ok(await strip.evaluate(el => el===document.activeElement && !el.inert));
-  assert.ok(Math.abs(await page.evaluate(()=>scrollY) - startY) < 2, "Inline focus changed page scroll");
-  await page.keyboard.press("Home"); await center(strip);
   if (touch) await card.tap(); else await card.click();
-  await image.waitFor(); assert.ok((await image.getAttribute("src")).endsWith(original.CUSTOMER[0].src));
-  await focus.locator(".focus-figure button").click(); await focus.waitFor({state:"detached"});
-  await strip.focus(); await page.keyboard.press("Enter"); await image.waitFor();
-  await page.locator("#table-title").click(); await focus.waitFor({state:"detached"});
-
+  assert.equal(await page.locator(blocked).count(), 0, "Gallery photos only scroll");
+  assert.ok(Math.abs(await page.evaluate(() => scrollY) - startY) < 2);
+  await strip.focus();
+  const stripBounds = await strip.boundingBox();
+  const gap = await strip.locator(".ribbon-track").evaluate(el => parseFloat(getComputedStyle(el).columnGap));
+  const ratios = new Set();
+  for (let i = 0; i < original.CUSTOMER.length; i++) {
+    const photo = strip.locator("figure").nth(i);
+    assert.equal(await strip.getAttribute("data-active"), String(i));
+    const frame = await photo.evaluate(async el => {
+      const im = el.querySelector("img"); await im.decode();
+      const b = im.getBoundingClientRect();
+      return { origin: im.getAttribute("src"), ratio: im.naturalWidth / im.naturalHeight, actual: b.width / b.height,
+        center: b.left + b.width / 2, right: b.right, width: b.width, height: b.height,
+        leftCaption: el.querySelector("figcaption").getBoundingClientRect().left - b.left };
+    });
+    assert.equal(frame.origin, "/" + original.CUSTOMER[i].src);
+    assert.ok(Math.abs(frame.ratio - frame.actual) < .006 && Math.abs(frame.leftCaption) < 1);
+    assert.ok(Math.abs(frame.center - stripBounds.width / 2) < 1);
+    ratios.add(Math.round(frame.actual * 100));
+    const next = strip.locator("figure").nth((i+1) % original.CUSTOMER.length);
+    if (await next.isVisible()) {
+      const nr = await next.boundingBox(); assert.ok(Math.abs(nr.x - frame.right - gap) < 1.1, "Continuous spacing at every seam");
+    }
+    await page.keyboard.press("ArrowRight");
+  }
+  assert.ok(ratios.size >= 5); assert.equal(await strip.getAttribute("data-active"), "0");
+  await page.keyboard.press("ArrowLeft"); assert.equal(await strip.getAttribute("data-active"), "10");
+  await page.keyboard.press("Home");
+  if (!touch) {
+    const b = await strip.boundingBox(), before = await position(strip);
+    await page.mouse.move(b.x+b.width*.5,b.y+b.height*.5);await page.mouse.down();
+    await page.mouse.move(b.x+b.width*.5-115,b.y+b.height*.5,{steps:7});await page.mouse.up();
+    assert.notEqual(await position(strip),before);
+  }
+  assert.equal(await page.locator(blocked).count(),0);
 }
 
 async function contactAndLegal(page, touch) {
@@ -138,14 +147,20 @@ async function contactAndLegal(page, touch) {
   assert.equal(await page.locator(".map-tile").getAttribute("href"),"https://maps.google.com/?cid=7212905066552907909");
   assert.equal(await page.locator(".phone-tile").getAttribute("href"),"tel:+390427541232");
   assert.equal(await page.locator(".wa-tile").getAttribute("href"),"https://wa.me/393802453757");
+  assert.equal(await page.locator(".wa-tile img").getAttribute("src"),"/assets/social/whatsapp.webp");
+  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/phone.webp");
   assert.equal(await page.locator(".studio-credit").getAttribute("href"),"https://mementostudio.it");
-  assert.deepEqual(await links.locator(".tile-bottom > span").allTextContents(),["Instagram","Facebook","Google Reviews","Tripadvisor","Restaurant Guru","Sluurpy"]);
+  assert.deepEqual(await links.locator(".tile-bottom > span:first-child").allTextContents(),["Instagram","Facebook","Google Reviews","Tripadvisor","Restaurant Guru","Sluurpy"]);
   await center(page.locator("#social"));await Promise.all((await links.locator("img").all()).map(el=>el.evaluate(im=>im.decode())));
+  const first=links.first();
+  await page.mouse.move(1,1); await tick(page);
+  assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter.includes("grayscale(1)")));
   if (!touch) {
-    await links.first().hover(); await tick(page);
-    assert.equal(await page.locator(".bento-grid[data-lit]").count(),0);
-    assert.equal(await links.first().evaluate(el=>el.style.getPropertyValue("--light-x")),"");
-    assert.ok(await links.first().evaluate(el=>getComputedStyle(el,"::after").backgroundImage.includes("bento-stars")));
+    await first.hover(); await tick(page);
+    assert.ok(await first.locator("img").evaluate(im=>getComputedStyle(im).filter.includes("grayscale(0)")));
+    assert.equal(await first.evaluate(el=>getComputedStyle(el).color),"rgb(240, 212, 147)");
+    assert.equal(await first.locator(".tile-arrow").evaluate(el=>getComputedStyle(el).color),"rgb(240, 212, 147)");
+    assert.equal(await first.locator("canvas").count(),0,"Reduced motion disables particle animation");
   }
   for (const lang of ["it", "en", "de", "fr"]) {
     await page.locator(`[data-lang="${lang}"]`).click();
@@ -191,67 +206,102 @@ async function contactAndLegal(page, touch) {
 }
 
 async function contactTextFits(page) {
-  const clipped=await page.locator(".visit-bento .bento-tile").evaluateAll(tiles=>tiles.flatMap(tile=>{
+  const clipped=await page.locator(".bento-grid .bento-tile").evaluateAll(tiles=>tiles.flatMap(tile=>{
     const bounds=tile.getBoundingClientRect();
-    return [...tile.querySelectorAll("strong,small,.tile-label,.opening-days,[data-status-label]")].filter(label=>{
+    return [...tile.querySelectorAll("strong,small,.hours-copy p,.action-label,.social-tile .tile-bottom > span:first-child")].filter(label=>{
       const range=document.createRange();range.selectNodeContents(label);
       return [...range.getClientRects()].some(r=>r.left<bounds.left-1 || r.right>bounds.right+1 || r.top<bounds.top-1 || r.bottom>bounds.bottom+1);
     }).map(label=>label.textContent);
   }));
-  assert.deepEqual(clipped,[],"Contact text must fit its square");
+  assert.deepEqual(clipped,[],"Labels must fit the card");
 }
 
 async function finalLayout(page) {
-  const sections = page.locator(".venue-room,#customer,#social,#dove");
-  assert.equal(await sections.count(),8);
-  const geometry=await sections.evaluateAll(nodes=>nodes.map(section=>{
-    const title=section.querySelector("h2"), r=title.getBoundingClientRect();
-    const visible=[...title.querySelectorAll(".spread-line > span")].filter(g=>g.getBoundingClientRect().width>0);
-    const first=visible[0].getBoundingClientRect(), last=visible.at(-1).getBoundingClientRect();
-    const stage=section.querySelector(".ribbon-stage")?.getBoundingClientRect();
-    return {id:section.id,height:section.getBoundingClientRect().height,viewport:innerHeight,
-      textAtGutters:Math.abs(first.left-r.left)<1 && Math.abs(last.right-r.right)<1 && Math.abs(r.left+r.right-innerWidth)<1,
-      fullWidth:!stage || (Math.abs(stage.left)<1 && Math.abs(stage.right-innerWidth)<1)};
-  }));
-  for (const item of geometry) {
-    assert.ok(Math.abs(item.height-item.viewport)<=2, `${item.id}: ${item.height} vs ${item.viewport}`);
-    assert.ok(item.textAtGutters && item.fullWidth, item.id);
-  }
-  for(const selector of [".social-bento",".visit-bento"]) {
-    const tiles=page.locator(selector+" .bento-tile");
-    assert.equal(await tiles.count(),6);
-    assert.ok(await tiles.evaluateAll(items=>items.every(el=>{
-      const r=el.getBoundingClientRect();
-      return r.width>=58 && Math.abs(r.width-r.height)<1 && r.left>=0 && r.right<=innerWidth;
-    })));
-  }
-  const boxes=await page.locator(".social-bento > a").evaluateAll(links=>links.map(link=>{
-    const r=link.getBoundingClientRect(), label=link.querySelector(".tile-bottom > span").getBoundingClientRect(), arrow=link.querySelector(".tile-arrow").getBoundingClientRect();
-    return {l:r.left,t:r.top,b:r.bottom,w:r.width,caption:label.left<arrow.left && arrow.right<r.right && r.bottom-arrow.bottom<r.height*.24,blank:link.target==="_blank"};
-  }));
-  assert.ok(boxes.every(b=>b.caption && b.blank));
-  const [ig,fb,google,trip,guru,sluurpy]=boxes;
-  assert.ok(google.w>ig.w*1.95 && Math.abs(trip.w-google.w)<1 && ig.w===fb.w && guru.w===sluurpy.w);
-  assert.ok(google.l>ig.l && google.t===ig.t && trip.t>ig.t && trip.l===ig.l && guru.l>trip.l && sluurpy.b===trip.b);
+  await tick(page);
+  const result = await page.evaluate(() => {
+    const rect = node => node.getBoundingClientRect();
+    const ok = (a,b) => Math.abs(a-b) < 1.6;
+    const content = rect(document.querySelector(".menu-head"));
+    const atGutters = el => { const r=rect(el); return ok(r.left,content.left) && ok(r.right,content.right); };
+    const titles = [...document.querySelectorAll(".spread-title")];
+    const rooms = [...document.querySelectorAll(".venue-room")];
+    const titleGap = room => {
+      const title=rect(room.querySelector("h2")), ribbon=rect(room.querySelector(".photo-ribbon"));
+      // At the middle of the curved stage, the 4:3 center image has this top edge.
+      const photoWidth=room.querySelector(".ribbon-card").offsetWidth;
+      return ribbon.top+(ribbon.height-.75*photoWidth)/2-title.bottom;
+    };
+    const pairs=rooms.slice(1).map((room,i) => {
+      const prev=rooms[i].querySelector(".photo-ribbon");
+      return [titleGap(room),rect(room.querySelector("h2")).top-rect(prev).bottom];
+    });
+    const lines=[...document.querySelectorAll("#table-title .spread-line")].map(el=>({text:el.textContent, top:rect(el).top,bottom:rect(el).bottom}));
+    const tiles=document.querySelectorAll(".bento-tile:not(.hours-tile)");
+    const outer=[...document.querySelectorAll(".bento-grid,.footer-row")];
+    const bento=[...document.querySelectorAll(".bento-grid")].map(grid=>[...grid.children].map(el=>{
+      const r=rect(el);return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};
+    }));
+    return {validTitles:titles.length===8 && titles.every(atGutters),lines, pairs,
+      menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
+      rules:getComputedStyle(document.querySelector("#customer")).borderTopWidth,
+      firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
+      blockSizes:[...document.querySelectorAll("#social,#dove")].every(el=>rect(el).height+1>=innerHeight),
+      validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
+      shortSides:[...tiles].every(el=>{const r=rect(el);return ok(r.width,r.height)&&r.width>=44;}),
+      overflow:document.documentElement.scrollWidth>innerWidth};
+  });
+  assert.ok(result.validTitles && result.validEdges && result.blockSizes && result.shortSides && !result.overflow, JSON.stringify(result));
+  assert.equal(result.menuPad >= 96,true); assert.equal(result.rules,"0px");
+  assert.deepEqual(result.lines.map(l=>l.text),["Ricordi condivisi","dalla community"]);
+  assert.ok(result.lines[1].top >= result.lines[0].bottom-1);
+  result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
+  assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
+  const [social,visit]=result.areas;
+  assert.equal(social.length,6);assert.equal(visit.length,5);
+  const [ig,fb,...reviews]=social, [map,logo,hours,wa,phone]=visit;
+  const close=(a,b)=>Math.abs(a-b)<1.6;
+  assert.ok(close(ig.t,fb.t)&&close(ig.w,fb.w)&&reviews.every(r=>r.t>ig.b&&close(r.t,reviews[0].t)&&ig.w>r.w*1.98));
+  assert.ok(close(map.t,logo.t)&&close(map.w,logo.w)&&close(map.w,ig.w)&&logo.l>map.l);
+  assert.ok(close(hours.w,map.w)&&close(hours.h,wa.h)&&close(wa.t,hours.t)&&close(wa.w,phone.w)&&close(wa.t,phone.t)&&hours.t>map.b);
+  assert.equal(await page.locator(".opening-time").innerText(),"18:00 - 23:00");
+  assert.equal(await page.locator(".hours-copy p").innerText(),"Chiuso il lunedì");
+  assert.equal(await page.locator("#openState,.status-tile").count(),0);
+  await contactTextFits(page);
   const footer=page.locator(".visit-footer");
   await footer.evaluate(el=>scrollTo({top:el.getBoundingClientRect().top+scrollY,behavior:"instant"}));
   const correct=await footer.evaluate(el=>{
     const blur=document.querySelector(".vr-edge-blur--bottom"), dock=document.querySelector(".vr-dock");
-    return Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
-      [...el.querySelectorAll("a")].every(link=>{ const r=link.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && link.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
+    const links=[...el.querySelectorAll("a")];
+    const row=el.querySelector(".footer-row").getBoundingClientRect(), left=el.querySelector("p").getBoundingClientRect(), nav=el.querySelector("nav").getBoundingClientRect(), credit=el.querySelector(".studio-credit").getBoundingClientRect();
+    return Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
+      Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
+      links.every(a=>{ const r=a.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
   });
-  assert.ok(correct,"Footer links must be above the blur and clear of the dock");
+  assert.ok(correct,"Footer columns, hit targets and dock clearance");
 }
 
-async function hours(page) {
-  for (const [instant, state] of [
-    ["2026-11-15T16:59:00Z","closed"],["2026-11-15T17:00:00Z","open"],["2026-11-15T21:59:00Z","open"],
-    ["2026-11-15T22:00:00Z","closed"],["2026-11-16T18:00:00Z","closed"],["2026-07-05T16:00:00Z","open"],
-  ]) {
-    await page.clock.setFixedTime(new Date(instant));
-    await page.evaluate(()=>document.dispatchEvent(new Event("visibilitychange")));
-    await page.waitForFunction(expected=>document.querySelector("#openState").dataset.state===expected,state);
-  }
+async function particles(page) {
+  const tile=page.locator(".platform-instagram");
+  await center(tile);await tile.hover();
+  const field=tile.locator("canvas.tile-particles");
+  await field.waitFor();
+  const sample = () => field.evaluate(c=>{
+    const data=c.getContext("2d").getImageData(0,0,c.width,c.height).data;
+    let light=0, pixels=0, y=0;
+    for(let i=3;i<data.length;i+=4) if(data[i]) { light+=data[i];pixels++; y+=Math.floor((i/4)/c.width)*data[i]; }
+    return {light,pixels,y};
+  });
+  await page.waitForTimeout(260);const start=await sample();
+  await page.waitForTimeout(1150);const peak=await sample();
+  assert.ok(peak.pixels>start.pixels && peak.light>start.light,"Particle count and intensity grow gradually");
+  await page.mouse.move(2,2);await page.waitForTimeout(850);const mid=await sample();
+  await page.waitForTimeout(950);const tail=await sample();
+  assert.ok(mid.light>tail.light && tail.light>0 && tail.y/tail.light<mid.y/mid.light,"Particles ascend and fade after exit");
+  await field.waitFor({state:"detached",timeout:1800});
+  const logo=page.locator(".sign-tile");
+  await center(logo);await logo.hover();await logo.locator("canvas").waitFor();
+  await page.waitForTimeout(650);assert.equal(await logo.locator(".sign-mark").evaluate(e=>getComputedStyle(e,"::after").opacity),"1");
+  await page.mouse.move(1,1);await page.waitForTimeout(700);assert.equal(await logo.locator(".sign-mark").evaluate(e=>getComputedStyle(e,"::after").opacity),"0");
 }
 
 async function run(layout) {
@@ -261,7 +311,7 @@ async function run(layout) {
   page.on("request",r=>first.push(r.url()));
   await page.goto(url);await page.evaluate(()=>document.fonts.ready);await tick(page);
   assert.ok(first.every(link=>!link.includes("/assets/ribbons/")), "Gallery bytes loaded on the menu landing");
-  await finalLayout(page); await hours(page);
+  await finalLayout(page);
   if (layout[3]) await galleries(page,layout[2]);
   await contactAndLegal(page,layout[2]);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth===innerWidth),"Horizontal page overflow");
@@ -291,7 +341,7 @@ try {
       assert.ok(coverage,`Panorama coverage at ${width}×${height}, offset ${fraction}`);
     }
   }
-  await compact.close();console.log("FIT_OK · compact landscape through ultrawide, full-height sections and panoramic edge coverage");
+  await compact.close();console.log("FIT_OK · compact landscape through ultrawide, exact menu gutters, two-line heading and panoramic edge coverage");
   const page=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:"no-preference"});
   await page.goto(url);
   const room=page.locator("#album-bancone .ribbon-stage");
@@ -300,5 +350,6 @@ try {
   await room.hover();await tick(page);const held=await position(room);await page.waitForTimeout(130);assert.equal(await position(room),held);
   await page.mouse.move(2,2);await page.waitForFunction(before=>document.querySelector("#album-bancone .ribbon-card").style.transform!==before,held);
   await page.evaluate(()=>scrollTo({top:0,behavior:"instant"}));await tick(page);const outside=await position(room);await page.waitForTimeout(130);assert.equal(await position(room),outside);
-  await page.close();console.log("GALLERY_MOTION_OK · drift, hover pause, offscreen pause");
+  await particles(page);
+  await page.close();console.log("MOTION_OK · gallery drift, offscreen pause, rising particles with a 3 s exit");
 } finally { await browser.close(); }
