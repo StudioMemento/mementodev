@@ -170,11 +170,11 @@ async function contactAndLegal(page, touch) {
   const pins = await page.locator(".map-pin").evaluateAll(all => all.map(pin => {
     const rect=pin.getBoundingClientRect(), map=pin.parentElement.getBoundingClientRect();
     const label=pin.querySelector("span"), box=label.getBoundingClientRect(), style=getComputedStyle(label);
-    const svg=pin.querySelector("svg"), matrix=svg.getScreenCTM();
-    const tip=new DOMPoint(30,32).matrixTransform(matrix), elbow=new DOMPoint(0,1).matrixTransform(matrix);
-    return {text:label.textContent, ink:style.color, solidLabel:style.backgroundColor!=="rgba(0, 0, 0, 0)",
-      tipAnchored:Math.hypot(tip.x-rect.left,tip.y-rect.top)<1,
-      aligned:Math.hypot(elbow.x-box.right,elbow.y-box.bottom)<1,
+    const stem=getComputedStyle(pin,"::before"), dot=getComputedStyle(pin,"::after");
+    const glass=getComputedStyle(label,"::before");
+    return {text:label.textContent, ink:style.color, softLabel:(glass.backdropFilter||glass.webkitBackdropFilter).includes("blur"),
+      tipAnchored:parseFloat(stem.width) === 1 && parseFloat(stem.bottom) === 0 && parseFloat(dot.width) >= 4,
+      aligned:Math.abs(rect.top - parseFloat(stem.height) - box.bottom) < 1 && box.left < rect.left && box.right >= rect.left,
       fits:box.left>=map.left && box.top>=map.top && box.right<=map.right && box.bottom<=map.bottom,
       x:(rect.left-map.left)/map.width, y:(rect.top-map.top)/map.height};
   }));
@@ -182,7 +182,7 @@ async function contactAndLegal(page, touch) {
   for (const [i,[x,y]] of [[.7191,.311],[.6082,.5081]].entries()) {
     const p=pins[i];
     assert.ok(p.fits && Math.abs(p.x-x)<.001 && Math.abs(p.y-y)<.001);
-    assert.ok(p.tipAnchored && p.aligned && p.solidLabel);
+    assert.ok(p.tipAnchored && p.aligned && p.softLabel);
   }
   assert.notEqual(pins[0].ink,pins[1].ink);
   const links = page.locator(".social-bento a");

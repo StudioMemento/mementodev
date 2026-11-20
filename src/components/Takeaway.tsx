@@ -2,15 +2,15 @@ import { useI18n, type Language } from "../i18n";
 import { HoloCard } from "./intro/HoloCard";
 
 const titles: Record<Language, [string, string]> = {
-  it: ["Facciamo anche", "servizio da asporto!"],
-  en: ["Our pizzas are available", "to take away!"],
-  de: ["Unsere Pizza gibt’s auch", "zum Mitnehmen!"],
-  fr: ["Nos pizzas sont aussi", "à emporter !"],
+  it: ["Gusto Via Roma nel comfort di casa?", "Facciamo anche servizio da asporto!"],
+  en: ["A taste of Via Roma at home?", "We do takeaway too!"],
+  de: ["Lust auf Via Roma zu Hause?", "Unsere Pizza gibt’s auch zum Mitnehmen!"],
+  fr: ["Envie de Via Roma chez vous ?", "Nos pizzas sont aussi à emporter !"],
 };
 
 export function Takeaway() {
   const { language } = useI18n();
-  const [lead, accent] = titles[language];
+  const [question, answer] = titles[language];
   return (
     <section className="takeaway" id="asporto" aria-labelledby="takeaway-title">
       <HoloCard>
@@ -21,7 +21,7 @@ export function Takeaway() {
             sizes="(min-width: 2400px) 26vw, (min-width: 1200px) 39vw, (min-width: 768px) 46vw, 52vw"
             width="1536" height="864" loading="lazy" decoding="async" draggable={false} alt="" />
         </picture>
-        <h2 className="takeaway-copy" id="takeaway-title"><span>{lead}</span>{" "}<em>{accent}</em></h2>
+        <h2 className="takeaway-copy" id="takeaway-title"><span className="takeaway-question">{question}</span>{" "}<span className="takeaway-answer">{answer}</span></h2>
       </HoloCard>
     </section>
   );

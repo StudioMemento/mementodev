@@ -42,7 +42,8 @@ async function checkSectionPolish(page, touch) {
   });
   assert.ok(layout.strokes.slice(0,2).every(edge => edge.startsWith('0px none')));
   assert.match(layout.strokes[2], /^1px solid rgb/);
-  assert.ok(layout.overlays.every(background => background === 'none'));
+  assert.ok(layout.overlays.slice(0,2).every(background => background.includes('linear-gradient')));
+  assert.ok(layout.overlays.slice(2).every(background => background === 'none'));
   assert.deepEqual(layout.headings, ['Le stuzzicherie', 'I dolci', 'Le bevande']);
   assert.ok(layout.categoryGaps.every(gap => gap >= 115));
   assert.ok(layout.groupGaps.every(gap => gap >= 55) && layout.breweryGap >= 37);

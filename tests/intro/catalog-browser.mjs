@@ -21,8 +21,10 @@ try {
     const oven = page.locator("#pizza-slider");
     const stage = oven.locator("#forno");
     assert.equal(await oven.locator(".pizza-dot,.pizza-count").count(), 0);
-    assert.ok(await oven.locator(".vr-pizza-card img[src]").count() < pizzas.length / 2);
-    assert.ok(files.size > 0 && files.size < pizzas.length / 2);
+    assert.ok(await oven.locator(".vr-pizza-card img:is([src],[srcset])").count() < pizzas.length / 2);
+    assert.ok(files.size > 0 && files.size < pizzas.length / 2, [...files].join(", "));
+    const uniquePizzas = new Set([...files].map(path => path.replace("-768.webp", ".webp")));
+    assert.equal(files.size, uniquePizzas.size, "Only one resolution per pizza is fetched on entry");
 
     for (const language of ["en", "de", "fr", "it"]) {
       await page.locator('[data-lang="' + language + '"]').click();
@@ -57,7 +59,7 @@ try {
       assert.ok(resource.width > 0 && resource.width === resource.height);
       if (index < pizzas.length-1) await shift("ArrowRight");
     }
-    assert.ok(await oven.locator(".vr-pizza-card img[src]").count() < pizzas.length / 2, "Previously visited photos should leave the image window");
+    assert.ok(await oven.locator(".vr-pizza-card img:is([src],[srcset])").count() < pizzas.length / 2, "Previously visited photos should leave the image window");
     await shift("Home");
     await waitForIndex(0);
     await oven.locator(".previous").click();
@@ -81,7 +83,7 @@ try {
     assert.equal(dimensions.file.includes("mobile"),width < 640);
     assert.ok(dimensions.overlay);
     assert.ok(dimensions.rightAligned && dimensions.leftAligned && dimensions.faded);
-    assert.ok(dimensions.ratio > (width < 640 ? 2.5 : 4.5));
+    assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
     assert.ok(await page.locator(".menu-art-window").evaluateAll(all =>
       all.length > 0 && all.every(el => getComputedStyle(el).maskImage === "none")));

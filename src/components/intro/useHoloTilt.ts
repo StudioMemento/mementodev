@@ -14,6 +14,8 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
       if (disposed) return;
       face.style.setProperty("--tilt-x", `${(-y * 15).toFixed(2)}deg`);
       face.style.setProperty("--tilt-y", `${(x * 15).toFixed(2)}deg`);
+      face.style.setProperty("--satin-x", (50 + x * 50).toFixed(1) + "%");
+      face.style.setProperty("--satin-y", (50 + y * 50).toFixed(1) + "%");
       shell.dataset.tiltActive = String(active);
     };
     const queue = () => { if (!frame && !disposed) frame = requestAnimationFrame(paint); };
@@ -37,8 +39,8 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
     const down = (event: PointerEvent) => {
       if (event.button !== 0 || !event.isPrimary || media.matches) return;
       measure();
-      if (event.pointerType !== "mouse") drag = { id: event.pointerId, x: event.clientX, y: event.clientY, locked: false };
-      follow(event);
+      if (event.pointerType === "mouse") follow(event);
+      else drag = { id: event.pointerId, x: event.clientX, y: event.clientY, locked: false };
     };
     const move = (event: PointerEvent) => {
       if (event.pointerType === "mouse") { follow(event); return; }
@@ -50,7 +52,7 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
       if (!drag.locked && Math.abs(dx) > 7 && Math.abs(dx) > Math.abs(dy) * 1.2) {
         drag.locked = true; shell.setPointerCapture(event.pointerId);
       }
-      follow(event);
+      if (drag.locked) follow(event);
     };
     const leave = (event: PointerEvent) => { if (event.pointerType === "mouse" || !drag?.locked) reset(); };
     const end = (event: PointerEvent) => { if (event.pointerType !== "mouse" || event.type === "pointercancel") reset(); };
@@ -73,6 +75,7 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
       window.removeEventListener("resize", invalidate); window.removeEventListener("scroll", invalidate);
       document.removeEventListener("visibilitychange", onVisibility);
       face.style.removeProperty("--tilt-x"); face.style.removeProperty("--tilt-y");
+      face.style.removeProperty("--satin-x"); face.style.removeProperty("--satin-y");
       delete shell.dataset.tiltActive;
     };
   }, [shellRef, faceRef]);

@@ -18,7 +18,7 @@ function makeMotes(count: number, seed: number): Mote[] {
 }
 
 export function mountEdgeField(view: HTMLElement) {
-  const region = view.closest<HTMLElement>(".final-sections")!;
+  const region = view.closest<HTMLElement>(".final-sections, #pizza-slider")!;
   const bands: Band[] = [];
   for (const canvas of view.querySelectorAll("canvas")) {
     const ctx = canvas.getContext("2d");
@@ -31,12 +31,12 @@ export function mountEdgeField(view: HTMLElement) {
   let height = 0, width = 0, span = 0, gutter = 0;
   let elapsed = 0, last = 0, frame = 0, visible = false;
   let pointerX = -1000, pointerY = -1000, strength = 0, target = 0;
-  let aimX = 0, aimY = 0;
+  let aimX = 0, aimY = 0, pendingPoint: PointerEvent | undefined;
 
   function resize() {
     width = view.clientWidth; height = view.clientHeight;
     span = bands[0].canvas.clientWidth;
-    gutter = (width - region.querySelector<HTMLElement>(".spread-title")!.offsetWidth) / 2;
+    gutter = Math.max(1, parseFloat(getComputedStyle(view).columnGap));
     // Bound the backing stores even on a high-DPI ultrawide display.
     const dpr = Math.min(devicePixelRatio, 1.5, Math.sqrt(540000 / Math.max(1, span * height)));
     const count = Math.min(248, Math.max(48, Math.round(span * height / 1050)));
@@ -85,6 +85,12 @@ export function mountEdgeField(view: HTMLElement) {
     if (!last || step >= 1 / 30 - .001) {
       const dt = last ? Math.min(step, .1) : 0;
       last = now; elapsed += dt;
+      if (pendingPoint) {
+        const rect = view.getBoundingClientRect();
+        aimX = pendingPoint.clientX - rect.left; aimY = pendingPoint.clientY - rect.top;
+        if (!target && strength < .02) { pointerX = aimX; pointerY = aimY; }
+        target = 1; pendingPoint = undefined;
+      }
       const follow = 1 - Math.exp(-dt * 5);
       strength += (target - strength) * follow;
       pointerX += (aimX - pointerX) * follow;
@@ -101,12 +107,9 @@ export function mountEdgeField(view: HTMLElement) {
   }
   function point(event: PointerEvent) {
     if (motion.matches || !event.isPrimary) return;
-    const rect = view.getBoundingClientRect();
-    aimX = event.clientX - rect.left; aimY = event.clientY - rect.top;
-    if (!target && strength < .02) { pointerX = aimX; pointerY = aimY; }
-    target = 1;
+    pendingPoint = event;
   }
-  function release() { target = 0; }
+  function release() { pendingPoint = undefined; target = 0; }
   region.addEventListener("pointermove", point, passive);
   region.addEventListener("pointerdown", point, passive);
   region.addEventListener("pointerleave", release, passive);

@@ -22,17 +22,18 @@ export function Photo({
   sizes?: string;
 }) {
   const meta = images[src];
-  const revision = src.startsWith("assets/pizze/") ? "?v=47" : src.startsWith("assets/gallery/") ? "?v=25" : "";
+  const pizza = src.startsWith("assets/pizze/");
+  const revision = pizza ? "?v=47" : src.startsWith("assets/gallery/") ? "?v=25" : "";
   const assetUrl = (path: string) => "/" + path + revision;
   const small = meta?.small === "-768.webp" ? src.replace(/\.webp$/, meta.small) : meta?.small;
   const srcSet = small ? `${assetUrl(small)} 768w, ${assetUrl(src)} ${meta.width}w` : undefined;
   return (
     <img
-      src={enabled && !deferred ? assetUrl(src) : undefined}
+      sizes={small ? sizes : undefined}
+      src={enabled && !deferred && !(pizza && srcSet) ? assetUrl(src) : undefined}
       srcSet={enabled && !deferred ? srcSet : undefined}
       data-file={deferred ? assetUrl(src) : undefined}
       data-sources={deferred ? srcSet : undefined}
-      sizes={enabled && small ? sizes : undefined}
       alt={alt}
       width={meta?.width}
       height={meta?.height}

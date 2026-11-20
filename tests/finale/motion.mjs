@@ -50,8 +50,8 @@ export async function edgeField(page) {
   await page.setViewportSize({width:1440,height:900});
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.locator("#social").evaluate(el=>el.scrollIntoView({block:"center",behavior:"instant"}));
-  const field=page.locator(".finale-field-view");
-  await page.waitForFunction(()=>document.querySelector(".finale-field-view canvas").width>300);
+  const field=page.locator(".final-sections .finale-field-view");
+  await page.waitForFunction(()=>document.querySelector(".final-sections .finale-field-view canvas").width>300);
   const result=await field.evaluate(el=>{
     const gutter=(el.clientWidth-document.querySelector(".spread-title").offsetWidth)/2;
     const canvas=[...el.querySelectorAll("canvas")];
@@ -72,7 +72,7 @@ export async function edgeField(page) {
   const still=await pixels();await page.mouse.move(15,220);await page.waitForTimeout(100);
   assert.equal(await pixels(),still,"Reduced motion keeps a static field");
   await page.emulateMedia({reducedMotion:"no-preference"});
-  await page.waitForFunction(prev=>document.querySelector(".finale-field-view canvas").toDataURL()!==prev,still);
+  await page.waitForFunction(prev=>document.querySelector(".final-sections .finale-field-view canvas").toDataURL()!==prev,still);
   await page.locator("#home").evaluate(el=>el.scrollIntoView({behavior:"instant"}));
   // The scroll and the browser's intersection notification can land on different frames.
   await field.evaluate(el=>new Promise(resolve=>{
@@ -94,7 +94,7 @@ export async function fieldInput(browser,url) {
   const page=await browser.newPage({viewport:{width:940,height:390},hasTouch:true});
   const panel='<section class="final-sections"><h2 class="spread-title"></h2><div class="view"><canvas></canvas><canvas></canvas></div></section>';
   await page.route("**/__field_test",route=>route.fulfill({contentType:"text/html",body:
-    '<style>*{box-sizing:border-box}body{margin:0;display:flex}.final-sections{position:relative;width:50vw;height:320px}.spread-title{margin:0 auto;width:56%}.view{position:absolute;inset:0;display:flex;justify-content:space-between}canvas{width:26%;height:100%}</style>'+panel+panel}));
+    '<style>*{box-sizing:border-box}body{margin:0;display:flex}.final-sections{position:relative;width:50vw;height:320px}.spread-title{margin:0 auto;width:56%}.view{position:absolute;inset:0;display:flex;justify-content:space-between;gap:11vw}canvas{width:26%;height:100%}</style>'+panel+panel}));
   try {
     await page.goto(new URL("__field_test",url).href);
     await page.evaluate(async path=>{

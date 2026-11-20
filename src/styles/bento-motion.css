@@ -1,22 +1,26 @@
-.sign-mark::after,.bento-tile::before,.bento-tile::after {
-  content:""; position:absolute; inset:0; opacity:var(--gold); transition:opacity .48s; pointer-events:none;
+.sign-mark::after,:is(.bento-tile,.crust-grid .crust-card)::before,:is(.bento-tile,.crust-grid .crust-card)::after {
+  content:""; position:absolute; inset:0; opacity:var(--gold,0); pointer-events:none;
+  --light-position:calc(100% - var(--satin-x,40%)) var(--satin-y,55%);
+  transition:opacity .55s ease,background-position .55s cubic-bezier(.22,.7,.25,1);
 }
-.sign-mark::after {
-  background:var(--vr-logo-gold);
-  mask:url("/assets/logo.png") center / contain no-repeat;
+.sign-mark::after { background:var(--vr-logo-gold); mask:url("/assets/logo.png") center / contain no-repeat; }
+
+/* One directional reflection crosses the face and grazes the perimeter. */
+:is(.bento-tile,.crust-grid .crust-card)::before {
+  z-index:1; background:linear-gradient(113deg,transparent 16%,#c9ac7710 33%,#f0d7a11a 46%,#d1b7830d 56%,transparent 76%) 0 0 / 185% 150%;
+  background-position:var(--light-position);
 }
-.bento-tile::before {
-  z-index:0; background:linear-gradient(117deg,transparent 10%,#f2dba10a 31%,transparent 46%,#c5a87306 72%,transparent 88%);
-  background-size:135% 100%; background-position:var(--satin-x,30%) center;
-}
-.bento-tile::after {
-  --x:var(--satin-x,30%); --y:var(--satin-y,72%); --wall:#000,#0007 2px,#0003 6px,transparent clamp(10px,4cqi,24px);
-  z-index:1;
-  background:linear-gradient(90deg,transparent calc(var(--x) - 27%),#ffe0a2be var(--x),transparent calc(var(--x) + 32%)),
-    linear-gradient(180deg,transparent calc(var(--y) - 26%),#dfbb7e99 var(--y),transparent calc(var(--y) + 29%)),
-    linear-gradient(118deg,#cba87055,transparent 45%,#a580484a);
-  mask-image:linear-gradient(to right,var(--wall)),linear-gradient(to left,var(--wall)),linear-gradient(to bottom,var(--wall)),linear-gradient(to top,var(--wall));
+:is(.bento-tile,.crust-grid .crust-card)::after {
+  --edge:#000b 0%,#0006 13%,#0002 42%,#0000 100%; --depth:clamp(18px,4.2vw,56px);
+  z-index:1; background:linear-gradient(114deg,transparent 18%,#d9b67722 33%,#f0d7a090 47%,#d5bb8438 60%,transparent 77%) 0 0 / 180% 140%;
+  background-position:var(--light-position);
+  mask:linear-gradient(to bottom,var(--edge)) top / 100% var(--depth) no-repeat,
+    linear-gradient(to top,var(--edge)) bottom / 100% var(--depth) no-repeat,
+    linear-gradient(to right,var(--edge)) left / var(--depth) 100% no-repeat,
+    linear-gradient(to left,var(--edge)) right / var(--depth) 100% no-repeat;
 }
 .tile-particles { position:absolute; z-index:1; inset:0; width:100%; height:100%; pointer-events:none; }
-@media(prefers-reduced-motion:reduce) { .bento-tile::before,.bento-tile::after,.sign-mark::after { transition:none; } }
-@media(forced-colors:active) { .bento-tile::before,.bento-tile::after { display:none; } }
+@media(prefers-reduced-motion:reduce) {
+  .sign-mark::after,:is(.bento-tile,.crust-grid .crust-card)::before,:is(.bento-tile,.crust-grid .crust-card)::after { transition:none; }
+}
+@media(forced-colors:active) { :is(.bento-tile,.crust-grid .crust-card)::before,:is(.bento-tile,.crust-grid .crust-card)::after { display:none; } }

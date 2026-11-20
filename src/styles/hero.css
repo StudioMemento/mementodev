@@ -74,7 +74,7 @@
   .vr-dock { bottom:calc(8px + env(safe-area-inset-bottom)); }
 }
 /* Native scrolling is intact; only its scrollbar is replaced. */
-html,body { scrollbar-width:none; -ms-overflow-style:none; }
+html,body { scrollbar-width:none; }
 html::-webkit-scrollbar,body::-webkit-scrollbar { display:none; width:0; height:0; }
 body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:text; -webkit-touch-callout:default; }
@@ -93,4 +93,10 @@ input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:te
   .vr-dock a[aria-current] .dock-tile,.lang button.on { outline:2px solid Highlight; outline-offset:-2px; }
   .vr-dock a[aria-current] .dock-tile,.lang button.on { color:Highlight; }
   .vr-scroll-progress > span { background:Highlight; forced-color-adjust:none; }
+}
+
+@supports (-webkit-touch-callout:none) {
+  @media (hover:none) and (pointer:coarse) {
+    .vr-edge-blur > div:nth-child(odd) { display:none; }
+  }
 }

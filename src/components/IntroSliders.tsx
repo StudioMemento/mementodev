@@ -2,6 +2,7 @@ import { useMemo, type CSSProperties } from "react";
 import data from "../data/menu.json";
 import { useI18n, translateDescription, translateName, type Language } from "../i18n";
 import { useCarousel } from "../hooks/useCarousel";
+import { FinaleAtmosphere } from "./FinaleAtmosphere";
 import { Chevron } from "./Icon";
 import { Photo } from "./Photo";
 import { HoloCard } from "./intro/HoloCard";
@@ -15,6 +16,7 @@ export function PizzaSlider() {
   })), [language]);
   const carousel = useCarousel(slides.length, language);
   return <section className="vr-pizza-carousel pizza-clean" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
+    <FinaleAtmosphere />
     <div className="pizza-frame">
       <header className="oven-header"><h2 className="oven-heading">{t.strip_k}</h2></header>
       <div className="vr-pizza-viewport">
@@ -28,7 +30,7 @@ export function PizzaSlider() {
               style={{ "--slot": offset, "--side": Math.sign(offset) } as CSSProperties}>
               <div className="vr-pizza-image">
                 <Photo src={src} alt={name} enabled={carousel.isLoaded(logical)} eager
-                  sizes="(max-width: 700px) 62vw, min(52dvh, 640px)" />
+                  sizes="(max-width: 700px) 62vw, min(52svh, 640px)" />
               </div>
             </figure>;
           })}

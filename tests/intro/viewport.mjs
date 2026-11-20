@@ -14,6 +14,8 @@ function measureOven() {
     return range.getBoundingClientRect();
   };
   const nav = box(document.querySelector(".vr-dock"));
+  const second = box(document.querySelectorAll(".dock-tile")[1]);
+  const captionX = (second.left + second.right) / 2;
   const head = box(document.querySelector(".site-top"));
   const oven = document.querySelector("#pizza-slider");
   const area = box(oven);
@@ -37,9 +39,9 @@ function measureOven() {
     const text = document.createRange();
     text.selectNodeContents(heading);
     const ingredients = [...caption.querySelectorAll("li")];
-    const aligned = [heading, ...ingredients].every(el => Math.abs(nav.left-box(el).left) < 1);
+    const aligned = [heading, ...ingredients].every(el => Math.abs(captionX-box(el).left) < 1);
     const ordered = ingredients.every((li,i) => !i || ink(li).top > ink(ingredients[i-1]).bottom-4);
-    if (!aligned || !ordered || text.getClientRects().length !== 1 || name.right > box(heading).right + 1 ||
+    if (!aligned || !ordered || text.getClientRects().length > (innerHeight <= 490 && innerWidth > innerHeight ? 2 : 1) || name.right > box(heading).right + 1 ||
         name.bottom > ink(ingredients[0]).top+4 || ink(ingredients.at(-1)).bottom > nav.top-3)
       problems.push({pizza:heading.textContent, aligned, ordered, nameRight:name.right, limit:box(heading).right,
         nameBottom:name.bottom, start:ink(ingredients[0]).top, last:ink(ingredients.at(-1)).bottom,dock:nav.top});
@@ -66,7 +68,7 @@ try {
         await page.waitForFunction(lang=>document.documentElement.lang===lang,lang);
         const info = await page.evaluate(measureOven);
         assert.ok(!info.overflow && Math.abs(info.top)<1 && Math.abs(info.device*1.2-info.height)<1 && info.image>85 && info.stage>72, JSON.stringify({width,height,lang,info}));
-        assert.equal(info.black,"rgb(0, 0, 0)");
+        assert.equal(info.black,"rgb(9, 9, 9)");
         assert.ok(info.blurAbove && info.headingAligned && info.title>info.header-2, JSON.stringify({width,height,lang,info}));
         assert.ok(info.landscape || info.titleGap >= 12, "Section title touches the stage: "+JSON.stringify(info));
         for (const m of info.measures) {

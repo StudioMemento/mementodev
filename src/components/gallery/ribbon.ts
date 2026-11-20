@@ -1,4 +1,4 @@
-import { bindRibbonDrag } from "./ribbon-drag";
+import { bindHorizontalDrag } from "../../hooks/horizontalDrag";
 import { wrap } from "../../hooks/useDrag";
 
 export type Variant = "panorama" | "flat";
@@ -157,7 +157,7 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
     if (motion.matches) { velocity = 0; if (goal !== null) { position = goal; goal = null; render(); } }
     refresh();
   }
-  bindRibbonDrag(stage, signal, {
+  bindHorizontalDrag(stage, signal, {
     begin() { interacting = true; keyboard = false; goal = null; velocity = 0; refresh(); },
     move(pixels, seconds) {
       const change = pixels / pitch;

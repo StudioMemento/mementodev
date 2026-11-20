@@ -8,9 +8,6 @@ import { SpreadLetters, SpreadTitle } from "./SpreadTitle";
 
 function MapPin({ kind, label }: { kind: "venue" | "square"; label: string }) {
   return <span className={`map-pin ${kind}-pin`}>
-    <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeLinejoin="round" aria-hidden="true">
-      <use href={`/assets/map-pins.svg#${kind}`} />
-    </svg>
     <span>{label}</span>
   </span>;
 }
