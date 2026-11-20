@@ -4,6 +4,12 @@
   --vr-gold-muted: #a89b7b;
   --vr-highlight: #dac18b; /* sampled from LE CLASSICHE, matches .mcat h3 */
   --vr-logo-gold:linear-gradient(120deg,#a98242 8%,#f5dc9d 32%,#ffefc5 40%,#be984e 62%,#ebd092 83%);
+  --satin-rim:#626262;
+  --satin-ink:#bebebe;
+  --selected-rim:#d8b772;
+  --selected-ink:#f2d594;
+  --selected-glass:radial-gradient(ellipse at 50% 116%,#9976409c,transparent 71%),linear-gradient(155deg,#292825e8,#191919ed);
+  --selected-light:inset 0 -2px 6px #dfb55f33,0 1px 9px #bd944916;
   --vr-hero-gradient-speed: 5s;
 }
 .vr-hero { position:relative; isolation:isolate; background:var(--vr-carbon); }
@@ -35,34 +41,36 @@
 .vr-edge-blur--top { top:0; height:calc(clamp(6rem,14vh,9rem) + env(safe-area-inset-top)); }
 .vr-edge-blur--bottom { bottom:0; height:calc(clamp(7rem,16vh,10rem) + env(safe-area-inset-bottom)); }
 .vr-edge-blur > div { position:absolute; inset:0; background:transparent; }
-/* The pill and dock share neutral glass. Only the selected glyph and language carry gold. */
+/* The light sits in the glass. Glyphs inherit one opaque colour. */
 .dock-tile,.lang {
-  overflow:hidden; isolation:isolate; color:#dedede; border-color:#505050;
+  overflow:hidden; isolation:isolate; color:var(--satin-ink); border-color:var(--satin-rim);
   background:linear-gradient(145deg,#252525c9,#191919a8); box-shadow:inset 0 1px #ffffff1c,0 2px 8px #0002;
   -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
 }
 .site-brand::after {
   content:""; position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .35s;
-  background:var(--vr-logo-gold); mask:url("/assets/flame.png") center / 28px auto no-repeat;
+  background:var(--selected-ink); mask:url("/assets/flame.png") center / 28px auto no-repeat;
 }
 .site-brand:focus-visible::after,.site-brand:active::after { opacity:1; }
-.lang { border-color:#373737; }
-.dock-tile { color:#b0b0b0; }
+.dock-tile svg { width:24px; height:24px; }
+.dock-flame { width:21px; height:22px; background:currentColor; mask:url("/assets/flame.png") center/contain no-repeat; }
 .hero-down,.hero-down svg { width:clamp(72px,6.8vw,96px); height:clamp(72px,6.8vw,96px); }
 .hero-down svg path { stroke-width:1.55; }
 @media(max-height:540px) { .hero-down,.hero-down svg { width:60px; height:60px; } }
 .lang button { border:0; transition:background-color .25s; }
-.lang button.on { color:var(--vr-highlight); background:linear-gradient(0deg,#80653885,#443a2b99 58%,#292622); border:1px solid #a68e60; }
-.lang button.on span { background:var(--vr-logo-gold); background-clip:text; -webkit-background-clip:text; color:transparent; }
-.vr-dock a[aria-current] .dock-tile { color:var(--vr-highlight); border-color:#606060; background:radial-gradient(ellipse at 50% 115%,#98783e80,transparent 71%),linear-gradient(155deg,#262523db,#191919c9); box-shadow:inset 0 -2px 6px #d4ae612e,0 2px 13px #d6ad5714; }
-.vr-dock a[aria-current] .dock-tile svg path { stroke:url(#dock-gold); }
-.vr-dock a[aria-current] .dock-tile i::before { display:inline-block; background:var(--vr-logo-gold); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.lang button.on,.vr-dock a[aria-current] .dock-tile,.vr-dock a:active .dock-tile,.chips button.on {
+  color:var(--selected-ink); border:1px solid var(--selected-rim); background:var(--selected-glass); box-shadow:var(--selected-light);
+}
 .vr-dock a:focus-visible,.lang button:focus-visible { outline-color:#eee; }
 .lang button:focus-visible { outline-offset:-2px; }
 @media(hover:hover) {
   .site-brand:hover::after { opacity:1; }
   .lang button:not(.on):hover { background:#ffffff12; }
-  .vr-dock a:hover .dock-tile { border-color:#888; }
+  .vr-dock a:not([aria-current]):not(:active):hover .dock-tile { border-color:#888; }
+}
+@media(max-height:320px) and (orientation:landscape) {
+  .site-top { padding-top:calc(6px + env(safe-area-inset-top)); }
+  .vr-dock { bottom:calc(8px + env(safe-area-inset-bottom)); }
 }
 /* Native scrolling is intact; only its scrollbar is replaced. */
 html,body { scrollbar-width:none; -ms-overflow-style:none; }
@@ -82,8 +90,8 @@ input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:te
   .hero-glimmer,.hero-liquid,.hero-logo::after,.vr-edge-blur { display:none; }
   .hero-logo[data-liquid-ready=true] > img { opacity:1; }
   .vr-dock a[aria-current] .dock-tile,.lang button.on { outline:2px solid Highlight; outline-offset:-2px; }
-  .lang button.on span { background:none; color:Highlight; }
-  .vr-dock a[aria-current] .dock-tile svg path { stroke:Highlight; }
-  .vr-dock a[aria-current] .dock-tile i::before { background:none; -webkit-text-fill-color:Highlight; }
+  .vr-dock a[aria-current] .dock-tile,.lang button.on { color:Highlight; }
+  .dock-flame { forced-color-adjust:none; background:ButtonText; }
+  [aria-current] .dock-flame { background:Highlight; }
   .vr-scroll-progress > span { background:Highlight; forced-color-adjust:none; }
 }

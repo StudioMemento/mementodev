@@ -123,9 +123,9 @@ async function testViewport(width,height,touch) {
     await flame.focus();
     const flameStyle=await flame.evaluate(el=>{
       const after=getComputedStyle(el,"::after");
-      return { opacity:after.opacity, gold:after.backgroundImage,mask:after.maskImage || after.webkitMaskImage };
+      return { opacity:after.opacity, image:after.backgroundImage,gold:after.backgroundColor,mask:after.maskImage || after.webkitMaskImage };
     });
-    assert.equal(flameStyle.opacity,"1"); assert.ok(flameStyle.gold.includes("gradient") && flameStyle.mask.includes("/assets/flame.png"));
+    assert.equal(flameStyle.opacity,"1"); assert.ok(flameStyle.image==="none" && !neutral(flameStyle.gold) && flameStyle.mask.includes("/assets/flame.png"));
     await flame.blur();
     for (const [id,ratio] of [["home",0],["menu",null],["gallery",null],["dove",1]]) {
       await page.evaluate(({id,ratio})=>{
@@ -137,13 +137,13 @@ async function testViewport(width,height,touch) {
       const tiles=await page.locator(".vr-dock a").evaluateAll(all=>all.map(a=>{
         const s=getComputedStyle(a.firstElementChild);
         const icon = a.querySelector(".dock-tile > *");
-        const gold = icon.tagName.toLowerCase()==="svg"
-          ? getComputedStyle(icon.querySelector("path")).stroke.includes("dock-gold")
-          : getComputedStyle(icon,"::before").backgroundImage.includes("linear-gradient");
-        return { active:a.hasAttribute("aria-current"), ink:s.color, border:s.borderTopColor, lowerGlow:s.backgroundImage.includes("radial-gradient"), gold };
+        const glyphInk = icon.tagName.toLowerCase()==="svg"
+          ? getComputedStyle(icon.querySelector("path")).stroke : getComputedStyle(icon).backgroundColor;
+        return {active:a.hasAttribute("aria-current"), ink:s.color, border:s.borderTopColor, rim:s.borderTopWidth,
+          lowerGlow:s.backgroundImage.includes("radial-gradient"), glyphInk};
       }));
       assert.equal(tiles.filter(t=>t.active).length,1);
-      assert.ok(tiles.every(t=>neutral(t.border) && neutral(t.ink)!==t.active && t.gold===t.active && t.lowerGlow===t.active));
+      assert.ok(tiles.every(t=>t.rim==="1px" && neutral(t.border)!==t.active && neutral(t.ink)!==t.active && t.glyphInk===t.ink && t.lowerGlow===t.active));
     }
     for(const progress of [0,.5,1]) {
       await page.evaluate(f=>scrollTo({top:(document.documentElement.scrollHeight-innerHeight)*f,behavior:"instant"}),progress);

@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_4.8_Vercel";
+const name = "ViaRoma_4.9_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -67,7 +67,7 @@ for (const required of [
   "src/components/gallery/PhotoRibbon.tsx",
   "src/components/LegalReader.tsx",
   "src/components/Takeaway.tsx",
-  ...["scatole-768", "scatole-1536", "scatole-mobile-768"].map(id => `public/assets/asporto/${id}.webp`),
+  ...["forno-asporto-768", "forno-asporto-1536", "forno-asporto-mobile-768"].map(id => `public/assets/asporto/${id}.webp`),
   "src/components/SpreadTitle.tsx",
   "src/components/bento/particles.ts",
   "src/components/bento/edge-field.ts",
@@ -76,6 +76,7 @@ for (const required of [
   ...["instagram", "facebook", "google", "tripadvisor", "guru", "sluurpy", "whatsapp", "smartphone"].map(id => `public/assets/social/${id}.webp`),
   "src/components/BentoGrid.tsx",
   "tests/intro/catalog-browser.mjs",
+  "tests/intro/viewport.mjs",
   "tests/finale/browser.mjs",
   "tests/finale/motion.mjs",
   "src/hooks/useOnApproach.ts",
@@ -121,6 +122,7 @@ for (const required of [
   "licenses/Phosphor-MIT.txt",
 ])
   assert.ok(names.includes(required), `${required} missing`);
+assert.ok(!names.some(file => file.includes("gretabeta-b63bd6a1")), "Uncropped community photo is present");
 const excluded = new Set(["node_modules", "dist", ".ssr", "test-results", ".git", ".vercel", ".unlazy", "GATES.md"]);
 async function collect(dir = ".") {
   const files = [];

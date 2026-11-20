@@ -39,7 +39,7 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_4.8 — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_4.9 — preview'));assert.ok(html.includes('noindex,nofollow'));
 const crustStart = html.lastIndexOf('<section',html.indexOf('id="cornicione"'));
 const takeawayStart = html.lastIndexOf('<section',html.indexOf('id="asporto"'));
 assert.equal((balanced(html,crustStart,'section').match(/class="crust-card"/g)||[]).length,3);
@@ -54,12 +54,14 @@ const css=await readFile('src/styles/menu.css','utf8');
 assert.match(await readFile('src/styles/clean.css','utf8'),/--nero: #090909/);
 assert.match(await readFile('src/styles/hero.css','utf8'),/--vr-carbon:\s*#090909/);
 assert.match(css,/\.menu-atmosphere \{[^}]*background:#090909/);
-assert.match(css,/#pizza-slider \{[^}]*background:#000/);
+assert.match(await readFile('src/styles/intro.css','utf8'),/#pizza-slider \{[^}]*background:#000/);
 assert.ok(!(await readFile('src/styles/contact.css','utf8')).includes('background: #000;'));
 assert.ok((await readFile('public/legal.css','utf8')).includes('background:#090909;'));
 const kitchen=balanced(html,html.indexOf('<section class="mcat fx on has-art" id="cat-cucina"'),'section');
 assert.match(kitchen,/Anche se incredibile\.\.\.<br class="kitchen-mobile-break"\/><span class="kitchen-desktop-space"> <\/span>non si ha sempre voglia di pizza\?/);
-assert.ok(!css.includes('.menu-art:hover')&&!css.includes('.menu-art::after'),'Obsolete artwork hover layers remain');
+assert.ok(!css.includes('.menu-art:hover'),'Obsolete artwork hover layers remain');
+assert.match(css,/\.menu-art::before,\.menu-art::after \{[^}]*background:#[0-9a-f]{6};[^}]*clip-path:polygon/);
+assert.ok(!html.includes('class="pizza-count"'));
 const head=balanced(html,html.indexOf('<header class="menu-head"'),'header');
 assert.equal(text(head),'Menù');assert.equal((head.match(/<h2/g)||[]).length,1);
 for(const [id,title] of [['stuzzicherie','Le stuzzicherie'],['dolci','I dolci'],['bevande','Le bevande']]){
@@ -75,6 +77,14 @@ const unescape = s => s.replaceAll('&#x27;',"'").replaceAll('&amp;','&').replace
 assert.deepEqual([...captions.matchAll(/<h3>(.*?)<\/h3><ul>(.*?)<\/ul>/g)].map(([,name,list]) =>
   [unescape(name), [...list.matchAll(/<li>(.*?)<\/li>/g)].map(m => unescape(m[1])).join(', ')]), pizzas);
 const images = JSON.parse(await readFile('src/data/images.json','utf8'));
+const community = JSON.parse(await readFile('src/data/photos.json','utf8')).CUSTOMER;
+assert.equal(community.length,47);
+const crop = community.find(photo => photo.name==='Gretabeta' && photo.ratio==='1090 / 613');
+assert.ok(crop && !community.some(photo => photo.src.includes('gretabeta-b63bd6a1')));
+const cropped = images[crop.src];
+assert.equal(cropped.sha256,hash(await readFile('public/'+crop.src)));
+assert.deepEqual([cropped.width,cropped.height],[1090,613]);
+assert.ok((await readFile('public/'+cropped.small)).toString('ascii',8,12)==='WEBP');
 for (const [src] of data.FORNO) {
   const meta = images[src];
   assert.deepEqual([meta.width,meta.height],[1100,1100]);

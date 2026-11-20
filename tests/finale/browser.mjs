@@ -164,6 +164,19 @@ async function galleries(page, touch) {
 }
 
 async function contactAndLegal(page, touch) {
+  const pins = await page.locator(".map-pin").evaluateAll(all => all.map(pin => {
+    const rect=pin.getBoundingClientRect(), map=pin.parentElement.getBoundingClientRect();
+    const label=pin.querySelector("span"), box=label.getBoundingClientRect(), style=getComputedStyle(label);
+    return {text:label.textContent, ink:style.color, background:style.backgroundColor, border:style.borderTopWidth,
+      fits:box.left>=map.left && box.top>=map.top && box.right<=map.right && box.bottom<=map.bottom,
+      x:(rect.left-map.left)/map.width, y:(rect.top-map.top)/map.height};
+  }));
+  assert.deepEqual(pins.map(p=>p.text),["Pizzeria Via Roma","Piazza Italia"]);
+  for (const [i,[x,y]] of [[.7191,.311],[.6082,.5081]].entries()) {
+    const p=pins[i];
+    assert.ok(p.fits && Math.abs(p.x-x)<.001 && Math.abs(p.y-y)<.001);
+    assert.ok(p.ink==="rgb(255, 255, 255)" && p.background==="rgba(0, 0, 0, 0)" && p.border==="0px");
+  }
   const links = page.locator(".social-bento a");
   assert.equal(await links.count(),6); assert.equal(await page.locator(".platform-google").getAttribute("href"),
     "https://www.google.com/maps/place//data=!4m4!3m3!1s0x477983a3cc4c3b4f:0x641962f142805885!9m1!1b1");

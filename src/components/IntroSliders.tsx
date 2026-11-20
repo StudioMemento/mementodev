@@ -17,7 +17,6 @@ export function PizzaSlider() {
   return <section className="vr-pizza-carousel pizza-clean" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
     <header className="oven-header">
       <h2 className="oven-heading">{t.strip_k}</h2>
-      <span className="pizza-count">{carousel.index + 1} / {slides.length}</span>
     </header>
     <div className="vr-pizza-viewport">
       <div className="vr-pizza-stage" id="forno" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.strip_k}>

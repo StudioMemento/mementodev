@@ -90,6 +90,31 @@ export async function fieldInput(browser,url) {
     await page.goto(new URL("__field_test",url).href);
     await page.evaluate(async path=>{
       const { mountEdgeField }=await import(path);
+      const points = new WeakMap();
+      const drawing = CanvasRenderingContext2D.prototype;
+      const {arc, clearRect} = drawing;
+      drawing.clearRect = function(...args) {
+        points.set(this.canvas, []);
+        return clearRect.apply(this, args);
+      };
+      drawing.arc = function(...args) {
+        points.get(this.canvas)?.push(args.slice(0, 2));
+        return arc.apply(this, args);
+      };
+      // Compare individual motes with the same seed at the same time.
+      window.plume = () => {
+        const [live,still] = [...document.querySelectorAll(".view canvas:first-child")].map(canvas => points.get(canvas) || []);
+        const intake = [], core = [];
+        still.forEach(([x,y],i) => {
+          if (!live[i]) return;
+          const dx = x-23, dy = y-150, distance = Math.hypot(dx,dy);
+          const [sx,sy] = live[i];
+          if (dy>18 && dy<85 && distance<95) intake.push([y-sy,distance-Math.hypot(sx-23,sy-150)]);
+          if (distance<70) core.push(Math.abs(sx-x));
+        });
+        return {rising:intake.filter(([rise,gain])=>rise>.8 && gain>.3).length,
+          intake:intake.length, curl:Math.max(0,...core)};
+      };
       document.querySelectorAll(".view").forEach(mountEdgeField);
       window.fieldsEqual=()=>{
         const [a,b]=[...document.querySelectorAll(".view canvas:first-child")];
@@ -102,6 +127,9 @@ export async function fieldInput(browser,url) {
     await page.waitForFunction(()=>window.fieldsEqual().painted && window.fieldsEqual().changed===0);
     await page.mouse.move(23,150);
     await page.waitForFunction(()=>window.fieldsEqual().changed>1000);
+    await page.waitForFunction(()=>{const p=window.plume();return p.intake>=2 && p.rising>=p.intake*.65 && p.curl>.8;});
+    const plume=await page.evaluate(()=>window.plume());
+    assert.ok(plume.curl<30, "Curl should stay local");
     await page.mouse.move(240,370);
     await page.waitForFunction(()=>window.fieldsEqual().changed===0);
     const client=await page.context().newCDPSession(page);

@@ -1,9 +1,8 @@
 import { useEffect, type RefObject } from "react";
 
-// Keep the frame still. Overscan covers the entire image throughout the pan.
-const panX = 2.2, panY = 2.4, zoom = 1.09;
+export type CardEffect = "tilt" | "window";
 
-export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef: RefObject<HTMLElement | null>) {
+export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef: RefObject<HTMLElement | null>, effect: CardEffect = "tilt") {
   useEffect(() => {
     const shell = shellRef.current, face = faceRef.current;
     if (!shell || !face) return;
@@ -15,9 +14,13 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
     const paint = () => {
       frame = 0;
       if (disposed) return;
-      face.style.setProperty("--photo-x", `${(-x * panX).toFixed(2)}%`);
-      face.style.setProperty("--photo-y", `${(-y * panY).toFixed(2)}%`);
-      face.style.setProperty("--photo-scale", active ? String(zoom) : "1");
+      if (effect === "tilt") {
+        face.style.setProperty("--tilt-x", `${(-y * 15).toFixed(2)}deg`);
+        face.style.setProperty("--tilt-y", `${(x * 15).toFixed(2)}deg`);
+      } else {
+        face.style.setProperty("--photo-x", `${(-x * 2.2).toFixed(2)}%`);
+        face.style.setProperty("--photo-y", `${(-y * 2.4).toFixed(2)}%`);
+      }
       shell.dataset.tiltActive = String(active);
     };
     const queue = () => { if (!frame && !disposed) frame = requestAnimationFrame(paint); };
@@ -76,8 +79,8 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
       media.removeEventListener("change", reset);
       window.removeEventListener("resize", invalidate); window.removeEventListener("scroll", invalidate);
       document.removeEventListener("visibilitychange", onVisibility);
-      face.style.removeProperty("--photo-x"); face.style.removeProperty("--photo-y"); face.style.removeProperty("--photo-scale");
+      face.style.removeProperty("--photo-x"); face.style.removeProperty("--photo-y"); face.style.removeProperty("--tilt-x"); face.style.removeProperty("--tilt-y");
       delete shell.dataset.tiltActive;
     };
-  }, [shellRef, faceRef]);
+  }, [shellRef, faceRef, effect]);
 }

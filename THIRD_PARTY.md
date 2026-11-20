@@ -1,4 +1,4 @@
-# Risorse e licenze — Via Roma 4.8
+# Risorse e licenze — Via Roma 4.9
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.

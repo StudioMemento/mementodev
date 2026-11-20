@@ -86,23 +86,27 @@
 .tile-bottom > span:first-child { min-width:0; }
 .tile-arrow { display:flex; flex:none; align-self:flex-end; width:clamp(9px,8cqi,24px); height:1.08em; align-items:center; justify-content:flex-end; }
 .tile-arrow svg { width:100%; height:auto; }
-.map-tile::before { content:""; position:absolute; z-index:-1; inset:0; background:linear-gradient(0deg,#090909ed,transparent 57%); }
+.map-photo::after { content:""; position:absolute; z-index:0; inset:0; background:linear-gradient(0deg,#090909ed,transparent 57%); }
 .map-tile strong,.map-tile small,.contact-tile small,.action-label { display:block; font-weight:inherit; }
 .map-tile strong { font-size:clamp(17px,10.7cqi,60px); }
 .map-tile small,.contact-tile small { font-size:clamp(10px,5.8cqi,19px); line-height:1.15; margin-top:.26em; }
 .map-photo { position:absolute; inset:0; z-index:-2; }
 .map-photo .tile-art { z-index:0; }
 .map-pin {
-  --pin-color:#ebd095; position:absolute; z-index:1; width:0; height:0;
-  color:var(--pin-color); font-weight:400; font-size:clamp(10px,2.1cqi,16px); line-height:1.15;
+  position:absolute; z-index:1; width:0; height:0;
+  color:white; font-weight:400; font-size:clamp(12px,2.3cqi,17px); line-height:1.15;
   pointer-events:none; text-shadow:0 1px 3px #000;
 }
 .map-pin::before { content:""; position:absolute; width:1px; bottom:0; height:var(--stem); background:currentColor; box-shadow:0 0 2px #090909; }
 .map-pin::after { content:""; position:absolute; left:0; top:0; translate:-50% -50%; width:clamp(5px,1.15cqi,11px); aspect-ratio:1; border-radius:50%; background:currentColor; border:1px solid #16130e; box-shadow:0 0 0 2px #fff3; }
-.map-pin span { position:absolute; bottom:var(--stem); right:-.6em; padding:.37em .62em; white-space:nowrap; border:1px solid #baa47c78; background:#14110fea; border-radius:3px; }
+.map-pin span { position:absolute; bottom:var(--stem); right:-.35em; padding-bottom:.25em; isolation:isolate; white-space:nowrap; }
+.map-pin span::before {
+  content:""; position:absolute; z-index:-1; inset:-.32em -.85em; pointer-events:none;
+  -webkit-backdrop-filter:blur(4px) brightness(.53); backdrop-filter:blur(4px) brightness(.53);
+  mask-image:radial-gradient(ellipse,#000 38%,transparent 73%);
+}
 .venue-pin { left:71.91%; top:31.10%; --stem:12cqi; }
-.square-pin { left:60.82%; top:50.81%; --stem:10cqi; --pin-color:#eee9dd; }
-.square-pin span { border-color:#bbb5aa80; }
+.square-pin { left:60.82%; top:50.81%; --stem:10cqi; }
 .sign-mark { position:relative; width:clamp(50px,53cqi,310px); aspect-ratio:1; }
 .sign-mark img { width:100%; height:100%; }
 .hours-tile { aspect-ratio:auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(7px,3cqi,24px); }

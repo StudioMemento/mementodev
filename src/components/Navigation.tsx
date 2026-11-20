@@ -148,8 +148,8 @@ export function Dock() {
         {[
           { id: "home", icon: "house", label: "Home" },
           { id: "menu", icon: "fork-knife", label: t.tab_menu },
-          { id: "gallery", icon: "fire", label: t.tab_storia },
-          { id: "dove", icon: "info", label: t.tab_dove },
+          { id: "gallery", icon: "gallery", label: copy.gallery },
+          { id: "dove", icon: "brand-flame", label: `Pizzeria Via Roma · ${t.tab_dove}` },
           { id: "call", icon: "phone", label: t.tab_chiama },
         ].map((x) => (
           <a

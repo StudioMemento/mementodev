@@ -40,8 +40,8 @@ async function checkSectionPolish(page, touch) {
       controls: leaders.map(button => ({width: rect(button).width, height: rect(button).height, glyphHeight: rect(button.querySelector('path')).height})),
     };
   });
-  assert.match(layout.strokes[0], /^1px solid rgb/);
-  assert.ok(layout.strokes.every(edge => edge === layout.strokes[0]));
+  assert.ok(layout.strokes.slice(0,2).every(edge => edge.startsWith('0px none')));
+  assert.match(layout.strokes[2], /^1px solid rgb/);
   assert.ok(layout.overlays.every(background => background === 'none'));
   assert.deepEqual(layout.headings, ['Le stuzzicherie', 'I dolci', 'Le bevande']);
   assert.ok(layout.categoryGaps.every(gap => gap >= 115));
@@ -125,12 +125,14 @@ try {
    const art=page.locator('#cat-audaci .menu-art');
    const snapshot=el=>{
     const style=(target,pseudo,keys)=>Object.fromEntries(keys.map(k=>[k,getComputedStyle(target,pseudo)[k]]));
-    return {frame:style(el,'::before',['borderImageSource','borderTopWidth','borderBottomWidth','filter','transitionDuration']),after:getComputedStyle(el,'::after').content,mask:getComputedStyle(el.querySelector('.menu-art-window')).maskImage,image:style(el.querySelector('img'),null,['filter','transform','opacity','mixBlendMode']),containerFilter:getComputedStyle(el).filter};
+    return {frame:style(el,'::before',['height','clipPath','backgroundColor','filter','transitionDuration']),after:style(el,'::after',['height','clipPath','backgroundColor','filter','transitionDuration']),mask:getComputedStyle(el.querySelector('.menu-art-window')).maskImage,image:style(el.querySelector('img'),null,['filter','transform','opacity','mixBlendMode']),containerFilter:getComputedStyle(el).filter};
    };
    const before=await art.evaluate(snapshot);
    await art.hover();const after=await art.evaluate(snapshot);
    assert.deepEqual(after,before,'Image hover changed the image or stroke/fade geometry');
-   assert.ok(parseFloat(before.frame.borderTopWidth)>=2 && parseFloat(before.frame.borderTopWidth)<=3);assert.equal(before.frame.borderBottomWidth,before.frame.borderTopWidth);assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');assert.equal(before.after,'none');
+   assert.ok(parseFloat(before.frame.height)>=2 && parseFloat(before.frame.height)<=3);
+   assert.deepEqual(before.frame,before.after);assert.ok(before.frame.clipPath.includes('1px'));
+   assert.equal(before.frame.backgroundColor,'rgb(203, 178, 122)');assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');
    assert.equal(before.mask,'none');assert.equal(before.image.filter,'none');assert.equal(before.containerFilter,'none');
   }
   await page.screenshot({path:`${out}/audaci-${width}x${height}.png`});

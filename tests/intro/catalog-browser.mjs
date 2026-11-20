@@ -20,7 +20,7 @@ try {
     await page.evaluate(() => document.fonts.ready);
     const oven = page.locator("#pizza-slider");
     const stage = oven.locator("#forno");
-    assert.equal(await oven.locator(".pizza-dot").count(), 0);
+    assert.equal(await oven.locator(".pizza-dot,.pizza-count").count(), 0);
     assert.ok(await oven.locator(".vr-pizza-card img[src]").count() < pizzas.length / 2);
     assert.ok(files.size > 0 && files.size < pizzas.length / 2);
 
@@ -50,7 +50,6 @@ try {
     await shift("ArrowRight");
     for (const [index, [file, name]] of pizzas.entries()) {
       await waitForIndex(index);
-      assert.equal((await oven.locator(".pizza-count").textContent()).trim(), (index+1)+" / "+pizzas.length);
       assert.equal(await oven.locator('.pizza-caption[aria-hidden="false"] h3').textContent(),name);
       const img=stage.locator('[data-forno-index="' + index + '"] img').first();
       const resource=await img.evaluate(async im => { await im.decode(); return {url:new URL(im.currentSrc).pathname, width:im.naturalWidth, height:im.naturalHeight}; });
@@ -83,10 +82,26 @@ try {
       all.length > 0 && all.every(el => getComputedStyle(el).maskImage === "none")));
     if (width > 1000) {
       await page.emulateMedia({ reducedMotion:"no-preference" });
+      const hoverCard = async shell => {
+        await shell.evaluate(async el => {
+          el.scrollIntoView({block:"center",behavior:"instant"});
+          await new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done)));
+        });
+        await shell.hover({position:{x:30,y:30}});
+      };
+      const crust=page.locator("#cornicione .crust-card-shell").first();
+      await hoverCard(crust);
+      await page.waitForFunction(()=>{
+        const card=document.querySelector("#cornicione .crust-card");
+        return card.parentElement.dataset.tiltActive==="true" && getComputedStyle(card).transform.startsWith("matrix3d");
+      });
+      assert.equal(await crust.locator("img").evaluate(el=>getComputedStyle(el).transform),"none");
       const shell=page.locator("#asporto .crust-card-shell");
-      await shell.hover({ position:{x:30,y:30} });
+      await hoverCard(shell);
       await page.waitForFunction(() => document.querySelector("#asporto .crust-card-shell").dataset.tiltActive==="true");
-      assert.equal(await card.evaluate(el => el.style.getPropertyValue("--photo-scale")),"1.09");
+      assert.equal(await card.evaluate(el => getComputedStyle(el).getPropertyValue("--card-scale").trim()),"1.09");
+      assert.equal(await card.evaluate(el=>getComputedStyle(el).transform),"none");
+      await page.waitForFunction(()=>new DOMMatrix(getComputedStyle(document.querySelector("#asporto img")).transform).a>1.025);
     }
     assert.deepEqual(errors,[]);
     await page.close();

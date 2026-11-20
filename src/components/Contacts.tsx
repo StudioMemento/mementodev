@@ -33,12 +33,12 @@ export default function Contacts() {
     <section id="dove" className="closing-section visit-section" aria-labelledby="visit-title">
       <SpreadTitle id="visit-title" text={closingCopy[language].visit} />
       <BentoGrid className="visit-bento">
-        <a className="bento-tile map-tile" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.d_maps} · Pizzeria Via Roma, Via Roma 47, 33085 Maniago (PN) · Piazza di Maniago`}>
+        <a className="bento-tile map-tile" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.d_maps} · Pizzeria Via Roma, Via Roma 47, 33085 Maniago (PN) · Piazza Italia`}>
           <span className="map-photo">
             <img className="tile-art" src="/assets/maniago.webp" srcSet="/assets/maniago-640.webp 640w, /assets/maniago.webp 1254w"
               sizes="(max-width: 700px) 80vw, (min-width: 2400px) 24vw, (min-width: 1200px) 36vw, (min-width: 768px) 42vw, 48vw" width="1254" height="1254" alt="" loading="lazy" decoding="async" />
             <span className="map-pin venue-pin"><span>Pizzeria Via Roma</span></span>
-            <span className="map-pin square-pin"><span>Piazza di Maniago</span></span>
+            <span className="map-pin square-pin"><span>Piazza Italia</span></span>
           </span>
           <span className="tile-bottom"><span><strong>Via Roma 47</strong><small>33085 Maniago (PN)</small></span><TileArrow /></span>
         </a>
