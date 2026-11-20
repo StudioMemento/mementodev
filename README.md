@@ -1,10 +1,10 @@
-# Via Roma 5.2
+# Via Roma 5.3
 
-Build di sviluppo per Pizzeria Via Roma a Maniago. Il marchio orizzontale in testata usa i tracciati originali ingranditi. Le cinque icone della navbar condividono la stessa griglia e lo stesso spessore di tratto. La lingua e la categoria attive conservano il bordo e il glow dorato. Le particelle appaiono soltanto sul controllo sotto il puntatore. Il focus da tastiera mantiene un contorno dedicato.
+Build di sviluppo per Pizzeria Via Roma a Maniago. Sui telefoni il selettore conserva le quattro lingue a vista e un’area di tocco alta 44 px. Il marchio orizzontale in testata usa i tracciati originali ingranditi. Le cinque icone della navbar condividono la stessa griglia e lo stesso spessore di tratto. La lingua e la categoria attive conservano il bordo e il glow dorato. Le particelle appaiono soltanto sul controllo sotto il puntatore. Il focus da tastiera mantiene un contorno dedicato.
 
-La sezione «Dal nostro forno» usa due filetti oro e lo sfondo animato delle gallerie. La sua altezza utilizza il viewport stabile durante lo scroll su telefono. La pizza selezionata resta al centro della fila per cinque secondi prima di passare alla successiva. Le due frecce occupano lo spazio tra il piatto centrale e quelli laterali. Il titolo parte dal bordo della navbar inferiore. Nome e ingredienti sono allineati al centro della seconda icona. Uno swipe veloce può superare più pizze e rallenta fino al nuovo centro. Lo scroll verticale e il pinch sono gestiti dal browser. Le 40 pizze si possono sfogliare anche con trascinamento, swipe e tastiera. Con movimento ridotto la selezione è manuale e immediata.
+La sezione «Dal nostro forno» usa due filetti oro e lo sfondo animato delle gallerie. La sua altezza utilizza il viewport stabile durante lo scroll su telefono. La pizza selezionata resta al centro della fila per cinque secondi prima di passare alla successiva. Le due frecce occupano lo spazio tra il piatto centrale e quelli laterali. Il titolo si estende tra i margini della sua riga. Nome e ingredienti partono dal bordo sinistro della seconda icona della navbar inferiore. Uno swipe veloce può superare più pizze e rallenta fino al nuovo centro. Lo scroll verticale e il pinch sono gestiti dal browser. Le 40 pizze si possono sfogliare anche con trascinamento, swipe e tastiera. Con movimento ridotto la selezione è manuale e immediata.
 
-Le otto immagini di categoria hanno un filetto dorato di tre pixel, più sottile alle estremità. Ogni filetto occupa una fascia propria. Dopo le bevande, un riquadro 16:9 accosta «Gusto Via Roma nel comfort di casa? Facciamo anche servizio da asporto!» alla pizza in cartone sulla destra. Su telefono usa il ritaglio dedicato e adatta le righe alla lingua e allo spazio disponibile.
+Le otto immagini di categoria hanno un filetto dorato di tre pixel, più sottile alle estremità. Ogni filetto occupa una fascia propria. Dopo le bevande, un riquadro 16:9 accosta «Gusto Via Roma nel comfort di casa? Facciamo anche servizio da asporto!» alla pizza in cartone sulla destra. La fotografia riempie la card e il browser sceglie tra tre risoluzioni WebP. Titolo su due righe, riflesso e inclinazione condivisi con i cornicioni, spazio ampliato prima della galleria.
 
 ## Avvio e deploy
 
@@ -30,6 +30,10 @@ La scheda di raccolta per il gestore viene consegnata separatamente. Per complet
 
 ## Verifiche
 
+Sulla build 5.3, a 390 × 844 px il selettore misura 134 px e lascia 68 px dopo il logo. Con densità 3× il browser carica la fotografia da 960 px (54.744 byte). Prima della linea della galleria ci sono 195 px di spazio.
+
+I test controllano le 40 pizze in quattro lingue, lo spazio per le didascalie, la card asporto, il cambio lingua, il movimento ridotto e gli input touch, mouse e tastiera. Il test dei popup apre le 70 voci interattive in 39 combinazioni di viewport e area sicura per ciascuna lingua. Il titolo del menù segue la larghezza della pagina anche durante la rotazione. La hero risponde al cambio di preferenza di movimento mentre la pagina è aperta.
+
 ```sh
 npm run check
 npm test
@@ -47,4 +51,4 @@ node tests/menu/browser.mjs
 node tests/menu/dialog-viewport.mjs
 ```
 
-`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_5.2_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.
+`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_5.3_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.

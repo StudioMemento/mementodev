@@ -91,12 +91,14 @@ async function checkLegalText(article) {
 }
 
 async function testViewport(width,height,touch) {
+  const compact = width < 768 || touch && height <= 540;
   const options={ viewport:{width,height}, hasTouch:touch, isMobile:touch, reducedMotion:"reduce" };
   const context=await browser.newContext(options);
+  context.setDefaultTimeout(15000);
   try {
     const page=await context.newPage();
     await page.goto(url,{waitUntil:"domcontentloaded"});
-    await page.evaluate(() => document.fonts.ready);
+    await page.waitForFunction(() => document.fonts.status === "loaded");
     for(const language of languages) {
       await page.locator('.lang button[data-lang="'+language+'"]').click();
       await page.waitForFunction(lang => document.documentElement.lang === lang,language);
@@ -107,8 +109,9 @@ async function testViewport(width,height,touch) {
       }));
       assert.equal(buttons.filter(button=>button.active).length,1);
       for(const button of buttons) {
-        assert.equal(button.w,button.h);
-        assert.ok(button.w >= (touch ? 44 : 36));
+        assert.ok(Math.abs(button.w - button.h) < .02);
+        if (compact) assert.ok(button.w >= 30 && button.w <= 34);
+        else assert.ok(button.w >= (touch ? 44 : 36));
         assert.equal(button.radius,"50%");
         assert.equal(button.line,button.active ? "1px" : "0px");
         if (button.active) assert.equal(neutral(button.ring),false);
@@ -134,9 +137,17 @@ async function testViewport(width,height,touch) {
     if (width===390) {
       await page.setViewportSize({width:height,height:width});
       assert.ok(await page.locator(".lang button").evaluateAll(buttons=>buttons.every(el=>{
-        const r=el.getBoundingClientRect();return r.width===r.height;
+        const r=el.getBoundingClientRect();return Math.abs(r.width - r.height) < .02;
       })));
       await page.setViewportSize({width,height});
+    }
+    if (compact) {
+      const tappable = await page.locator(".lang button").evaluateAll(buttons => buttons.every(button => {
+        const box = button.getBoundingClientRect();
+        const cx = (box.left + box.right) / 2, cy = (box.top + box.bottom) / 2;
+        return [-21, 21].every(dy => button.contains(document.elementFromPoint(cx, cy + dy)));
+      }));
+      assert.ok(tappable, "Each compact language choice has its own 44px-high touch area");
     }
     const flame=page.locator(".site-brand");
     const brandInk=()=>flame.locator("svg").evaluate(el=>getComputedStyle(el).fill);
@@ -210,7 +221,10 @@ async function testViewport(width,height,touch) {
         for(const lang of languages) for(const slug of slugs) {
           const path=(lang==="it"?"":lang+"/")+slug+".html";
           const response=await page.goto(new URL(path,url).href);
-          assert.ok(response.ok()); await page.evaluate(()=>document.fonts.ready);
+          assert.ok(response.ok());
+          // A script-disabled Firefox document can paint its fonts without settling a page-side promise.
+          if (await page.evaluate(() => document.fonts.status !== "loaded")) await page.waitForLoadState("networkidle");
+          assert.equal(await page.evaluate(() => document.fonts.status), "loaded");
           const article=page.locator("article.legal-text");
           await checkLegalText(article);
           if (width===320) {

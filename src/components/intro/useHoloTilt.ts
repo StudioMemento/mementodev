@@ -12,11 +12,9 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
     const paint = () => {
       frame = 0;
       if (disposed) return;
-      face.style.setProperty("--tilt-x", `${(-y * 15).toFixed(2)}deg`);
-      face.style.setProperty("--tilt-y", `${(x * 15).toFixed(2)}deg`);
-      face.style.setProperty("--satin-x", (50 + x * 50).toFixed(1) + "%");
-      face.style.setProperty("--satin-y", (50 + y * 50).toFixed(1) + "%");
-      shell.dataset.tiltActive = String(active);
+      face.style.setProperty("--pointer-x", x.toFixed(3));
+      face.style.setProperty("--pointer-y", y.toFixed(3));
+      if (shell.dataset.tiltActive !== String(active)) shell.dataset.tiltActive = String(active);
     };
     const queue = () => { if (!frame && !disposed) frame = requestAnimationFrame(paint); };
     const reset = () => {
@@ -74,8 +72,7 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
       media.removeEventListener("change", reset);
       window.removeEventListener("resize", invalidate); window.removeEventListener("scroll", invalidate);
       document.removeEventListener("visibilitychange", onVisibility);
-      face.style.removeProperty("--tilt-x"); face.style.removeProperty("--tilt-y");
-      face.style.removeProperty("--satin-x"); face.style.removeProperty("--satin-y");
+      face.style.removeProperty("--pointer-x"); face.style.removeProperty("--pointer-y");
       delete shell.dataset.tiltActive;
     };
   }, [shellRef, faceRef]);

@@ -5,7 +5,10 @@ import vm from 'node:vm';
 
 // Exercise the real effect lifecycle with deterministic platform fakes.
 // This checks behavior; it is not a substitute for browser / hardware rendering.
-let effect;
+const refs = [], effects = [];
+let hookIndex = 0;
+const useRef = initial => refs[hookIndex++] ??= { current:initial };
+const useEffect = callback => effects.push(callback);
 const listeners = new Map();
 const target = (name) => ({
   dataset:{}, addEventListener:(e,f)=>listeners.set(name+':'+e,f),
@@ -20,8 +23,8 @@ const section={...target('hero'),getBoundingClientRect:()=>sectionBox};
 const logo={...target('logo'),getBoundingClientRect:()=>logoBox,querySelector:()=>img};
 const canvas=target('canvas');
 const particles=target('particles');
-let intersection,resize,mutations;
-const doc={...target('document'),get hidden(){return hidden},body:{},querySelector:()=>dialog?{}:null,fonts:{ready:Promise.resolve()}};
+let intersection,resize;
+const doc={...target('document'),get hidden(){return hidden},fonts:{ready:Promise.resolve()}};
 const media={...target('media'),get matches(){return reduced}};
 const context={
   console,Math,HTMLDialogElement:class{},HTMLElement:class{},
@@ -30,8 +33,7 @@ const context={
   requestAnimationFrame:(fn)=>{raf.set(++id,fn);return id},cancelAnimationFrame:i=>raf.delete(i),
   ResizeObserver:class{constructor(f){resize=f}observe(){}disconnect(){}},
   IntersectionObserver:class{constructor(f){intersection=f}observe(){}disconnect(){}},
-  MutationObserver:class{constructor(f){mutations=f}observe(){}disconnect(){}},
-  useEffect:fn=>{effect=fn},
+  useRef, useEffect, useDialog:()=>({modal:dialog?{}:null}),
   createGlimmer:()=>({resize:g=>{glimmerSize=g},draw:()=>{glimmerDraws++},press:(x,y)=>{pressAt=[x,y]},release:()=>{pressAt=null}}),
   createLiquid:()=>({resize:s=>{liquidSize=s},draw:(_t,_x,_y,h)=>{liquidDraws++;lastHover=h},dispose:()=>{disposeCount++}}),
   HERO_PRESET:{mobileFps:30,desktopFps:40},
@@ -41,8 +43,12 @@ vm.createContext(context);
 let src=await readFile('src/components/hero/useHeroEffects.ts','utf8');
 src=src.replace(/^import .*;\n/gm,'').replace('export function','function');
 vm.runInContext(stripTypeScriptTypes(src),context);
-context.useHeroEffects({current:section},{current:logo},{current:particles},{current:canvas});
-const cleanup=effect(); await Promise.resolve();
+const render = () => {
+  hookIndex = 0; effects.length = 0;
+  context.useHeroEffects({current:section},{current:logo},{current:particles},{current:canvas});
+};
+render(); effects[0]();
+const cleanup=effects[1](); await Promise.resolve();
 let clock=0;
 const tick=(now)=>{clock=Math.max(clock+40,now);const jobs=[...raf.values()];raf.clear();jobs.forEach(fn=>fn(clock));};
 tick(0);
@@ -73,8 +79,8 @@ reduced=false;listeners.get('media:change')();tick(340);assert.equal(logo.datase
 listeners.get('canvas:webglcontextlost')({preventDefault(){}});assert.equal(logo.dataset.liquidReady,'false');
 const liquidBefore=liquidDraws;tick(380);assert.equal(liquidDraws,liquidBefore);
 listeners.get('canvas:webglcontextrestored')();tick(420);assert.ok(liquidDraws>liquidBefore);
-dialog=true;mutations([{type:'attributes'}]);assert.equal(raf.size,0);assert.equal(section.dataset.fxState,'paused');
-dialog=false;mutations([{type:'attributes'}]);assert.equal(raf.size,1);
+dialog=true;render();effects[0]();assert.equal(raf.size,0);assert.equal(section.dataset.fxState,'paused');
+dialog=false;render();effects[0]();assert.equal(raf.size,1);
 cleanup();assert.equal(raf.size,0);assert.equal(listeners.size,0);assert.equal(disposeCount,1);
 
 // Render the actual particle algorithm into a recording canvas to independently

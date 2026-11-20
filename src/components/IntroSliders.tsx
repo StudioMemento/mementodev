@@ -5,6 +5,7 @@ import { useCarousel } from "../hooks/useCarousel";
 import { FinaleAtmosphere } from "./FinaleAtmosphere";
 import { Chevron } from "./Icon";
 import { Photo } from "./Photo";
+import { SpreadLetters } from "./SpreadTitle";
 import { HoloCard } from "./intro/HoloCard";
 import { useIntroVisibility } from "./intro/useIntroVisibility";
 export function PizzaSlider() {
@@ -18,7 +19,11 @@ export function PizzaSlider() {
   return <section className="vr-pizza-carousel pizza-clean" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
     <FinaleAtmosphere />
     <div className="pizza-frame">
-      <header className="oven-header"><h2 className="oven-heading">{t.strip_k}</h2></header>
+      <header className="oven-header">
+        <h2 className="oven-heading" aria-label={t.strip_k}>
+          <span className="spread-line" aria-hidden="true"><SpreadLetters text={t.strip_k} /></span>
+        </h2>
+      </header>
       <div className="vr-pizza-viewport">
         <div className="vr-pizza-stage" id="forno" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.strip_k}>
           {Array.from({ length: carousel.renderCount }, (_, slot) => {

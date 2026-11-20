@@ -36,22 +36,27 @@ state.nudge(-1);assert.equal(scrollRequest.behavior,'instant');
 rail.clientWidth=1000;listeners.get('window:resize')();ros.at(-1).fn();assert.ok(!classes.has('can-l'));assert.ok(!classes.has('can-r'));assert.ok(ios[0].disconnected);
 language='de';commit();assert.equal(ros.at(-1).observed.length,9);assert.ok(ros.at(-2).disconnected);
 slots.forEach(s=>s.cleanup?.());assert.equal(listeners.size,0);assert.ok(ros.at(-1).disconnected);assert.ok(ios.at(-1).disconnected);
-// Actual title fitting: font load, resize, a long translation, zero size and unmount.
-let effect,width=320,fontSize=80,ratio=3,tracking=.26,fitWrites=0,fontReady;
-const label={getBoundingClientRect:()=>({width:fontSize*(ratio+tracking)})};
-const heading={firstElementChild:label,get clientWidth(){return width},style:{setProperty:(key,value)=>{assert.equal(key,'--menu-title-size');fontSize=parseFloat(value);fitWrites++}}};
-const fits=[];
-let fitFrame;
-const titleFrames={
-  requestAnimationFrame(fn){ assert.equal(fitFrame,undefined); fitFrame=fn; return 1 },
-  cancelAnimationFrame(){fitFrame=undefined}
-};
-function paintTitle(){const draw=fitFrame;fitFrame=undefined;draw?.()}
-const title=await source('src/components/menu/MenuTitle.tsx',{...titleFrames,useRef:()=>({current:heading}),useLayoutEffect:fn=>{effect=fn},ResizeObserver:class{constructor(fn){this.fn=fn;fits.push(this)}observe(){}disconnect(){this.disconnected=true}},getComputedStyle:()=>({fontSize:`${fontSize}px`,letterSpacing:`${fontSize*tracking}px`}),document:{fonts:{ready:{then:fn=>{fontReady=fn}}}}});
-title.useTitleFit('Menù');let cleanup=effect();assert.ok(Math.abs(fontSize*ratio-width)<.001);const firstWrites=fitWrites;fits.at(-1).fn();assert.equal(fitWrites,firstWrites);
-ratio=3.85;fontReady();assert.ok(Math.abs(fontSize*ratio-width)<.001);width=1200;fits.at(-1).fn();fits.at(-1).fn();assert.notEqual(fitFrame,undefined);paintTitle();assert.ok(Math.abs(fontSize*ratio-width)<.001);
-cleanup();const oldReady=fontReady;ratio=8;title.useTitleFit('Die Speisekarte');cleanup=effect();assert.ok(Math.abs(fontSize*ratio-width)<.001);
-width=0;fits.at(-1).fn();paintTitle();assert.ok(Number.isFinite(fontSize));width=960;fits.at(-1).fn();const lastWrites=fitWrites;cleanup();assert.equal(fitFrame,undefined);fontReady();oldReady();assert.equal(fitWrites,lastWrites);assert.ok(fits.at(-1).disconnected);
+// The measured font ratio follows the CSS content width without a resize callback.
+let effect, width=320, scale=.25, ratio=3, tracking=.26, fitWrites=0, fontReady;
+const fontSize=()=>width*scale;
+const label={getBoundingClientRect:()=>({width:fontSize()*(ratio+tracking)})};
+const heading={firstElementChild:label,style:{setProperty:(key,value)=>{
+ assert.equal(key,'--menu-title-scale');scale=Number(value);assert.ok(Number.isFinite(scale));fitWrites++;
+}}};
+const title=await source('src/components/menu/MenuTitle.tsx',{
+ useRef:()=>({current:heading}),useLayoutEffect:fn=>{effect=fn},
+ getComputedStyle:()=>({fontSize:fontSize()+'px',letterSpacing:fontSize()*tracking+'px'}),
+ document:{fonts:{ready:{then:fn=>{fontReady=fn}}}}
+});
+const fits=()=>assert.ok(Math.abs(fontSize()*ratio-width)<.001);
+title.useTitleFit('Menù');let cleanup=effect();fits();
+ratio=3.85;fontReady();fits();
+const beforeResize=fitWrites;width=1200;fits();width=0;fits();width=960;fits();
+assert.equal(fitWrites,beforeResize);
+cleanup();const oldReady=fontReady;ratio=8;title.useTitleFit('Die Speisekarte');cleanup=effect();fits();
+width=0;const lastWrites=fitWrites;fontReady();assert.equal(fitWrites,lastWrites);
+cleanup();fontReady();oldReady();assert.equal(fitWrites,lastWrites);
+
 // Execute item handlers and the real dialog render/cancel/click handlers.
 const allergen=await source('src/data/allergen-info.ts',{});const getAllergenInfo=vm.runInContext('getAllergenInfo',allergen);
 const data=JSON.parse(await readFile('src/data/menu.json','utf8')),allergens=JSON.parse(await readFile('src/data/allergens.json','utf8'));

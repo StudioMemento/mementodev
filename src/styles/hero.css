@@ -45,14 +45,12 @@
 .vr-edge-blur > div { position:absolute; inset:0; background:transparent; }
 /* The light sits in the glass. Glyphs inherit one opaque colour. */
 .dock-tile,.lang,.chips button {
-  overflow:hidden; isolation:isolate; color:var(--satin-ink); border-color:var(--satin-rim);
+  isolation:isolate; color:var(--satin-ink); border-color:var(--satin-rim);
   background:var(--specks),linear-gradient(145deg,#252525c9,#191919a8); box-shadow:0 2px 8px #0002;
   -webkit-backdrop-filter:blur(var(--satin-blur,12px)); backdrop-filter:blur(var(--satin-blur,12px));
 }
 .lang { border-color:#ffffff12; background:linear-gradient(145deg,#242424ba,#161616a6); }
-@media(max-width:375px) {
-  .site-top { --narrow-gutter:clamp(12px,calc(50vw - 150px),var(--vr-gutter)); padding-inline:max(var(--narrow-gutter),env(safe-area-inset-left)) max(var(--narrow-gutter),env(safe-area-inset-right)); }
-}
+.dock-tile,.chips button { overflow:hidden; }
 .site-brand:focus-visible,.site-brand:active { color:var(--selected-ink); }
 .hero-down,.hero-down svg { width:clamp(72px,6.8vw,96px); height:clamp(72px,6.8vw,96px); }
 .hero-down svg path { stroke-width:1.55; }

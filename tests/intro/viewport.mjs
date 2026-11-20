@@ -15,7 +15,20 @@ function measureOven() {
   };
   const nav = box(document.querySelector(".vr-dock"));
   const second = box(document.querySelectorAll(".dock-tile")[1]);
-  const captionX = (second.left + second.right) / 2;
+  const captionX = second.left;
+  const takeaway = document.querySelector("#asporto");
+  const takeawayTitle = takeaway.querySelector("h2");
+  const textBox = node => {
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    return [...range.getClientRects()];
+  };
+  const lines = [...takeawayTitle.childNodes].filter(n => n.nodeType === Node.TEXT_NODE).map(textBox);
+  const answer = textBox(takeaway.querySelector("p").firstChild);
+  const card = box(takeaway.querySelector(".crust-card"));
+  const textFits = lines.length === 2 && lines.every(line => line.length === 1) &&
+    lines[0][0].top < lines[1][0].top && lines[1][0].top < answer[0].top &&
+    [...lines.flat(), ...answer].every(r => r.left >= card.left && r.right <= card.right && r.bottom <= card.bottom);
   const head = box(document.querySelector(".site-top"));
   const oven = document.querySelector("#pizza-slider");
   const area = box(oven);
@@ -47,7 +60,9 @@ function measureOven() {
         nameBottom:name.bottom, start:ink(ingredients[0]).top, last:ink(ingredients.at(-1)).bottom,dock:nav.top});
   }
   return {height:area.height, device:innerHeight, top:area.top, black:getComputedStyle(oven).backgroundColor, problems,
-    image:center.width, title:title.top, header:head.bottom, headingAligned:Math.abs(box(oven.querySelector("h2")).left-nav.left)<1,
+    textFits, answerLines:answer.length, image:center.width, title:title.top, header:head.bottom, headingAligned:Math.abs(box(oven.querySelector("h2")).left-nav.left)<1,
+    headingFilled: Math.abs(ink(oven.querySelector(".spread-line > :first-child")).left-title.left)<1 &&
+      Math.abs(ink(oven.querySelector(".spread-line > :last-child")).right-box(oven.querySelector("h2")).right)<2,
     titleGap:stage.top-title.bottom, landscape:innerWidth>innerHeight && innerHeight<=490, measures, gap,
     stage:stage.height, overflow:document.documentElement.scrollWidth > innerWidth+1,
     blurAbove:+getComputedStyle(document.querySelector(".vr-edge-blur")).zIndex > +getComputedStyle(oven).zIndex};
@@ -68,8 +83,9 @@ try {
         await page.waitForFunction(lang=>document.documentElement.lang===lang,lang);
         const info = await page.evaluate(measureOven);
         assert.ok(!info.overflow && Math.abs(info.top)<1 && Math.abs(info.device*1.2-info.height)<1 && info.image>85 && info.stage>72, JSON.stringify({width,height,lang,info}));
+        assert.ok(info.textFits && (lang !== "it" || info.answerLines === 1), "Takeaway copy must fit: "+JSON.stringify({width,height,lang,info}));
         assert.equal(info.black,"rgb(9, 9, 9)");
-        assert.ok(info.blurAbove && info.headingAligned && info.title>info.header-2, JSON.stringify({width,height,lang,info}));
+        assert.ok(info.blurAbove && info.headingAligned && info.headingFilled && info.title>info.header-2, JSON.stringify({width,height,lang,info}));
         assert.ok(info.landscape || info.titleGap >= 12, "Section title touches the stage: "+JSON.stringify(info));
         for (const m of info.measures) {
           assert.ok(Math.abs(m.centerX-m.expectedX)<1 && m.centerY<1 && m.width>=44 && m.height>=44 && m.sideScale<.73, JSON.stringify(m));

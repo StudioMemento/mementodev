@@ -61,14 +61,26 @@ try {
  }
  const touch=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
  const mobile=await touch.newPage();await mobile.goto(url);await mobile.evaluate(()=>window.scrollTo({top:scrollY+document.querySelector('#cornicione').getBoundingClientRect().top,behavior:'instant'}));
- const m=await mobile.locator('.crust-card-shell').first().boundingBox();const cdp=await touch.newCDPSession(mobile);
+ const cdp=await touch.newCDPSession(mobile);
  const touchPoint=(x,y)=>({x,y,id:1,radiusX:3,radiusY:3,force:1});
- await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[touchPoint(m.x+m.width*.4,m.y+m.height*.5)]});
- await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[touchPoint(m.x+m.width*.7,m.y+m.height*.55)]});
- await mobile.waitForFunction(()=>document.querySelector('.crust-card-shell').dataset.tiltActive==='true');
- assert.equal(await mobile.locator('.crust-card').first().evaluate(e=>getComputedStyle(e).getPropertyValue('--card-scale').trim()),'1.1');
- await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
- await mobile.waitForFunction(()=>document.querySelector('.crust-card-shell').dataset.tiltActive==='false');
+ const sendTouch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points});
+ for(const selector of ['#cornicione .crust-card-shell','#asporto .crust-card-shell']) {
+  const card=mobile.locator(selector).first();
+  await card.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+  const box=await card.boundingBox(), x=box.x+box.width*.4, y=box.y+box.height*.5;
+  const before=await mobile.evaluate(()=>scrollY);
+  await sendTouch('touchStart',[touchPoint(x,y)]);
+  await sendTouch('touchMove',[touchPoint(x+box.width*.3,y+3)]);
+  await mobile.waitForFunction(sel=>document.querySelector(sel).dataset.tiltActive==='true',selector);
+  assert.equal(await card.evaluate(el=>getComputedStyle(el.firstElementChild).getPropertyValue('--card-scale').trim()),'1.1');
+  assert.ok(Math.abs((await mobile.evaluate(()=>scrollY))-before)<1);
+  await sendTouch('touchEnd',[]);
+  await mobile.waitForFunction(sel=>document.querySelector(sel).dataset.tiltActive==='false',selector);
+  await sendTouch('touchStart',[touchPoint(x,y)]);
+  for (let dy=20;dy<=100;dy+=20) await sendTouch('touchMove',[touchPoint(x+1,y-dy)]);
+  await sendTouch('touchEnd',[]);
+  await mobile.waitForFunction(old=>scrollY>old+10,before);
+ }
  await mobile.emulateMedia({reducedMotion:'reduce'});
  assert.equal(await mobile.locator('.crust-card').first().evaluate(e=>getComputedStyle(e).transform),'none');
  await touch.close();assert.deepEqual(errors,[]);

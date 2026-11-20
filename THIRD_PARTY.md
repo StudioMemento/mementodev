@@ -10,7 +10,7 @@ La base V25 rimuoveva i componenti React Bits, i relativi shader/renderer e GSAP
 
 La hero aggiunge implementazioni originali Canvas 2D, WebGL e CSS ispirate alle reference visive fornite. Il codice React Bits Pro non è incluso. Nessuna nuova libreria di animazione è stata aggiunta.
 
-Le card cornicione e asporto usano una parallasse fotografica interna. Il codice gestisce lo spostamento e lo zoom con puntatore e tocco.
+Le card cornicione e asporto condividono inclinazione, ingrandimento e riflesso satinato. Il puntatore o un trascinamento orizzontale controllano l’intera card.
 
 Il background 3.5–3.8 è un'implementazione originale Canvas 2D, autorizzata dall'utente, ispirata alla reference visiva Blinking Squares. Non include il sorgente React Bits Pro e non richiede la sua licenza o il registro shadcn. Dot Grid e tutto il relativo codice derivato sono stati rimossi. Nessuna nuova dipendenza npm.
 
@@ -18,4 +18,4 @@ Le gallerie e il bento della 4.1 riprendono i preset visivi Panorama, Flat e Mag
 
 Le otto immagini in `public/assets/social` sono visual generati e ottimizzati in WebP. La serie 4.6 comprende sei marchi delle piattaforme, WhatsApp e un pittogramma di smartphone per la scheda «Chiama». La finitura riprende il campione Instagram della 4.4. Le icone hanno fondo trasparente e condividono la superficie carbone delle schede. I marchi delle piattaforme appartengono ai rispettivi titolari.
 
-Le 40 immagini dello slider provengono dal pacchetto ViaRoma_40_Pizze_Slider. La pizza Via Roma deriva dal campione fotografico fornito, le altre 39 sono ricostruzioni generate. La pila di tre scatole neutre nella card asporto è un’immagine illustrativa generata per il sito.
+Le 40 immagini dello slider provengono dal pacchetto ViaRoma_40_Pizze_Slider. La pizza Via Roma deriva dal campione fotografico fornito, le altre 39 sono ricostruzioni generate. La fotografia illustrativa della Margherita nel cartone da asporto è stata generata per la 5.3 ed esportata in tre risoluzioni WebP.

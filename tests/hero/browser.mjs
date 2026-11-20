@@ -8,7 +8,10 @@ await mkdir(out,{recursive:true});
 const result=[];
 for(const engine of (process.env.HERO_BROWSERS || 'chromium,webkit').split(',')) {
   const type=engine==='webkit'?webkit:chromium;
-  const options=engine==='chromium'?{headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader'],...(existsSync('/usr/bin/chromium')?{executablePath:'/usr/bin/chromium'}:{})}:{headless:true};
+  const executablePath = engine === 'chromium'
+    ? process.env.CHROMIUM_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined)
+    : process.env.WEBKIT_PATH;
+  const options = {headless:true, executablePath, ...(engine==='chromium' ? {args:['--enable-unsafe-swiftshader']} : {})};
   const browser=await type.launch(options);
   try {
     const page=await browser.newPage({viewport:{width:1440,height:900}});
@@ -20,11 +23,11 @@ for(const engine of (process.env.HERO_BROWSERS || 'chromium,webkit').split(','))
       await page.setViewportSize({width,height});await page.waitForTimeout(220);
       const view=await page.evaluate(()=>{
         const h=document.querySelector('#home').getBoundingClientRect(),l=document.querySelector('.hero-logo').getBoundingClientRect(),p=document.querySelector('.hero-glimmer');
-        return {center:[Number(p.dataset.centerX),Number(p.dataset.centerY)],expected:[l.left-h.left+l.width*425/851,l.top-h.top+l.height*424.5/851],overflow:document.documentElement.scrollWidth>window.innerWidth,font:getComputedStyle(document.querySelector('.hero-slogan')).fontFamily,weight:getComputedStyle(document.querySelector('.hero-slogan')).fontWeight,tints:[...document.querySelectorAll('.vr-edge-blur,.vr-edge-blur > div')].map(e=>getComputedStyle(e).backgroundColor),blurBoxes:[...document.querySelectorAll('.vr-edge-blur')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height})),langBlur:getComputedStyle(document.querySelector('.lang')).backdropFilter,scrollbar:getComputedStyle(document.documentElement).scrollbarWidth,progressWidth:getComputedStyle(document.querySelector('.vr-scroll-progress')).width,selection:getComputedStyle(document.body).userSelect,tileBlur:getComputedStyle(document.querySelector('.dock-tile')).backdropFilter,active:getComputedStyle(document.querySelector('a[aria-current] .dock-tile')).color};
+        return {center:[Number(p.dataset.centerX),Number(p.dataset.centerY)],expected:[l.left-h.left+l.width*425/851,l.top-h.top+l.height*424.5/851],overflow:document.documentElement.scrollWidth>window.innerWidth,font:getComputedStyle(document.querySelector('.hero-slogan')).fontFamily,weight:getComputedStyle(document.querySelector('.hero-slogan')).fontWeight,tints:[...document.querySelectorAll('.vr-edge-blur,.vr-edge-blur > div')].map(e=>getComputedStyle(e).backgroundColor),blurBoxes:[...document.querySelectorAll('.vr-edge-blur')].map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height})),langBlur:getComputedStyle(document.querySelector('.lang')).backdropFilter,scrollbar:getComputedStyle(document.documentElement).scrollbarWidth || getComputedStyle(document.documentElement,"::-webkit-scrollbar").display,scrollbarGutter:innerWidth-document.documentElement.clientWidth,progressWidth:getComputedStyle(document.querySelector('.vr-scroll-progress')).width,selection:getComputedStyle(document.body).userSelect || getComputedStyle(document.body).getPropertyValue("-webkit-user-select"),tileBlur:getComputedStyle(document.querySelector('.dock-tile')).backdropFilter,active:getComputedStyle(document.querySelector('a[aria-current] .dock-tile')).color};
       });
       assert.ok(Math.abs(view.center[0]-view.expected[0])<1 && Math.abs(view.center[1]-view.expected[1])<1);
       assert.equal(view.overflow,false);assert.equal(view.weight,'300');assert.ok(view.font.includes('Jost'));
-      assert.ok(view.tints.every(c=>c==='rgba(0, 0, 0, 0)'));assert.equal(view.tileBlur,'blur(12px)');assert.equal(view.langBlur,'blur(12px)');assert.ok(view.blurBoxes.every(b=>b.width>0&&b.height>=96));assert.equal(view.scrollbar,'none');assert.equal(view.progressWidth,'2px');assert.equal(view.selection,'none');assert.equal(view.active,'rgb(218, 193, 139)');
+      assert.ok(view.tints.every(c=>c==='rgba(0, 0, 0, 0)'));assert.equal(view.tileBlur,'blur(12px)');assert.equal(view.langBlur,'blur(12px)');assert.ok(view.blurBoxes.every(b=>b.width>0&&b.height>=96));assert.equal(view.scrollbarGutter,0);if(view.scrollbar)assert.equal(view.scrollbar,'none');assert.equal(view.progressWidth,'2px');assert.equal(view.selection,'none');assert.equal(view.active,'rgb(242, 213, 148)');
       await page.screenshot({path:`${out}/${engine}-${width}x${height}.png`});result.push({engine,width,height,...view});
     }
     await page.setViewportSize({width:1440,height:900});
@@ -61,7 +64,7 @@ for(const engine of (process.env.HERO_BROWSERS || 'chromium,webkit').split(','))
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.waitForFunction(()=>document.querySelector('#home').dataset.fxState==='reduced');
     assert.equal(await page.locator('.hero-logo').getAttribute('data-liquid-ready'),'false');
-    assert.equal(await page.locator('.hero-slogan').evaluate(e=>getComputedStyle(e).animationName),'none');
+    assert.equal(await page.locator('#home .hero-slogan').evaluate(e=>getComputedStyle(e).animationName),'none');
     assert.equal(errors.length,0,errors.join('\n'));
     const nojs=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
     const staticPage=await nojs.newPage();await staticPage.goto(process.env.TEST_URL || 'http://127.0.0.1:4173/');

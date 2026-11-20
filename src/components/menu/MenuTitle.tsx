@@ -9,32 +9,17 @@ export function useTitleFit(text: string) {
     const label = el?.firstElementChild as HTMLElement | null;
     if (!el || !label) return;
     let disposed = false;
-    let lastWidth = 0, frame = 0;
     const fit = () => {
       if (disposed) return;
-      const available = el.clientWidth;
       const type = getComputedStyle(label);
-      // CSS cancels the final tracking advance with a negative inline margin.
-      // Measure the visible word, so both its first and last letters meet the gutters.
-      const tracking = parseFloat(type.letterSpacing) || 0;
-      const measured = label.getBoundingClientRect().width - tracking;
-      if (available <= 0 || measured <= 0) return;
-      const current = parseFloat(type.fontSize);
-      el.style.setProperty("--menu-title-size", `${current * available / measured}px`);
-      lastWidth = available;
+      // The final tracking advance sits outside the visible word. Store a ratio
+      // so CSS can resize the type in the same layout pass as its container.
+      const wordWidth = label.getBoundingClientRect().width - (parseFloat(type.letterSpacing) || 0);
+      if (wordWidth > 0) el.style.setProperty("--menu-title-scale", String(parseFloat(type.fontSize) / wordWidth));
     };
     fit();
-    const observer = new ResizeObserver(() => {
-      // Writing the font size changes the observed heading height. Fit on the next
-      // frame so WebKit can finish its resize delivery during device rotation.
-      if (el.clientWidth !== lastWidth && !frame) {
-        frame = requestAnimationFrame(() => { frame = 0; fit(); });
-      }
-    });
-    observer.observe(el);
-    // Fallback font metrics must not determine the final title width.
-    document.fonts.ready.then(fit);
-    return () => { disposed = true; observer.disconnect(); cancelAnimationFrame(frame); };
+    void document.fonts.ready.then(fit);
+    return () => { disposed = true; };
   }, [text]);
   return heading;
 }

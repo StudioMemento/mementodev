@@ -69,20 +69,24 @@ try {
 
     const card = page.locator("#asporto .crust-card");
     await card.scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => {
+      const photo = document.querySelector("#asporto img");
+      return photo.complete && photo.naturalWidth > 0;
+    });
     const dimensions = await card.evaluate(async el => {
       const image=el.querySelector("img"); await image.decode();
       const card=el.getBoundingClientRect(), picture=image.getBoundingClientRect(), copy=el.querySelector(".takeaway-copy").getBoundingClientRect();
-      return {ratio:card.width/card.height, rightAligned:Math.abs(picture.right-card.right)<2 && picture.left>card.left+card.width*.3,
-        leftAligned:copy.left < picture.left && getComputedStyle(el.querySelector("h2")).textAlign === "left",
-        faded:getComputedStyle(el.querySelector("picture")).maskImage.includes("linear-gradient"),
-        crossed:picture.right > card.right+1 || copy.right > card.right+1 || copy.bottom > card.bottom+1,
-        overlay:copy.top >= picture.top && copy.bottom <= picture.bottom+1, file:new URL(image.currentSrc).pathname,
-        shape:getComputedStyle(el).transform, overflow:document.documentElement.scrollWidth > innerWidth};
+      const crust=document.querySelector("#cornicione .crust-card");
+      const sameFinish=["borderTop","borderRadius","overflow"].every(name=>getComputedStyle(el)[name]===getComputedStyle(crust)[name]) &&
+        ["::before","::after"].every(p=>getComputedStyle(el,p).backgroundImage===getComputedStyle(crust,p).backgroundImage);
+      return {ratio:card.width/card.height, sameFinish, fullBleed:["top","right","bottom","left"].every(k=>Math.abs(picture[k]-card[k])<2),
+        contained:copy.left>=picture.left && copy.right<=picture.right+1 && copy.top>=picture.top && copy.bottom<=picture.bottom+1,
+        file:new URL(image.currentSrc).pathname, shape:getComputedStyle(el).transform,
+        gap:document.querySelector("#gallery").getBoundingClientRect().top-card.bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
-    assert.ok(!dimensions.crossed && !dimensions.overflow);
-    assert.equal(dimensions.file.includes("mobile"),width < 640);
-    assert.ok(dimensions.overlay);
-    assert.ok(dimensions.rightAligned && dimensions.leftAligned && dimensions.faded);
+    assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
+    assert.match(dimensions.file,/margherita-(480|960|1600)\.webp$/);
+    assert.ok(dimensions.gap >= Math.min(280, Math.max(120, height * .23)) - 1);
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
     assert.ok(await page.locator(".menu-art-window").evaluateAll(all =>
@@ -107,7 +111,7 @@ try {
       await hoverCard(shell);
       await page.waitForFunction(() => document.querySelector("#asporto .crust-card-shell").dataset.tiltActive==="true");
       const zoom = await card.evaluate(el => Number(getComputedStyle(el).getPropertyValue("--card-scale")));
-      assert.ok(zoom > 1 && zoom < 1.025, "The wide banner tilts without leaving the menu gutters");
+      assert.equal(zoom, 1.1, "The takeaway and crust cards share the same lift");
       await page.waitForFunction(()=>getComputedStyle(document.querySelector("#asporto .crust-card")).transform.startsWith("matrix3d"));
       assert.equal(await card.locator("img").evaluate(el=>getComputedStyle(el).transform),"none");
     }
