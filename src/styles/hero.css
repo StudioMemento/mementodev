@@ -50,27 +50,21 @@
   -webkit-backdrop-filter:blur(var(--satin-blur,12px)); backdrop-filter:blur(var(--satin-blur,12px));
 }
 .lang { border-color:#ffffff12; background:linear-gradient(145deg,#242424ba,#161616a6); }
-@media(max-width:360px) {
-  .site-top { padding-inline:max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-right)); }
+@media(max-width:375px) {
+  .site-top { --narrow-gutter:clamp(12px,calc(50vw - 150px),var(--vr-gutter)); padding-inline:max(var(--narrow-gutter),env(safe-area-inset-left)) max(var(--narrow-gutter),env(safe-area-inset-right)); }
 }
-.site-brand::after {
-  content:""; position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .35s;
-  background:var(--selected-ink); mask:url("/assets/via-roma-orizzontale.svg") left center / 100% auto no-repeat;
-}
-.site-brand:focus-visible::after,.site-brand:active::after { opacity:1; }
-.dock-flame { width:21px; height:22px; background:currentColor; mask:url("/assets/flame.png") center/contain no-repeat; }
+.site-brand:focus-visible,.site-brand:active { color:var(--selected-ink); }
 .hero-down,.hero-down svg { width:clamp(72px,6.8vw,96px); height:clamp(72px,6.8vw,96px); }
 .hero-down svg path { stroke-width:1.55; }
 @media(max-height:540px) { .hero-down,.hero-down svg { width:60px; height:60px; } }
 .lang button { border:0; background-image:var(--specks); transition:background-color .25s; }
 .lang button.on,.vr-dock a[aria-current] .dock-tile,.vr-dock a:active .dock-tile,.chips button.on {
-  color:var(--selected-ink); border:1px solid var(--selected-rim); --specks:var(--lit-specks,none); background:var(--specks),var(--selected-glass); box-shadow:var(--selected-light);
+  color:var(--selected-ink); border:1px solid var(--selected-rim); background:var(--specks),var(--selected-glass); box-shadow:var(--selected-light);
 }
-.vr-dock a:focus-visible,:is(.lang,.chips) button:focus-visible { --specks:var(--lit-specks,none); }
 .vr-dock a:focus-visible,.lang button:focus-visible { outline-color:#eee; }
 .lang button:focus-visible { outline-offset:-2px; }
-@media(hover:hover) {
-  .site-brand:hover::after { opacity:1; }
+@media(hover:hover) and (pointer:fine) {
+  .site-brand:hover { color:var(--selected-ink); }
   .vr-dock a:hover,:is(.lang,.chips) button:hover { --specks:var(--lit-specks,none); }
   .lang button:not(.on):hover { background-color:#ffffff12; }
   .vr-dock a:not([aria-current]):not(:active):hover .dock-tile { border-color:#ffffff30; }
@@ -88,7 +82,7 @@ input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:te
 .vr-scroll-progress > span { display:block; width:100%; height:100%; background:linear-gradient(180deg,transparent,#dac18b30 42%,#c6ab7085 82%,#f0d69c); transform:scaleY(0); transform-origin:top; }
 @media(prefers-reduced-motion:reduce) {
   .hero-slogan { animation:none; }
-  .site-brand::after,.lang button,.hero-logo,.hero-logo::after { transition:none; }
+  .site-brand,.lang button,.hero-logo,.hero-logo::after { transition:none; }
 }
 /* Keep optical blur when the OS reports reduced transparency: the old rule hid it entirely on the review browser. */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .vr-edge-blur { display:none; } .dock-tile,.lang,.chips button { background:#252525e0; } }
@@ -98,7 +92,5 @@ input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:te
   .hero-logo[data-liquid-ready=true] > img { opacity:1; }
   .vr-dock a[aria-current] .dock-tile,.lang button.on { outline:2px solid Highlight; outline-offset:-2px; }
   .vr-dock a[aria-current] .dock-tile,.lang button.on { color:Highlight; }
-  .dock-flame { forced-color-adjust:none; background:ButtonText; }
-  [aria-current] .dock-flame { background:Highlight; }
   .vr-scroll-progress > span { background:Highlight; forced-color-adjust:none; }
 }

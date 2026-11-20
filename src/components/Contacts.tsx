@@ -6,6 +6,15 @@ import { useDialog } from "./DialogContext";
 import { BentoGrid, TileArrow } from "./BentoGrid";
 import { SpreadLetters, SpreadTitle } from "./SpreadTitle";
 
+function MapPin({ kind, label }: { kind: "venue" | "square"; label: string }) {
+  return <span className={`map-pin ${kind}-pin`}>
+    <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeLinejoin="round" aria-hidden="true">
+      <use href={`/assets/map-pins.svg#${kind}`} />
+    </svg>
+    <span>{label}</span>
+  </span>;
+}
+
 function Footer() {
   const { ui, copy, language } = useI18n();
   const { open } = useDialog();
@@ -34,11 +43,11 @@ export default function Contacts() {
       <SpreadTitle id="visit-title" text={closingCopy[language].visit} />
       <BentoGrid className="visit-bento">
         <a className="bento-tile map-tile" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.d_maps} · Pizzeria Via Roma, Via Roma 47, 33085 Maniago (PN) · Piazza Italia`}>
-          <span className="map-photo">
+          <span className="map-photo" aria-hidden="true">
             <img className="tile-art" src="/assets/maniago.webp" srcSet="/assets/maniago-640.webp 640w, /assets/maniago.webp 1254w"
               sizes="(max-width: 700px) 80vw, (min-width: 2400px) 24vw, (min-width: 1200px) 36vw, (min-width: 768px) 42vw, 48vw" width="1254" height="1254" alt="" loading="lazy" decoding="async" />
-            <span className="map-pin venue-pin"><span>Pizzeria Via Roma</span></span>
-            <span className="map-pin square-pin"><span>Piazza Italia</span></span>
+            <MapPin kind="venue" label="Pizzeria Via Roma" />
+            <MapPin kind="square" label="Piazza Italia" />
           </span>
           <span className="tile-bottom"><span><strong>Via Roma 47</strong><small>33085 Maniago (PN)</small></span><TileArrow /></span>
         </a>

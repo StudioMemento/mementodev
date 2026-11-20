@@ -132,6 +132,10 @@ try {
    assert.deepEqual(after,before,'Image hover changed the image or stroke/fade geometry');
    assert.ok(parseFloat(before.frame.height)>=2 && parseFloat(before.frame.height)<=4);
    assert.deepEqual(before.frame,before.after);assert.ok(before.frame.backgroundImage.includes('filetto.svg'));
+   assert.ok(await page.locator('.menu-art').evaluateAll(all => all.length === 8 && all.every(el => {
+    const box=el.getBoundingClientRect(), img=el.querySelector('img').getBoundingClientRect();
+    return Math.abs(img.top-box.top-3)<.1 && Math.abs(box.bottom-img.bottom-3)<.1;
+   })), 'The artwork must meet the inside edges of both rules');
    assert.equal(before.frame.backgroundSize,'100% 100%');assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');
    assert.equal(before.mask,'none');assert.equal(before.image.filter,'none');assert.equal(before.containerFilter,'none');
   }

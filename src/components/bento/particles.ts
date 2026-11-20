@@ -1,11 +1,10 @@
-import "../../styles/bento-motion.css";
 type Speck = {
   birth: number; life: number; x: number; y: number; phase: number; radius: number; size: number;
   released?: number; exitAlpha?: number;
 };
 type Field = {
   tile: HTMLElement; canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D;
-  specks: Speck[]; sources: Set<string>; next: number;
+  specks: Speck[]; sources: Set<string>; next: number; pointer?: PointerEvent;
 };
 const exitTime = 3000;
 
@@ -24,10 +23,15 @@ export function bindParticles(grid: HTMLElement) {
   let frame = 0;
   let last = 0;
   let inView = true;
+  function retire(f: Field) {
+    f.canvas.remove();
+    f.tile.style.removeProperty("--satin-x");
+    f.tile.style.removeProperty("--satin-y");
+    fields.delete(f.tile);
+  }
   function clear() {
     cancelAnimationFrame(frame); frame = 0;
-    for (const f of fields.values()) f.canvas.remove();
-    fields.clear();
+    for (const f of fields.values()) retire(f);
   }
   function change(tile: HTMLElement | null, source: string, on: boolean) {
     if (!tile || motion.matches || document.hidden || !inView) return;
@@ -67,6 +71,12 @@ export function bindParticles(grid: HTMLElement) {
       for (const f of fields.values()) {
         const { tile, canvas, ctx } = f;
         const w = tile.clientWidth, h = tile.clientHeight;
+        if (f.pointer) {
+          const box = tile.getBoundingClientRect();
+          tile.style.setProperty("--satin-x", `${Math.round((f.pointer.clientX - box.left) * 100 / box.width)}%`);
+          tile.style.setProperty("--satin-y", `${Math.round((f.pointer.clientY - box.top) * 100 / box.height)}%`);
+          f.pointer = undefined;
+        }
         const dpr = Math.min(devicePixelRatio, 1.5);
         const cw = Math.round(w * dpr), ch = Math.round(h * dpr);
         if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
@@ -88,7 +98,7 @@ export function bindParticles(grid: HTMLElement) {
           ctx.globalAlpha = .79 * opacity(p, now) * (.88 + .12 * Math.cos(a));
           ctx.beginPath(); ctx.arc(x, y, p.size, 0, Math.PI * 2); ctx.fill();
         }
-        if (!f.sources.size && !f.specks.length) { canvas.remove(); fields.delete(tile); }
+        if (!f.sources.size && !f.specks.length) retire(f);
       }
     }
     if (fields.size) frame = requestAnimationFrame(draw);
@@ -101,6 +111,11 @@ export function bindParticles(grid: HTMLElement) {
   }
   grid.addEventListener("pointerover", hover, options);
   grid.addEventListener("pointerout", hover, options);
+  grid.addEventListener("pointermove", e => {
+    const tile = tileOf(e.target);
+    const field = tile && fields.get(tile);
+    if (field && field.sources.has("hover")) field.pointer = e;
+  }, { ...options, passive: true });
   grid.addEventListener("focusin", e => {
     const tile = tileOf(e.target);
     if (tile?.matches(":focus-visible")) change(tile, "focus", true);

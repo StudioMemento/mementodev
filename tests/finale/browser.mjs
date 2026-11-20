@@ -52,9 +52,11 @@ async function galleries(page, touch) {
     const frame = i => cards[i].getBoundingClientRect();
     const centered = frame(0), right = frame(1);
     return { clip: node.firstElementChild.style.clipPath, transforms: cards[0].style.transform, sideHigher: right.height > centered.height,
+      seam:right.left-centered.right, gap:parseFloat(getComputedStyle(node.firstElementChild).columnGap),
       narrowerThanStage: centered.width < node.clientWidth, noTilt: centered.top >= right.top };
   });
   assert.ok(projection.sideHigher && projection.noTilt && projection.narrowerThanStage);
+  assert.ok(Math.abs(projection.seam-projection.gap)<.15,"The projected center seam uses the gallery's declared gap");
   assert.match(projection.transforms, /matrix3d/); assert.match(projection.clip, /polygon/);
   await page.keyboard.press("ArrowLeft");
   assert.equal(await stage.getAttribute("data-active"), String(original.GALLERY_ALBUMS.esterno.length - 1));
@@ -127,6 +129,7 @@ async function galleries(page, touch) {
   assert.equal(await strip.locator(".is-current .photo-byline").evaluate(el=>getComputedStyle(el).textDecorationLine),"underline");
   const stripBounds = await strip.boundingBox();
   const gap = await strip.locator(".ribbon-track").evaluate(el => parseFloat(getComputedStyle(el).columnGap));
+  assert.equal(gap, await stage.locator(".ribbon-track").evaluate(el => parseFloat(getComputedStyle(el).columnGap)));
   const ratios = new Set();
   for (let i = 0; i < original.CUSTOMER.length; i++) {
     const photo = strip.locator("figure").nth(i);
@@ -167,7 +170,11 @@ async function contactAndLegal(page, touch) {
   const pins = await page.locator(".map-pin").evaluateAll(all => all.map(pin => {
     const rect=pin.getBoundingClientRect(), map=pin.parentElement.getBoundingClientRect();
     const label=pin.querySelector("span"), box=label.getBoundingClientRect(), style=getComputedStyle(label);
-    return {text:label.textContent, ink:style.color, background:style.backgroundColor, border:style.borderTopWidth,
+    const svg=pin.querySelector("svg"), matrix=svg.getScreenCTM();
+    const tip=new DOMPoint(30,32).matrixTransform(matrix), elbow=new DOMPoint(0,1).matrixTransform(matrix);
+    return {text:label.textContent, ink:style.color, solidLabel:style.backgroundColor!=="rgba(0, 0, 0, 0)",
+      tipAnchored:Math.hypot(tip.x-rect.left,tip.y-rect.top)<1,
+      aligned:Math.hypot(elbow.x-box.right,elbow.y-box.bottom)<1,
       fits:box.left>=map.left && box.top>=map.top && box.right<=map.right && box.bottom<=map.bottom,
       x:(rect.left-map.left)/map.width, y:(rect.top-map.top)/map.height};
   }));
@@ -175,8 +182,9 @@ async function contactAndLegal(page, touch) {
   for (const [i,[x,y]] of [[.7191,.311],[.6082,.5081]].entries()) {
     const p=pins[i];
     assert.ok(p.fits && Math.abs(p.x-x)<.001 && Math.abs(p.y-y)<.001);
-    assert.ok(p.ink==="rgb(255, 255, 255)" && p.background==="rgba(0, 0, 0, 0)" && p.border==="0px");
+    assert.ok(p.tipAnchored && p.aligned && p.solidLabel);
   }
+  assert.notEqual(pins[0].ink,pins[1].ink);
   const links = page.locator(".social-bento a");
   assert.equal(await links.count(),6); assert.equal(await page.locator(".platform-google").getAttribute("href"),
     "https://www.google.com/maps/place//data=!4m4!3m3!1s0x477983a3cc4c3b4f:0x641962f142805885!9m1!1b1");
@@ -312,7 +320,7 @@ async function finalLayout(page) {
       overflow:document.documentElement.scrollWidth>innerWidth};
   });
   assert.ok(result.validTitles && result.validEdges && result.blockSizes && result.shortSides && !result.overflow, JSON.stringify(result));
-  assert.equal(result.menuPad >= 164 && result.firstGap >= 122,true); assert.ok(result.rules,"The finale sections have no separators");
+  assert.equal(result.menuPad >= 36 && result.menuPad <= 84 && result.firstGap >= 122,true); assert.ok(result.rules,"The finale sections have no separators");
   assert.equal(result.footerRule,result.stackedFooter?"1px":"0px","Only the stacked footer separates the links from the signature");
   assert.deepEqual(result.lines.map(l=>l.text),["Ricordi condivisi","dalla community"]);
   assert.ok(result.lines[1].top >= result.lines[0].bottom-1);
@@ -375,6 +383,14 @@ async function particles() {
   await hover(tile);
   const field=tile.locator("canvas.tile-particles");
   await field.waitFor();
+  await page.clock.runFor(90);
+  const reflection=()=>tile.evaluate(el=>[el.style.getPropertyValue("--satin-x"),el.style.getPropertyValue("--satin-y")]);
+  const startLight=await reflection();
+  const area=await tile.boundingBox();
+  await page.mouse.move(area.x+area.width*.84,area.y+area.height*.28);
+  await page.clock.runFor(90);
+  assert.notDeepEqual(await reflection(),startLight,"The edge reflections follow the pointer");
+  assert.ok(await tile.evaluate(el=>getComputedStyle(el,"::after").maskImage.includes("linear-gradient")));
   const sample = () => field.evaluate(c=>{
     const data=c.getContext("2d").getImageData(0,0,c.width,c.height).data;
     let light=0, pixels=0, y=0;
@@ -426,7 +442,7 @@ try {
     await compact.keyboard.press("Home");
     for(const fraction of [0,.25,.5,.75]) {
       const coverage=await strip.evaluate((el,offset)=>{
-        const pitch=el.querySelector(".ribbon-card").offsetWidth+4;
+        const pitch=el.querySelector(".ribbon-card").offsetWidth+parseFloat(getComputedStyle(el.firstElementChild).columnGap);
         el.dispatchEvent(new WheelEvent("wheel",{deltaX:pitch*offset,cancelable:true}));
         const r=el.getBoundingClientRect(), spans=[...el.querySelectorAll(".ribbon-card")].filter(c=>c.style.visibility==="visible").map(c=>c.getBoundingClientRect());
         return [.02,.07,.93,.98].every(f=>spans.some(s=>s.left-5 <=r.width*f && s.right+5>=r.width*f));

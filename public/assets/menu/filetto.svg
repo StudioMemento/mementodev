@@ -1,10 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 4" preserveAspectRatio="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 3" preserveAspectRatio="none">
   <defs>
     <linearGradient id="gold">
-      <stop stop-color="#9c875b"/>
-      <stop offset=".5" stop-color="#deca93"/>
-      <stop offset="1" stop-color="#9c875b"/>
+      <stop stop-color="#645537"/>
+      <stop offset=".5" stop-color="#e1c891"/>
+      <stop offset="1" stop-color="#645537"/>
+    </linearGradient>
+    <linearGradient id="shoulder">
+      <stop stop-color="#090909"/>
+      <stop offset=".17" stop-color="#201b13"/>
+      <stop offset=".5" stop-color="#c3a66c"/>
+      <stop offset=".83" stop-color="#201b13"/>
+      <stop offset="1" stop-color="#090909"/>
+    </linearGradient>
+    <linearGradient id="tip">
+      <stop offset=".18" stop-color="#090909"/>
+      <stop offset=".5" stop-color="#826e4b"/>
+      <stop offset=".82" stop-color="#090909"/>
     </linearGradient>
   </defs>
-  <path fill="url(#gold)" d="M0 1.68C150 1.68 330 .16 500 .16S850 1.68 1000 1.68V2.32C850 2.32 670 3.84 500 3.84S150 2.32 0 2.32Z"/>
+  <path fill="url(#tip)" d="M0 0h1000v1H0z"/>
+  <path fill="url(#shoulder)" d="M0 1h1000v1H0z"/>
+  <path fill="url(#gold)" d="M0 2h1000v1H0z"/>
 </svg>

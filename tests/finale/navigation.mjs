@@ -5,13 +5,39 @@ const playwright = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const executablePath = process.env.BROWSER_PATH || (engine === "chromium" ? process.env.CHROMIUM_PATH : undefined);
 const browser = await playwright[engine].launch({ headless: true, executablePath });
 const url = process.env.TEST_URL || "http://127.0.0.1:4175/";
-const viewports = [[320,568,true], [390,844,true], [844,390,true], [768,1024,true], [1440,900,false]];
+const viewports = [[320,568,true], [320,861,true], [390,844,true], [844,390,true], [768,1024,true], [1440,900,false]];
 const languages = ["it","en","de","fr"];
 const slugs = ["privacy","cookie","note-legali"];
 
 function neutral(color) {
   const parts = color.match(/[\d.]+/g).map(Number);
   return parts[0] === parts[1] && parts[1] === parts[2];
+}
+
+async function checkParticles(page, touch) {
+  await page.emulateMedia({reducedMotion:"no-preference"});
+  const specks = control => control.evaluate(el=>getComputedStyle(el).backgroundImage.includes("satin-specks.svg"));
+  const groups = [
+    [page.locator(".lang button.on"), page.locator(".lang button:not(.on)").first()],
+    [page.locator(".chips button.on"), page.locator(".chips button:not(.on)").first()],
+  ];
+  for (const [selected, other] of groups) {
+    await selected.scrollIntoViewIfNeeded();
+    if (touch) await selected.tap();
+    else await page.mouse.move(1,1);
+    await selected.focus();
+    assert.equal(await specks(selected),false,"Selection and focus alone keep only the glow");
+    assert.ok(await selected.evaluate(el=>getComputedStyle(el).boxShadow!=="none"));
+    if (touch) continue;
+    await selected.hover();
+    assert.equal(await specks(selected),true);
+    await other.hover();
+    assert.equal(await specks(other),true);
+    assert.equal(await specks(selected),false,"Only the hovered control carries particles");
+    await page.mouse.move(1,1);
+    assert.equal(await specks(other),false);
+  }
+  await page.emulateMedia({reducedMotion:"reduce"});
 }
 
 async function checkLegalText(article) {
@@ -113,20 +139,24 @@ async function testViewport(width,height,touch) {
       await page.setViewportSize({width,height});
     }
     const flame=page.locator(".site-brand");
+    const brandInk=()=>flame.locator("svg").evaluate(el=>getComputedStyle(el).fill);
     if(!touch) {
       await flame.hover();
-      assert.equal(await flame.evaluate(el=>getComputedStyle(el,"::after").opacity),"1");
+      assert.equal(neutral(await brandInk()),false);
       await page.mouse.move(width/2,150);
-      assert.equal(await flame.evaluate(el=>getComputedStyle(el,"::after").opacity),"0");
+      assert.equal(neutral(await brandInk()),true);
     }
     await page.keyboard.press("Tab");
     await flame.focus();
-    const flameStyle=await flame.evaluate(el=>{
-      const after=getComputedStyle(el,"::after");
-      return { opacity:after.opacity, image:after.backgroundImage,gold:after.backgroundColor,mask:after.maskImage || after.webkitMaskImage };
+    await page.waitForFunction(()=>{
+      const el=document.querySelector(".site-brand");
+      const svg=el.querySelector("svg"), box=svg.getBoundingClientRect(), languages=el.nextElementSibling.getBoundingClientRect();
+      return svg.querySelector("use").getBBox().width>1000 && box.right<=languages.left-7
+        && languages.right<=document.documentElement.clientWidth && box.width>=95;
     });
-    assert.equal(flameStyle.opacity,"1"); assert.ok(flameStyle.image==="none" && !neutral(flameStyle.gold) && flameStyle.mask.includes("/assets/via-roma-orizzontale.svg"));
+    assert.ok(!neutral(await brandInk()));
     await flame.blur();
+    if (width===390 || width===1440) await checkParticles(page,touch);
     for (const [id,ratio] of [["home",0],["menu",null],["gallery",null],["dove",1]]) {
       await page.evaluate(({id,ratio})=>{
         const y=ratio===null ? document.getElementById(id).getBoundingClientRect().top+scrollY : (document.documentElement.scrollHeight-innerHeight)*ratio;
@@ -137,12 +167,14 @@ async function testViewport(width,height,touch) {
       const tiles=await page.locator(".vr-dock a").evaluateAll(all=>all.map(a=>{
         const s=getComputedStyle(a.firstElementChild);
         const icon = a.querySelector(".dock-tile > *");
-        const glyphInk = icon.tagName.toLowerCase()==="svg"
-          ? getComputedStyle(icon.querySelector("path")).stroke : getComputedStyle(icon).backgroundColor;
+        const mark=icon.querySelector("use"), bbox=mark.getBBox();
+        const glyphInk = getComputedStyle(mark).stroke;
         return {active:a.hasAttribute("aria-current"), ink:s.color, border:s.borderTopColor, rim:s.borderTopWidth,
+          balanced:bbox.width>=14 && bbox.width<=20 && bbox.height>=15 && bbox.height<=20,
           lowerGlow:s.backgroundImage.includes("radial-gradient"), glyphInk};
       }));
       assert.equal(tiles.filter(t=>t.active).length,1);
+      assert.ok(tiles.every(t=>t.balanced));
       assert.ok(tiles.every(t=>t.rim==="1px" && neutral(t.border)!==t.active && neutral(t.ink)!==t.active && t.glyphInk===t.ink && t.lowerGlow===t.active));
     }
     for(const progress of [0,.5,1]) {

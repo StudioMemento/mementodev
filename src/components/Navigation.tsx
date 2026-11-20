@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { languages, useI18n } from "../i18n";
-import { Icon } from "./Icon";
+import { DockIcon } from "./Icon";
 import GradualBlur from "./hero/GradualBlur";
 import { usePresentationInteractions } from "./hero/usePresentationInteractions";
 
@@ -108,12 +108,9 @@ export function Header() {
           href="#home"
           aria-label="Pizzeria Via Roma — home"
         >
-          <img
-            src="/assets/via-roma-orizzontale.svg"
-            width="1110"
-            height="199"
-            alt="Pizzeria Via Roma"
-          />
+          <svg viewBox="139 139 1110 199" width="1110" height="199" fill="currentColor" aria-hidden="true" focusable="false">
+            <use href="/assets/via-roma-orizzontale.svg?v=51#VEC_H" />
+          </svg>
         </a>
         <div className="lang" role="group" aria-label={copy.changeLanguage}>
           {languages.map((l) => (
@@ -162,9 +159,8 @@ export function Dock() {
             aria-current={active === x.id ? "location" : undefined}
           >
             <span className="dock-tile">
-              <Icon name={x.icon} />
+              <DockIcon name={x.icon} />
             </span>
-            
           </a>
         ))}
       </nav>

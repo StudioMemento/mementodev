@@ -1,4 +1,3 @@
-import "../../styles/ribbon-motion.css";
 import { bindRibbonDrag } from "./ribbon-drag";
 import { wrap } from "../../hooks/useDrag";
 
@@ -84,15 +83,16 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
 
   function measure() {
     width = Math.max(1, stage.clientWidth);
-    cardWidth = Math.max(1, cards[0].offsetWidth);
-    pitch = cardWidth + 4;
+    const layoutWidth = (card: HTMLElement) => parseFloat(getComputedStyle(card).width);
+    cardWidth = Math.max(1, layoutWidth(cards[0]));
+    const gap = parseFloat(getComputedStyle(track).columnGap);
+    pitch = cardWidth + gap;
     // Angular motion and the flat track share the same screen velocity at the optical center.
-    const venueWidth = paceReference?.offsetWidth || cardWidth;
+    const venueWidth = paceReference ? layoutWidth(paceReference) : cardWidth;
     focal = Math.min(perspective, venueWidth * 2.15, Math.max(venueWidth * 1.12, width * .54));
     if (!panorama) {
       // Distances use one average pitch, so a full lap still contains exactly N units.
-      const gap = parseFloat(getComputedStyle(track).columnGap);
-      for (let i = 0; i < cards.length; i++) widths[i] = parseFloat(getComputedStyle(cards[i]).width);
+      for (let i = 0; i < cards.length; i++) widths[i] = layoutWidth(cards[i]);
       pitch = widths.reduce((sum, w) => sum + w + gap, 0) / cards.length;
       driftRate = focal * angularSpeed / pitch;
       let edge = -widths[0] / 2;
@@ -104,9 +104,10 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
       return;
     }
     // Keep the seven-photo rooms continuous even on shallow ultrawide screens.
-    stepAngle = 2 * Math.atan(pitch / (2 * focal));
-    driftRate = angularSpeed / stepAngle;
     halfAngle = Math.atan(cardWidth / (2 * focal));
+    // Place the next panel's near edge one CSS gap from the centered panel.
+    stepAngle = halfAngle + Math.atan((cardWidth / 2 + gap) / focal);
+    driftRate = angularSpeed / stepAngle;
     viewAngle = Math.atan(width / (2 * focal)) + halfAngle;
     // Trim the straight chords to one continuous, symmetrical aperture.
     const outline: string[] = [];

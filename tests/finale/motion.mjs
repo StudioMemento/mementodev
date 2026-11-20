@@ -74,7 +74,16 @@ export async function edgeField(page) {
   await page.emulateMedia({reducedMotion:"no-preference"});
   await page.waitForFunction(prev=>document.querySelector(".finale-field-view canvas").toDataURL()!==prev,still);
   await page.locator("#home").evaluate(el=>el.scrollIntoView({behavior:"instant"}));
-  await page.waitForTimeout(100);const away=await pixels();await page.waitForTimeout(120);
+  // The scroll and the browser's intersection notification can land on different frames.
+  await field.evaluate(el=>new Promise(resolve=>{
+    const observer=new IntersectionObserver(([entry])=>{
+      if (entry.isIntersecting) return;
+      observer.disconnect();
+      requestAnimationFrame(resolve);
+    });
+    observer.observe(el);
+  }));
+  const away=await pixels();await page.waitForTimeout(120);
   assert.equal(await pixels(),away,"Offscreen atmosphere is paused");
 }
 

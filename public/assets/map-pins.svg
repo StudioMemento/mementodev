@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="venue" viewBox="0 0 40 40">
+    <path d="M0 1h8l15 14" stroke-width="1" vector-effect="non-scaling-stroke"/>
+    <path d="M30 32c-2.4-3.9-7.4-9.2-7.4-14a7.4 7.4 0 0 1 14.8 0c0 4.8-5 10.1-7.4 14Z" fill="#201b14" fill-opacity=".72" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <symbol id="square" viewBox="0 0 40 40">
+    <path d="M0 1h7l23 23v3.4m0 0 4.6 4.6-4.6 4.6-4.6-4.6Z" fill="none" stroke-width="1" vector-effect="non-scaling-stroke"/>
+  </symbol>
+</svg>

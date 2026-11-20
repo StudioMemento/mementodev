@@ -48,7 +48,7 @@ const initialJs = initialFiles.reduce((sum, file) => {
 // Budget includes the 40-slide catalogue and the responsive takeaway feature.
 assert.ok(initialJs < 102_000, `Initial JS budget exceeded: ${initialJs}`);
 assert.ok(js < 112_000, `JS budget exceeded: ${js}`);
-// Check the stylesheet needed by the first page separately from the on-demand dialog and ribbon styles.
+// Check the stylesheet needed by the first page separately from the on-demand dialog styles.
 const initialStyles = new Set([...initialKeys].flatMap(key => manifest[key].css || []));
 const initialCss = [...initialStyles].reduce((sum, file) => sum + cssSizes.get(file), 0);
 assert.ok(initialCss < 10_450, `Initial CSS budget exceeded: ${initialCss}`);

@@ -1,14 +1,22 @@
-.sign-mark::after,.bento-tile::after {
+.sign-mark::after,.bento-tile::before,.bento-tile::after {
   content:""; position:absolute; inset:0; opacity:var(--gold); transition:opacity .48s; pointer-events:none;
 }
 .sign-mark::after {
   background:var(--vr-logo-gold);
   mask:url("/assets/logo.png") center / contain no-repeat;
 }
+.bento-tile::before {
+  z-index:0; background:linear-gradient(117deg,transparent 10%,#f2dba10a 31%,transparent 46%,#c5a87306 72%,transparent 88%);
+  background-size:135% 100%; background-position:var(--satin-x,30%) center;
+}
 .bento-tile::after {
+  --x:var(--satin-x,30%); --y:var(--satin-y,72%); --wall:#000,#0007 2px,#0003 6px,transparent clamp(10px,4cqi,24px);
   z-index:1;
-  background:radial-gradient(ellipse 75% 73% at 50% 127%,#b58e4959,transparent 82%),
-    linear-gradient(0deg,#c8a05b12,transparent 40%);
+  background:linear-gradient(90deg,transparent calc(var(--x) - 27%),#ffe0a2be var(--x),transparent calc(var(--x) + 32%)),
+    linear-gradient(180deg,transparent calc(var(--y) - 26%),#dfbb7e99 var(--y),transparent calc(var(--y) + 29%)),
+    linear-gradient(118deg,#cba87055,transparent 45%,#a580484a);
+  mask-image:linear-gradient(to right,var(--wall)),linear-gradient(to left,var(--wall)),linear-gradient(to bottom,var(--wall)),linear-gradient(to top,var(--wall));
 }
 .tile-particles { position:absolute; z-index:1; inset:0; width:100%; height:100%; pointer-events:none; }
-@media(prefers-reduced-motion:reduce) { .bento-tile::after,.sign-mark::after { transition:none; } }
+@media(prefers-reduced-motion:reduce) { .bento-tile::before,.bento-tile::after,.sign-mark::after { transition:none; } }
+@media(forced-colors:active) { .bento-tile::before,.bento-tile::after { display:none; } }

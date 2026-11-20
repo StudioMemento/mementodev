@@ -76,10 +76,10 @@
 .crust-card-shell { position:relative; min-width:0; min-height:0; aspect-ratio:2/3; touch-action:pan-y pinch-zoom; perspective:900px; }
 .crust-card {
   width:100%; height:100%;
-  transform:rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)) scale(var(--card-scale,1));
+  transform:rotateX(calc(var(--tilt-x,0deg) * var(--tilt-gain,1))) rotateY(calc(var(--tilt-y,0deg) * var(--tilt-gain,1))) scale(var(--card-scale,1));
   backface-visibility:hidden; transition:transform .65s cubic-bezier(.22,1,.36,1);
 }
-[data-tilt-active=true] { --card-scale:1.1; z-index:2; }
+[data-tilt-active=true] { --card-scale:var(--hover-scale,1.1); z-index:2; }
 [data-tilt-active=true] > .crust-card { transition-duration:.18s; }
 .crust-card-copy { pointer-events:none; }
 .crust-card-copy h3 { color:var(--vr-highlight); min-width:0; text-align:left; text-wrap:balance; }
@@ -96,9 +96,12 @@
   .crust-card-copy { left:8px; right:8px; bottom:10px; gap:6px; }
   .crust-card h3,.crust-price { font-size:clamp(12px,2vw,16px); }
 }
-.takeaway { position:relative; width:var(--vr-content); margin-inline:auto; padding-bottom:clamp(80px,14svh,180px); }
-.takeaway .crust-card-shell { aspect-ratio:1.8; }
-.takeaway picture { position:absolute; inset:0; }
-.takeaway-copy h2 { color:var(--vr-highlight); font-weight:400; font-size:clamp(18px,2.1vw,32px); line-height:1.2; }
-@media(max-width:639px) { .takeaway .crust-card-shell { aspect-ratio:.96; } }
+.takeaway { --tilt-gain:.14; --hover-scale:1.012; position:relative; container-type:inline-size; width:var(--vr-content); margin-inline:auto; padding-bottom:clamp(30px,5svh,68px); }
+.takeaway .crust-card-shell { aspect-ratio:auto; }
+.takeaway .crust-card { display:flex; align-items:center; min-height:clamp(98px,19cqi,240px); height:auto; isolation:isolate; background:#10100f; border-block:1px solid #9a81533d; }
+.takeaway picture { position:absolute; inset:0 0 0 auto; width:65%; mask-image:linear-gradient(90deg,transparent 1%,#0004 24%,#000 55%); }
+.takeaway .crust-photo { object-position:70% 49%; }
+.takeaway-copy { position:relative; width:49%; padding:clamp(12px,2.3cqi,28px) 0 clamp(12px,2.3cqi,28px) clamp(13px,4cqi,54px); text-align:left; }
+.takeaway-copy span { display:block; margin-bottom:.22em; color:#d5c9b2; font-size:clamp(12px,2cqi,21px); font-weight:400; line-height:1.2; }
+.takeaway-copy em { display:block; color:#eed7a3; font:italic clamp(21px,5cqi,62px)/1.04 Georgia,serif; letter-spacing:-.035em; text-wrap:balance; }
 @media(prefers-reduced-motion:reduce) { .crust-card { transform:none; transition:none; } }

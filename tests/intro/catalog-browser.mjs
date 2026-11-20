@@ -70,13 +70,18 @@ try {
     const dimensions = await card.evaluate(async el => {
       const image=el.querySelector("img"); await image.decode();
       const card=el.getBoundingClientRect(), picture=image.getBoundingClientRect(), copy=el.querySelector(".takeaway-copy").getBoundingClientRect();
-      return {crossed:picture.right > card.right+1 || copy.right > card.right+1 || copy.bottom > card.bottom+1,
+      return {ratio:card.width/card.height, rightAligned:Math.abs(picture.right-card.right)<2 && picture.left>card.left+card.width*.3,
+        leftAligned:copy.left < picture.left && getComputedStyle(el.querySelector("h2")).textAlign === "left",
+        faded:getComputedStyle(el.querySelector("picture")).maskImage.includes("linear-gradient"),
+        crossed:picture.right > card.right+1 || copy.right > card.right+1 || copy.bottom > card.bottom+1,
         overlay:copy.top >= picture.top && copy.bottom <= picture.bottom+1, file:new URL(image.currentSrc).pathname,
         shape:getComputedStyle(el).transform, overflow:document.documentElement.scrollWidth > innerWidth};
     });
     assert.ok(!dimensions.crossed && !dimensions.overflow);
     assert.equal(dimensions.file.includes("mobile"),width < 640);
     assert.ok(dimensions.overlay);
+    assert.ok(dimensions.rightAligned && dimensions.leftAligned && dimensions.faded);
+    assert.ok(dimensions.ratio > (width < 640 ? 2.5 : 4.5));
     assert.equal(dimensions.shape,"none");
     assert.ok(await page.locator(".menu-art-window").evaluateAll(all =>
       all.length > 0 && all.every(el => getComputedStyle(el).maskImage === "none")));
@@ -99,7 +104,8 @@ try {
       const shell=page.locator("#asporto .crust-card-shell");
       await hoverCard(shell);
       await page.waitForFunction(() => document.querySelector("#asporto .crust-card-shell").dataset.tiltActive==="true");
-      assert.equal(await card.evaluate(el => getComputedStyle(el).getPropertyValue("--card-scale").trim()),"1.1");
+      const zoom = await card.evaluate(el => Number(getComputedStyle(el).getPropertyValue("--card-scale")));
+      assert.ok(zoom > 1 && zoom < 1.025, "The wide banner tilts without leaving the menu gutters");
       await page.waitForFunction(()=>getComputedStyle(document.querySelector("#asporto .crust-card")).transform.startsWith("matrix3d"));
       assert.equal(await card.locator("img").evaluate(el=>getComputedStyle(el).transform),"none");
     }
