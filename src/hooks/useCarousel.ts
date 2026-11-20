@@ -51,7 +51,9 @@ export function useCarousel(count: number, language: string) {
         else captions.forEach(caption => { caption.style.opacity = "0"; });
         lastCaption = next;
       }
-      captions[next].style.opacity = captionOpacity(loopDistance(next, m.position, count)).toFixed(4);
+      // Even a drag that stops halfway leaves the selected recipe legible.
+      const fade = captionOpacity(loopDistance(next, m.position, count));
+      captions[next].style.opacity = (0.82 + 0.18 * fade).toFixed(4);
       if (next !== s.index) { s.index = next; setIndex(next); }
     };
     const eligible = () => s.visible && !document.hidden && !s.modal;
@@ -84,7 +86,7 @@ export function useCarousel(count: number, language: string) {
       render();
     };
     const visibility = () => { stop(); if (eligible()) start(); };
-    const motion = () => { s.reduced = media.matches; if (s.reduced) { m.velocity = 0; m.target = null; } visibility(); };
+    const motion = () => { s.reduced = media.matches; if (s.reduced) { m.velocity = 0; m.target = null; m.position = Math.round(m.position); render(); } visibility(); };
     const io = new IntersectionObserver(entries => { s.visible = entries[0].isIntersecting; visibility(); }, { threshold: 0 });
     const ro = new ResizeObserver(resize);
     io.observe(root); ro.observe(stage); if (cards[0]) ro.observe(cards[0]);
@@ -148,7 +150,10 @@ export function useCarousel(count: number, language: string) {
       onPointerUp(e: PointerEvent<HTMLElement>) { release(e.currentTarget, false); },
       onPointerCancel(e: PointerEvent<HTMLElement>) { release(e.currentTarget, true); },
       onLostPointerCapture(e: PointerEvent<HTMLElement>) { if (e.target === e.currentTarget) release(e.currentTarget, true); },
-      onKeyDown(e: KeyboardEvent<HTMLElement>) { if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); move(e.key === "ArrowLeft" ? -1 : 1); } },
+      onKeyDown(e: KeyboardEvent<HTMLElement>) {
+        if (e.key === "Home" || e.key === "End") { e.preventDefault(); select(e.key === "Home" ? 0 : count - 1); }
+        else if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); move(e.key === "ArrowLeft" ? -1 : 1); }
+      },
     },
   };
 }

@@ -1,6 +1,6 @@
 type Mote = {
   distance: number; y: number; phase: number; orbit: number;
-  rise: number; radius: number; opacity: number;
+  rise: number; radius: number; opacity: number; offsetX: number; offsetY: number;
 };
 type Band = {
   canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D;
@@ -13,7 +13,7 @@ function makeMotes(count: number, seed: number): Mote[] {
     // A few cross the content margin. The rest cluster against the glass edge.
     distance: i % 31 === 30 ? 1 + random() : Math.pow(random(), 2.25),
     y: random(), phase: random() * Math.PI * 2, orbit: .16 + random() * .2,
-    rise: 3 + random() * 7, radius: .65 + random() * .8, opacity: .33 + random() * .44,
+    offsetX: 0, offsetY: 0, rise: 3 + random() * 7, radius: .65 + random() * .8, opacity: .33 + random() * .44,
   }));
 }
 
@@ -38,7 +38,7 @@ export function mountEdgeField(view: HTMLElement) {
     gutter = (width - region.querySelector<HTMLElement>(".spread-title")!.offsetWidth) / 2;
     // Bound the backing stores even on a high-DPI ultrawide display.
     const dpr = Math.min(devicePixelRatio, 1.5, Math.sqrt(540000 / Math.max(1, span * height)));
-    const count = Math.min(220, Math.max(36, Math.round(span * height / 1350)));
+    const count = Math.min(340, Math.max(64, Math.round(span * height / 815)));
     bands.forEach((band, index) => {
       const { canvas, ctx } = band;
       canvas.width = Math.max(1, Math.round(span * dpr));
@@ -49,12 +49,13 @@ export function mountEdgeField(view: HTMLElement) {
     if (visible) paint();
   }
 
-  function paint() {
+  function paint(dt = 0) {
     bands.forEach(({ ctx, motes }, side) => {
       ctx.clearRect(0, 0, span, height);
       ctx.fillStyle = "#e3c88b";
       const px = side ? width - pointerX : pointerX;
-      const reach = Math.min(125, Math.max(60, gutter * .6));
+      const reach = Math.min(175, Math.max(83, gutter * .85));
+      const recovery = Math.exp(-dt * 1.8);
       for (const mote of motes) {
         const base = mote.distance < 1 ? gutter * mote.distance : gutter + (span - gutter) * (mote.distance - 1);
         const angle = mote.phase + elapsed * mote.orbit;
@@ -62,13 +63,19 @@ export function mountEdgeField(view: HTMLElement) {
         let x = base + Math.sin(angle) * swing;
         const period = height + 24;
         let y = ((mote.y * period - elapsed * mote.rise) % period + period) % period - 12 + Math.cos(angle) * swing * .65;
-        if (strength > .005 && Math.abs(x - px) < reach && Math.abs(y - pointerY) < reach) {
-          const dx = x - px, dy = y - pointerY;
-          const proximity = Math.max(0, 1 - Math.hypot(dx, dy) / reach);
-          const force = proximity * proximity * strength * .52;
-          x += (dx - .78 * dy) * force;
-          y += (dy + .78 * dx) * force;
+        const dx = x + mote.offsetX - px, dy = y + mote.offsetY - pointerY;
+        const proximity = strength > .005 ? Math.max(0, 1 - Math.hypot(dx, dy) / reach) : 0;
+        if (proximity > 0) {
+          // Tangential rotation preserves distance to the pointer, even for stationary hover.
+          const turn = (side ? -1 : 1) * dt * strength * proximity * (2.5 + 6 * proximity);
+          const sin = Math.sin(turn), cos = Math.cos(turn);
+          mote.offsetX += dx * (cos - 1) - dy * sin;
+          mote.offsetY += dx * sin + dy * (cos - 1);
+        } else {
+          mote.offsetX *= recovery;
+          mote.offsetY *= recovery;
         }
+        x += mote.offsetX; y += mote.offsetY;
         const fade = Math.max(0, Math.min(1, (y + 3) / 16, (height + 3 - y) / 16));
         ctx.globalAlpha = fade * mote.opacity * (1 - Math.min(1, base / gutter) * .43);
         ctx.beginPath(); ctx.arc(x, y, mote.radius, 0, Math.PI * 2); ctx.fill();
@@ -83,7 +90,7 @@ export function mountEdgeField(view: HTMLElement) {
       const dt = last ? Math.min(step, .1) : 0;
       last = now; elapsed += dt;
       strength += (target - strength) * (1 - Math.exp(-dt * 8));
-      paint();
+      paint(dt);
     }
     frame = requestAnimationFrame(animate);
   }

@@ -46,9 +46,15 @@
   background:var(--vr-logo-gold); mask:url("/assets/flame.png") center / 28px auto no-repeat;
 }
 .site-brand:focus-visible::after,.site-brand:active::after { opacity:1; }
+.lang { border-color:#373737; }
+.dock-tile { color:#b0b0b0; }
+.hero-down,.hero-down svg { width:clamp(72px,6.8vw,96px); height:clamp(72px,6.8vw,96px); }
+.hero-down svg path { stroke-width:1.55; }
+@media(max-height:540px) { .hero-down,.hero-down svg { width:60px; height:60px; } }
 .lang button { border:0; transition:background-color .25s; }
-.lang button.on { color:var(--vr-highlight); background:#c6ab7026; border:1px solid #dac18b52; }
-.vr-dock a[aria-current] .dock-tile { color:var(--vr-highlight); }
+.lang button.on { color:var(--vr-highlight); background:linear-gradient(0deg,#80653885,#443a2b99 58%,#292622); border:1px solid #a68e60; }
+.lang button.on span { background:var(--vr-logo-gold); background-clip:text; -webkit-background-clip:text; color:transparent; }
+.vr-dock a[aria-current] .dock-tile { color:var(--vr-highlight); border-color:#606060; background:radial-gradient(ellipse at 50% 115%,#98783e80,transparent 71%),linear-gradient(155deg,#262523db,#191919c9); box-shadow:inset 0 -2px 6px #d4ae612e,0 2px 13px #d6ad5714; }
 .vr-dock a[aria-current] .dock-tile svg path { stroke:url(#dock-gold); }
 .vr-dock a[aria-current] .dock-tile i::before { display:inline-block; background:var(--vr-logo-gold); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 .vr-dock a:focus-visible,.lang button:focus-visible { outline-color:#eee; }
@@ -76,6 +82,7 @@ input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:te
   .hero-glimmer,.hero-liquid,.hero-logo::after,.vr-edge-blur { display:none; }
   .hero-logo[data-liquid-ready=true] > img { opacity:1; }
   .vr-dock a[aria-current] .dock-tile,.lang button.on { outline:2px solid Highlight; outline-offset:-2px; }
+  .lang button.on span { background:none; color:Highlight; }
   .vr-dock a[aria-current] .dock-tile svg path { stroke:Highlight; }
   .vr-dock a[aria-current] .dock-tile i::before { background:none; -webkit-text-fill-color:Highlight; }
   .vr-scroll-progress > span { background:Highlight; forced-color-adjust:none; }

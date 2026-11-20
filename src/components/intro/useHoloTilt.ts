@@ -1,9 +1,8 @@
 import { useEffect, type RefObject } from "react";
 
-export const HOLO_PRESET = { tiltMax: 15, hoverScale: 1.1, intensity: 0, frame: 0, glare: 0, radius: 0, edgeSparkle: 0 } as const;
+// Keep the frame still. Overscan covers the entire image throughout the pan.
+const panX = 2.2, panY = 2.4, zoom = 1.09;
 
-/** The requested zero-foil Holo Card preset only needs perspective and pointer
- * motion. Stable hit bounds avoid feedback from the transformed card. */
 export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const shell = shellRef.current, face = faceRef.current;
@@ -16,9 +15,9 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
     const paint = () => {
       frame = 0;
       if (disposed) return;
-      face.style.setProperty("--tilt-x", `${(-y * HOLO_PRESET.tiltMax).toFixed(2)}deg`);
-      face.style.setProperty("--tilt-y", `${(x * HOLO_PRESET.tiltMax).toFixed(2)}deg`);
-      face.style.setProperty("--tilt-scale", active ? String(HOLO_PRESET.hoverScale) : "1");
+      face.style.setProperty("--photo-x", `${(-x * panX).toFixed(2)}%`);
+      face.style.setProperty("--photo-y", `${(-y * panY).toFixed(2)}%`);
+      face.style.setProperty("--photo-scale", active ? String(zoom) : "1");
       shell.dataset.tiltActive = String(active);
     };
     const queue = () => { if (!frame && !disposed) frame = requestAnimationFrame(paint); };
@@ -50,7 +49,7 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
       if (!drag || drag.id !== event.pointerId) return;
       const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
       // A vertical gesture remains native page scroll. Horizontal touch drag
-      // controls the tilt, including Y movement once the gesture is engaged.
+      // controls the image, including Y movement once the gesture is engaged.
       if (!drag.locked && Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { reset(); return; }
       if (!drag.locked && Math.abs(dx) > 7 && Math.abs(dx) > Math.abs(dy) * 1.2) {
         drag.locked = true; shell.setPointerCapture(event.pointerId);
@@ -60,7 +59,12 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
     const leave = (event: PointerEvent) => { if (event.pointerType === "mouse" || !drag?.locked) reset(); };
     const end = (event: PointerEvent) => { if (event.pointerType !== "mouse" || event.type === "pointercancel") reset(); };
     const onVisibility = () => { if (document.hidden) { reset(); if (frame) { cancelAnimationFrame(frame); frame = 0; paint(); } } };
-    const events = { pointerenter: enter, pointerdown: down, pointermove: move, pointerleave: leave, pointerup: end, pointercancel: end, lostpointercapture: reset };
+    // Touch starts with implicit capture on the image. Its release bubbles when
+    // horizontal dragging transfers capture to the frame.
+    const lostCapture = (event: PointerEvent) => {
+      if (event.target === shell && drag?.id === event.pointerId) reset();
+    };
+    const events = { pointerenter: enter, pointerdown: down, pointermove: move, pointerleave: leave, pointerup: end, pointercancel: end, lostpointercapture: lostCapture };
     for (const [name, handler] of Object.entries(events)) shell.addEventListener(name, handler as EventListener, { passive: true });
     media.addEventListener("change", reset);
     window.addEventListener("resize", invalidate, { passive: true });
@@ -72,7 +76,7 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
       media.removeEventListener("change", reset);
       window.removeEventListener("resize", invalidate); window.removeEventListener("scroll", invalidate);
       document.removeEventListener("visibilitychange", onVisibility);
-      face.style.removeProperty("--tilt-x"); face.style.removeProperty("--tilt-y"); face.style.removeProperty("--tilt-scale");
+      face.style.removeProperty("--photo-x"); face.style.removeProperty("--photo-y"); face.style.removeProperty("--photo-scale");
       delete shell.dataset.tiltActive;
     };
   }, [shellRef, faceRef]);

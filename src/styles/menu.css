@@ -23,8 +23,9 @@
 .chipbar-inner { position:relative; pointer-events:auto; }
 .chips { position:relative; display:flex; overflow-x:auto; gap:8px; padding:7px 2px; scroll-padding-inline:2px; scrollbar-width:none; overscroll-behavior-x:contain; }
 .chips::-webkit-scrollbar { display:none; }
-.chips button { flex:1 0 auto; min-height:40px; padding:9px 16px; border:1px solid rgb(241 236 225 / .24); border-radius:24px; color:#fff; font-size:11px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; background:linear-gradient(150deg,rgb(37 37 36 / .8),rgb(37 37 36 / .62) 55%,rgb(37 37 36 / .74)); box-shadow:inset 0 1px 0 rgb(241 236 225 / .2),inset 0 -1px 0 rgb(241 236 225 / .06),0 2px 8px rgb(9 9 9 / .15); -webkit-backdrop-filter:blur(22px); backdrop-filter:blur(22px); -webkit-mask-image:var(--chip-edge,none); mask-image:var(--chip-edge,none); transition:color .45s ease,border-color .45s ease,box-shadow .45s ease; }
-.chips button.on { color:var(--vr-highlight); border-color:rgb(218 193 139 / .6); box-shadow:inset 0 1px 0 rgb(241 236 225 / .12),inset 0 -10px 18px -10px rgb(218 193 139 / .4); }
+.chips button { flex:1 0 auto; min-height:40px; padding:9px 16px; border:1px solid #505050; border-radius:24px; color:#b5b5b5; font-size:11px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; background:linear-gradient(150deg,rgb(37 37 36 / .8),rgb(37 37 36 / .62) 55%,rgb(37 37 36 / .74)); box-shadow:inset 0 1px 0 rgb(255 255 255 / .06),0 2px 8px rgb(9 9 9 / .15); -webkit-backdrop-filter:blur(22px); backdrop-filter:blur(22px); -webkit-mask-image:var(--chip-edge,none); mask-image:var(--chip-edge,none); transition:color .45s ease,border-color .45s ease,box-shadow .45s ease; }
+.chips button.on { color:#f0d7a2; border-color:#b19866; background:linear-gradient(0deg,#67563bcf,#302a20d9 45%,#202020df 87%); box-shadow:inset 0 -2px 8px #d3b27625; }
+@media (min-width:768px) { .chips button { letter-spacing:.16em; } }
 .chips button:focus-visible { outline-color:#fff; outline-offset:-4px; }
 .chips button.on:focus-visible { outline-color:var(--vr-highlight); }
 .chipchev { position:absolute; z-index:1; top:5px; width:32px; height:44px; display:none; place-items:center; color:var(--vr-highlight); background:none; border:0; border-radius:0; }
@@ -39,8 +40,8 @@
 .mcat .tag { margin:12px auto 0; max-width:48ch; color:var(--vr-muted); letter-spacing:.015em; font-size:clamp(19px,1.5vw,23px); line-height:1.4; text-wrap:pretty; }
 .kitchen-mobile-break { display:none; }
 .menu-art { width:100%; aspect-ratio:2048/487; position:relative; margin:28px 0; }
-:root { --section-rule:1px solid #766644; --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); --menu-stroke:linear-gradient(90deg,transparent,rgb(198 171 112 / .3) 20%,rgb(218 193 139 / .65) 50%,rgb(198 171 112 / .3) 80%,transparent); }
-.menu-art::before { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-block:1px solid transparent; border-image:var(--menu-stroke) 1; }
+:root { --section-rule:1px solid #766644; --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); --menu-stroke:linear-gradient(90deg,#70582c55,#b79a60 22%,#eedba7 50%,#b79a60 78%,#70582c55); }
+.menu-art::before { content:""; position:absolute; z-index:1; pointer-events:none; inset:0; border-block:clamp(2px,.21vw,3px) solid transparent; border-image:var(--menu-stroke) 1; }
 .menu-art-window { position:absolute; inset:0; overflow:hidden; }
 .menu-art img { width:100%; height:100%; object-fit:contain; }
 .item { position:relative; padding:10px 0; min-width:0; }
@@ -113,7 +114,7 @@
 @media(hover:hover) {
   .menu-head:hover h2 span { filter:drop-shadow(0 0 12px rgb(218 193 139 / .23)); }
   .mcat-head:hover h3 span { animation:vr-menu-gold 4s ease-in-out infinite alternate; filter:drop-shadow(0 0 10px rgb(218 193 139 / .23)); }
-  .chips button:not(.on):hover { color:#fff; border-color:rgb(241 236 225 / .45); }
+  .chips button:not(.on):hover { color:#d5d5d5; border-color:#737373; }
   .item button.nome:hover,.allergen-trigger:hover { color:var(--vr-highlight); }
 }
 @media(max-width:767px) {

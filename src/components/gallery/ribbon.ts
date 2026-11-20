@@ -56,7 +56,12 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
       const edge = panorama ? viewAngle : (width + widths[i]) / 2;
       const within = offset < edge + (panorama ? .015 : 1);
       const near = offset < edge + (panorama ? stepAngle : pitch);
-      if (near && images[i].loading !== "eager") images[i].loading = "eager";
+      if (near && images[i].loading !== "eager") {
+        const image = images[i];
+        if (image.dataset.sources) image.srcset = image.dataset.sources;
+        if (image.dataset.file) image.src = image.dataset.file;
+        image.loading = "eager";
+      }
       card.style.visibility = within ? "visible" : "hidden";
       if (!within) continue;
       if (!panorama) {

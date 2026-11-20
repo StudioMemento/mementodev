@@ -10,7 +10,8 @@ export default defineConfig({
         // Archival checksums stay in the immutable source index for QA. They
         // are never read by the UI and need not be transferred to the browser.
         const images = JSON.parse(source) as Record<string, Record<string, unknown>>;
-        for (const metadata of Object.values(images)) {
+        for (const [path, metadata] of Object.entries(images)) {
+          if (metadata.small === path.replace(/\.webp$/, "-768.webp")) metadata.small = "-768.webp";
           delete metadata.sha256;
           delete metadata.bytes;
         }

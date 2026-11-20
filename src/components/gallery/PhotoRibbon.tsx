@@ -49,9 +49,10 @@ export function PhotoRibbon({ photos, title, variant }: Props) {
           const { width, height } = metadata[src as keyof typeof metadata];
           if (flat) {
             const ratio = width / height;
-            return <figure key={src} className="ribbon-card" aria-label={caption} style={{ "--photo-ratio": ratio } as CSSProperties}>
-              <Photo src={src} alt={caption} className="ribbon-image"
-                sizes={`(max-width: 620px) and (orientation: portrait) ${Math.ceil(52 * ratio)}vw, max(${10 * ratio}vw, min(${28 * ratio}vw, ${46 * ratio}svh))`} />
+            const sizes = `(max-width: 620px) and (orientation: portrait) ${Math.ceil(52 * ratio)}vw, max(${10 * ratio}vw, min(${28 * ratio}vw, ${46 * ratio}svh))`;
+            return <figure key={`${src}-${caption}-${index}`} className="ribbon-card" aria-label={caption} style={{ "--photo-ratio": ratio } as CSSProperties}>
+              <Photo src={src} alt={caption} className="ribbon-image" sizes={sizes} deferred />
+              <noscript><Photo src={src} alt={caption} className="ribbon-image" sizes={sizes} /></noscript>
               <figcaption className="photo-byline">{caption}</figcaption>
             </figure>;
           }

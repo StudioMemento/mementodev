@@ -46,20 +46,20 @@ async function checkSectionPolish(page, touch) {
   assert.deepEqual(layout.headings, ['Le stuzzicherie', 'I dolci', 'Le bevande']);
   assert.ok(layout.categoryGaps.every(gap => gap >= 115));
   assert.ok(layout.groupGaps.every(gap => gap >= 55) && layout.breweryGap >= 37);
-  assert.ok(layout.controls.every(b => b.width >= 52 && b.height >= 52 && b.glyphHeight >= 21.5));
+  assert.ok(layout.controls.every(b => b.width >= 48 && b.height >= 44 && b.glyphHeight >= 21.5));
 
   await page.emulateMedia({reducedMotion: 'reduce'});
   const oven = page.locator('#pizza-slider');
   await oven.locator('.pizza-controls').evaluate(el => scrollTo({top: scrollY + el.getBoundingClientRect().top - innerHeight * .55, behavior: 'instant'}));
-  const dots = oven.locator('.pizza-dot');
-  assert.equal(await dots.count(),40);
+  const stage = oven.locator('#forno');
+  assert.equal(await oven.locator('.pizza-dot').count(),0);
   const arrows = oven.locator('.pizza-arrow');
-  const waitForActive = index => oven.locator(`.pizza-dot:nth-child(${index + 1})[aria-pressed="true"]`).waitFor();
+  const waitForActive = index => oven.locator(`.pizza-caption:nth-child(${index + 1})[aria-hidden="false"]`).waitFor();
   const activate = arrow => touch ? arrow.tap({position:{x:5,y:12}}) : arrow.click({position:{x:5,y:12}});
-  await dots.first().click();
+  await stage.focus(); await page.keyboard.press('Home');
   await waitForActive(0);
   await activate(arrows.first());
-  await waitForActive((await dots.count())-1);
+  await waitForActive(39);
   await activate(arrows.last());
   await waitForActive(0);
   await arrows.last().focus();
@@ -99,7 +99,7 @@ try {
    await page.waitForFunction(titleFitsGutters);
    const last = page.locator('.pizza-caption').last();
    assert.equal(await last.locator('h3').textContent(),'Delicata');
-   assert.ok((await last.locator('p').textContent()).length > 12);
+   assert.equal(await last.locator('li').count(),5);
 
   }
   await page.emulateMedia({reducedMotion:'reduce'});
@@ -121,7 +121,7 @@ try {
   if(width<768){assert.ok(layout.desc.right<=layout.price.left+1);assert.ok(layout.chevron.left>=layout.railRect.right-1);assert.ok(layout.chevron.right<=width+1);}
   if(await page.evaluate(()=>matchMedia('(hover: hover)').matches)){
    const inactive=page.locator('.chips button:not(.on)').first();await inactive.hover();
-   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.chips button:not(.on)')).color==='rgb(255, 255, 255)');
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.chips button:not(.on)')).color==='rgb(213, 213, 213)');
    const art=page.locator('#cat-audaci .menu-art');
    const snapshot=el=>{
     const style=(target,pseudo,keys)=>Object.fromEntries(keys.map(k=>[k,getComputedStyle(target,pseudo)[k]]));
@@ -130,7 +130,7 @@ try {
    const before=await art.evaluate(snapshot);
    await art.hover();const after=await art.evaluate(snapshot);
    assert.deepEqual(after,before,'Image hover changed the image or stroke/fade geometry');
-   assert.equal(before.frame.borderTopWidth,'1px');assert.equal(before.frame.borderBottomWidth,'1px');assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');assert.equal(before.after,'none');
+   assert.ok(parseFloat(before.frame.borderTopWidth)>=2 && parseFloat(before.frame.borderTopWidth)<=3);assert.equal(before.frame.borderBottomWidth,before.frame.borderTopWidth);assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');assert.equal(before.after,'none');
    assert.equal(before.mask,'none');assert.equal(before.image.filter,'none');assert.equal(before.containerFilter,'none');
   }
   await page.screenshot({path:`${out}/audaci-${width}x${height}.png`});

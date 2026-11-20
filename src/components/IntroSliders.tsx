@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent } from "react";
+import { useMemo, type CSSProperties } from "react";
 import data from "../data/menu.json";
 import { useI18n, translateDescription, translateName, type Language } from "../i18n";
 import { useCarousel } from "../hooks/useCarousel";
@@ -6,58 +6,19 @@ import { Chevron } from "./Icon";
 import { Photo } from "./Photo";
 import { HoloCard } from "./intro/HoloCard";
 import { useIntroVisibility } from "./intro/useIntroVisibility";
-function Controls({ labels, carousel }: { labels: string[]; carousel: ReturnType<typeof useCarousel> }) {
-  const { copy } = useI18n();
-  const railRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    const rail = railRef.current;
-    const active = rail?.children[carousel.index] as HTMLButtonElement | undefined;
-    if (!rail || !active) return;
-    const center = () => {
-      rail.scrollLeft = active.offsetLeft - (rail.clientWidth - active.offsetWidth) / 2;
-    };
-    center();
-    const observer = new ResizeObserver(center);
-    observer.observe(rail);
-    return () => observer.disconnect();
-  }, [carousel.index]);
-
-  function navigate(event: KeyboardEvent<HTMLButtonElement>, from: number) {
-    const last = labels.length - 1;
-    let next: number;
-    switch (event.key) {
-      case "Home": next = 0; break;
-      case "End": next = last; break;
-      case "ArrowLeft": next = from === 0 ? last : from - 1; break;
-      case "ArrowRight": next = from === last ? 0 : from + 1; break;
-      default: return;
-    }
-    event.preventDefault();
-    carousel.select(next);
-    const target = railRef.current?.children[next] as HTMLButtonElement | undefined;
-    target?.focus({ preventScroll: true });
-  }
-  return <div className="pizza-controls" role="group" aria-label={copy.navigation}>
-    <button className="pizza-arrow" type="button" aria-controls="forno" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
-    <div ref={railRef} className="pizza-dots" role="group" aria-label={copy.menu}>
-      {labels.map((label, i) => <button key={label} type="button" className="pizza-dot"
-        aria-label={label} tabIndex={i === carousel.index ? 0 : -1} onKeyDown={event => navigate(event, i)}
-        aria-pressed={i === carousel.index} onClick={() => carousel.select(i)}><span /></button>)}
-    </div>
-    <button className="pizza-arrow" type="button" aria-controls="forno" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
-  </div>;
-}
-
 export function PizzaSlider() {
-  const { t, language } = useI18n();
+  const { t, language, copy } = useI18n();
   const slides = useMemo(() => data.FORNO.map(([src, name, description]) => ({
     src,
     name: translateName(name, language),
-    lines: description.split(/ · (?=base:)/).map(line => translateDescription(line, language)),
+    ingredients: description.split(", ").map(item => translateDescription(item, language)),
   })), [language]);
   const carousel = useCarousel(slides.length, language);
   return <section className="vr-pizza-carousel pizza-clean" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
-    <h2 className="oven-heading">{t.strip_k}</h2>
+    <header className="oven-header">
+      <h2 className="oven-heading">{t.strip_k}</h2>
+      <span className="pizza-count">{carousel.index + 1} / {slides.length}</span>
+    </header>
     <div className="vr-pizza-viewport">
       <div className="vr-pizza-stage" id="forno" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.strip_k}>
         {Array.from({length:carousel.renderCount},(_,slot) => {
@@ -70,15 +31,16 @@ export function PizzaSlider() {
         })}
       </div>
     </div>
-    <div className="pizza-copy" id="pizza-copy">
-      {slides.map(({ name, lines }, i) => <div className="pizza-caption" key={`${i}-${language}`} aria-hidden={i !== carousel.index}>
-        <h3>{name}</h3>
-        <p>{lines.map((line, part) => (
-          <Fragment key={part}>{part > 0 && <br />}{line}</Fragment>
-        ))}</p>
-      </div>)}
+    <div className="pizza-controls" role="group" aria-label={copy.navigation}>
+      <button className="pizza-arrow previous" type="button" aria-controls="forno pizza-copy" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
+      <div className="pizza-copy" id="pizza-copy">
+        {slides.map(({ name, ingredients }, i) => <div className="pizza-caption" key={i} aria-hidden={i !== carousel.index}>
+          <h3>{name}</h3>
+          <ul>{ingredients.map((item, part) => <li key={part}>{item}</li>)}</ul>
+        </div>)}
+      </div>
+      <button className="pizza-arrow next" type="button" aria-controls="forno pizza-copy" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
     </div>
-    <Controls labels={slides.map(slide => slide.name)} carousel={carousel} />
   </section>;
 }
 

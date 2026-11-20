@@ -124,7 +124,7 @@ export function Header() {
               aria-pressed={language === l}
               lang={l}
             >
-              {l.toUpperCase()}
+              <span>{l.toUpperCase()}</span>
             </button>
           ))}
         </div>

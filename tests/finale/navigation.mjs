@@ -92,11 +92,11 @@ async function testViewport(width,height,touch) {
       const hours=await page.locator(".hours-copy").evaluate(el=>{
         const time=el.querySelector("strong"), note=el.querySelector(".hours-note");
         const a=time.getBoundingClientRect(), b=note.getBoundingClientRect(), tile=el.parentElement.getBoundingClientRect();
-        return {weight:getComputedStyle(time).fontWeight,gap:b.top-a.bottom,
+        return {weight:getComputedStyle(time).fontWeight, noteWeight:getComputedStyle(note).fontWeight,gap:b.top-a.bottom,
           centered:Math.abs(a.left+a.right-tile.left-tile.right)<2,
           edges:Math.abs(a.left-b.left)+Math.abs(a.right-b.right)<2};
       });
-      assert.ok(hours.weight==="200" && hours.gap >= 7.5 && hours.centered && hours.edges, JSON.stringify(hours));
+      assert.ok(hours.weight==="300" && hours.noteWeight===hours.weight && hours.gap >= 7.5 && hours.centered && hours.edges, JSON.stringify(hours));
     }
     const italian=page.locator('.lang button[data-lang="it"]');
     if (!touch) {
@@ -140,10 +140,10 @@ async function testViewport(width,height,touch) {
         const gold = icon.tagName.toLowerCase()==="svg"
           ? getComputedStyle(icon.querySelector("path")).stroke.includes("dock-gold")
           : getComputedStyle(icon,"::before").backgroundImage.includes("linear-gradient");
-        return { active:a.hasAttribute("aria-current"), ink:s.color, border:s.borderTopColor, gold };
+        return { active:a.hasAttribute("aria-current"), ink:s.color, border:s.borderTopColor, lowerGlow:s.backgroundImage.includes("radial-gradient"), gold };
       }));
       assert.equal(tiles.filter(t=>t.active).length,1);
-      assert.ok(tiles.every(t=>neutral(t.border) && neutral(t.ink)!==t.active && t.gold===t.active));
+      assert.ok(tiles.every(t=>neutral(t.border) && neutral(t.ink)!==t.active && t.gold===t.active && t.lowerGlow===t.active));
     }
     for(const progress of [0,.5,1]) {
       await page.evaluate(f=>scrollTo({top:(document.documentElement.scrollHeight-innerHeight)*f,behavior:"instant"}),progress);

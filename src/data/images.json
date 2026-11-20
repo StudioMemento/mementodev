@@ -17,79 +17,6 @@
     "bytes": 2996,
     "sha256": "d23e7f8f68dfbf155dcdf70e7f9f5925da9d674c853ea80aed79d07f90a50274"
   },
-  "assets/community/matteo-4f4e3cd9.webp": {
-    "width": 1360,
-    "height": 1020,
-    "bytes": 262274,
-    "sha256": "4f4e3cd95e89f3a0e1b6f12afd1a81fcc6ac49fd0001480024ef84dd49997fb7",
-    "small": "assets/community/matteo-4f4e3cd9-768.webp"
-  },
-  "assets/community/tomaz-a3e72513.webp": {
-    "width": 574,
-    "height": 1020,
-    "bytes": 113532,
-    "sha256": "a3e72513eede4f81ea6f74edbff39007877aad2765858782ba0bdf74e936407e"
-  },
-  "assets/community/fabio-9e64d53d.webp": {
-    "width": 1360,
-    "height": 1017,
-    "bytes": 161628,
-    "sha256": "9e64d53dd01b612f7aa8638b2f2031906de69dab97da8ab6d008a532d5a530c9",
-    "small": "assets/community/fabio-9e64d53d-768.webp"
-  },
-  "assets/community/david-a1ea9444.webp": {
-    "width": 1020,
-    "height": 1020,
-    "bytes": 114676,
-    "sha256": "a1ea9444dff9af01a9c68b8978d683f5aab80868d305627a192f4126a7ef5e7f",
-    "small": "assets/community/david-a1ea9444-768.webp"
-  },
-  "assets/community/erika-5f6313c1.webp": {
-    "width": 1360,
-    "height": 1020,
-    "bytes": 204818,
-    "sha256": "5f6313c13b6d135cfc189a7e9d0896fb3a44fa942c4c3636786726f82edb2730",
-    "small": "assets/community/erika-5f6313c1-768.webp"
-  },
-  "assets/community/giovanni-f9dc1207.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 177244,
-    "sha256": "f9dc1207244834ab48890b99c5c79c3e4c5f8784403e4bcdf2fc81e7c2c5d518"
-  },
-  "assets/community/tomaz-96f3508e.webp": {
-    "width": 1360,
-    "height": 765,
-    "bytes": 182674,
-    "sha256": "96f3508ed40b99661809c5a64e52919c99141a39132438bb4dbd4d3d81f8877a",
-    "small": "assets/community/tomaz-96f3508e-768.webp"
-  },
-  "assets/community/silvia-85ad0cf5.webp": {
-    "width": 1080,
-    "height": 720,
-    "bytes": 86634,
-    "sha256": "85ad0cf53c2b0103d0b917fd57d4ea5e101a828e952587e047ef866022bd1813",
-    "small": "assets/community/silvia-85ad0cf5-768.webp"
-  },
-  "assets/community/carina-5a23f980.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 84648,
-    "sha256": "5a23f980be70adf2770b0dbb0ef4f4322f4991400b0f04c65d5f62db53125bb1"
-  },
-  "assets/community/carina-326a5b44.webp": {
-    "width": 765,
-    "height": 1020,
-    "bytes": 137430,
-    "sha256": "326a5b44ad68febb2410031a4d2f4d3f8e2a34169ceae42395ddef4298fe7a45"
-  },
-  "assets/community/erika-c356f761.webp": {
-    "width": 1360,
-    "height": 1020,
-    "bytes": 211404,
-    "sha256": "c356f761711fd46ba8cd6d68d2268c43e0a45c461ebaf76a3387e4f5a57cd585",
-    "small": "assets/community/erika-c356f761-768.webp"
-  },
   "assets/menu/stuzzicherie.webp": {
     "width": 2048,
     "height": 487,
@@ -709,5 +636,295 @@
     "bytes": 244120,
     "sha256": "7d040756f4fc7528ee8961a8712b2c801257230366782805ae54713f5b2828eb",
     "small": "assets/pizze/delicata-768.webp"
+  },
+  "assets/community/alan-47cd32c8.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 111596,
+    "sha256": "47cd32c8d36a765e03f435f6a9615e8a5aac174afa686882f069061cd8904b4f"
+  },
+  "assets/community/bostjan-e488dc29.webp": {
+    "width": 945,
+    "height": 1020,
+    "bytes": 144410,
+    "sha256": "e488dc296483e2a66c53626401be243581a7623e39335d2fdb9edfdd6ac9918a",
+    "small": "assets/community/bostjan-e488dc29-768.webp"
+  },
+  "assets/community/carina-326a5b44.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 137430,
+    "sha256": "326a5b44ad68febb2410031a4d2f4d3f8e2a34169ceae42395ddef4298fe7a45"
+  },
+  "assets/community/carina-5a23f980.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 84648,
+    "sha256": "5a23f980be70adf2770b0dbb0ef4f4322f4991400b0f04c65d5f62db53125bb1"
+  },
+  "assets/community/carla-999174d9.webp": {
+    "width": 574,
+    "height": 1020,
+    "bytes": 90692,
+    "sha256": "999174d9924cb16ff7963fec9a83a2342ee4c9f9e2fb1e8262266618f1ca9186"
+  },
+  "assets/community/david-a1ea9444.webp": {
+    "width": 1020,
+    "height": 1020,
+    "bytes": 114676,
+    "sha256": "a1ea9444dff9af01a9c68b8978d683f5aab80868d305627a192f4126a7ef5e7f",
+    "small": "assets/community/david-a1ea9444-768.webp"
+  },
+  "assets/community/david-96d7b77b.webp": {
+    "width": 1020,
+    "height": 1020,
+    "bytes": 151506,
+    "sha256": "96d7b77bcb8233114f6e367d8b34faec46bc82f67525437870ff47662859927c",
+    "small": "assets/community/david-96d7b77b-768.webp"
+  },
+  "assets/community/david-59ffcd7a.webp": {
+    "width": 1020,
+    "height": 1020,
+    "bytes": 133596,
+    "sha256": "59ffcd7a2843f337c230ac01839ad04bf9d6762eb66fcc4e3e384a9ea37d3a36",
+    "small": "assets/community/david-59ffcd7a-768.webp"
+  },
+  "assets/community/dominik-4804d9ab.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 172042,
+    "sha256": "4804d9ab80a87b7415d2a4261b57d943942f1f918b1145f5317a64b135e33ddf"
+  },
+  "assets/community/erika-a20be2eb.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 71258,
+    "sha256": "a20be2ebfe99e5a0df9a22f5db5de9d6d94ac5610e4bf6fca9e10874ba95bb54"
+  },
+  "assets/community/erika-7f3209a1.webp": {
+    "width": 1360,
+    "height": 1020,
+    "bytes": 243406,
+    "sha256": "7f3209a1395679893b613ba6c7a028a3992f240902158a066d763248917cdaa7",
+    "small": "assets/community/erika-7f3209a1-768.webp"
+  },
+  "assets/community/erika-c356f761.webp": {
+    "width": 1360,
+    "height": 1020,
+    "bytes": 211404,
+    "sha256": "c356f761711fd46ba8cd6d68d2268c43e0a45c461ebaf76a3387e4f5a57cd585",
+    "small": "assets/community/erika-c356f761-768.webp"
+  },
+  "assets/community/erika-5f6313c1.webp": {
+    "width": 1360,
+    "height": 1020,
+    "bytes": 204818,
+    "sha256": "5f6313c13b6d135cfc189a7e9d0896fb3a44fa942c4c3636786726f82edb2730",
+    "small": "assets/community/erika-5f6313c1-768.webp"
+  },
+  "assets/community/fabio-9e64d53d.webp": {
+    "width": 1360,
+    "height": 1017,
+    "bytes": 161628,
+    "sha256": "9e64d53dd01b612f7aa8638b2f2031906de69dab97da8ab6d008a532d5a530c9",
+    "small": "assets/community/fabio-9e64d53d-768.webp"
+  },
+  "assets/community/fabio-d55c6bde.webp": {
+    "width": 1360,
+    "height": 1020,
+    "bytes": 232412,
+    "sha256": "d55c6bde05131b1b3c25869cfb1e19adac2e041db10f98fb16d8ff5292afc1b2",
+    "small": "assets/community/fabio-d55c6bde-768.webp"
+  },
+  "assets/community/fabiosa-41a7f900.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 108994,
+    "sha256": "41a7f9006b527638935f6ab443f759ed2be3dcf36bdb09193690ab44ad95be4a"
+  },
+  "assets/community/giovanni-f9dc1207.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 177244,
+    "sha256": "f9dc1207244834ab48890b99c5c79c3e4c5f8784403e4bcdf2fc81e7c2c5d518"
+  },
+  "assets/community/giovanni-0869e547.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 137836,
+    "sha256": "0869e54702b808fa09a7575be1cc247b0aaed160475d9b3036d546267fc34f1a"
+  },
+  "assets/community/giovanni-fa2695f3.webp": {
+    "width": 1020,
+    "height": 1020,
+    "bytes": 160850,
+    "sha256": "fa2695f3d27e7d660008bb116a6e22310c196fa7e1cda27bba16dca347240287",
+    "small": "assets/community/giovanni-fa2695f3-768.webp"
+  },
+  "assets/community/giovanni-e848855a.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 114948,
+    "sha256": "e848855a224de0d4e9bef5d2023518c2ada00c331da44f9776bb9e90c03348c0"
+  },
+  "assets/community/gretabeta-663170c5.webp": {
+    "width": 1360,
+    "height": 613,
+    "bytes": 103478,
+    "sha256": "663170c5282ff2cfab53fea5b135e92a143100ae57f6ce644cd722c9abe3c963",
+    "small": "assets/community/gretabeta-663170c5-768.webp"
+  },
+  "assets/community/gretabeta-b63bd6a1.webp": {
+    "width": 1360,
+    "height": 613,
+    "bytes": 164368,
+    "sha256": "b63bd6a12fbbe7dbd4a3daee30aad52569c3bd9d7f0fbad95a565dfebfa5cfc9",
+    "small": "assets/community/gretabeta-b63bd6a1-768.webp"
+  },
+  "assets/community/gretabeta-45a37be8.webp": {
+    "width": 1360,
+    "height": 613,
+    "bytes": 123942,
+    "sha256": "45a37be826fbc4915ab7ab6c4318d859bb3edc93ee78985e81de76fd2c1d0cd4",
+    "small": "assets/community/gretabeta-45a37be8-768.webp"
+  },
+  "assets/community/jordan-6ba8df12.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 125002,
+    "sha256": "6ba8df1293ddef98500edc115ecfaa5ccb28b8c2a088b4bdeb57a9fd01af3d40"
+  },
+  "assets/community/marcella-66be12e8.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 98274,
+    "sha256": "66be12e82c546534d74f58abe7672a1e8e0d861d8d8a8312a619631c39f01119"
+  },
+  "assets/community/marcella-8781a883.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 108822,
+    "sha256": "8781a883382441d17bed2e5efe996cffb7e62fa87056786a1c4c5b3a61106f7d"
+  },
+  "assets/community/matteo-4f4e3cd9.webp": {
+    "width": 1360,
+    "height": 1020,
+    "bytes": 262274,
+    "sha256": "4f4e3cd95e89f3a0e1b6f12afd1a81fcc6ac49fd0001480024ef84dd49997fb7",
+    "small": "assets/community/matteo-4f4e3cd9-768.webp"
+  },
+  "assets/community/matteo-68330e6d.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 108798,
+    "sha256": "68330e6dd733713e70d3e918150b9a0a9a1bd30d1bc35e4f066458e2aa3d1308"
+  },
+  "assets/community/paola-bcc3ede8.webp": {
+    "width": 459,
+    "height": 1020,
+    "bytes": 72048,
+    "sha256": "bcc3ede8af7552c3320b02d24d7c2a6c48739af09c00e72ca824e51f2ea54753"
+  },
+  "assets/community/paola-500461c8.webp": {
+    "width": 460,
+    "height": 1020,
+    "bytes": 82446,
+    "sha256": "500461c8f7f5951fb56513cb52ab3f8a738f9081e04114f7bb10d023235439e3"
+  },
+  "assets/community/paola-4db29589.webp": {
+    "width": 460,
+    "height": 1020,
+    "bytes": 73350,
+    "sha256": "4db29589527bcd736ef06e98eb25425ee7301059ebb7732dcf676bdd9276ad69"
+  },
+  "assets/community/pietro-82612084.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 122166,
+    "sha256": "82612084615b82d0fca7203f08cb814a427102f5cf063abe90f7fedd03aac7b7"
+  },
+  "assets/community/raffaele-a8267454.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 136272,
+    "sha256": "a8267454deaf4c1a31dfd9763c52df8c6ed158947a266ff6f4937d6ee3378ee1"
+  },
+  "assets/community/richard-a0bd5019.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 130594,
+    "sha256": "a0bd5019470a4cb02f0e00888ca11ba5e2fac63a37969ef5f93c1b9edc921bb2"
+  },
+  "assets/community/silvia-85ad0cf5.webp": {
+    "width": 1080,
+    "height": 720,
+    "bytes": 86634,
+    "sha256": "85ad0cf53c2b0103d0b917fd57d4ea5e101a828e952587e047ef866022bd1813",
+    "small": "assets/community/silvia-85ad0cf5-768.webp"
+  },
+  "assets/community/silvia-d839414b.webp": {
+    "width": 800,
+    "height": 640,
+    "bytes": 59868,
+    "sha256": "d839414b20695e84121f7281a76d555586699ddfbef4aed0e21160da04f31cde",
+    "small": "assets/community/silvia-d839414b-768.webp"
+  },
+  "assets/community/spyros-cf8d8220.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 159518,
+    "sha256": "cf8d82204af8952accbd301dd823117e00abd542b036bcac7d9bbc22e466142a"
+  },
+  "assets/community/stefano-8bafe209.webp": {
+    "width": 460,
+    "height": 1020,
+    "bytes": 85400,
+    "sha256": "8bafe2099d17c89974072243adf2e368b4cad5fae314063019ed5b29e7341579"
+  },
+  "assets/community/stefano-60f3a69e.webp": {
+    "width": 1360,
+    "height": 613,
+    "bytes": 126372,
+    "sha256": "60f3a69e655a4e3f71424fd951f87ccf71b63714e86e69e257bd6924f101feca",
+    "small": "assets/community/stefano-60f3a69e-768.webp"
+  },
+  "assets/community/stefano-fb4407ec.webp": {
+    "width": 1232,
+    "height": 1020,
+    "bytes": 137766,
+    "sha256": "fb4407ecfe989a331608453939acb0d00bf8777d3910e02596ff7df35dc6ecf6",
+    "small": "assets/community/stefano-fb4407ec-768.webp"
+  },
+  "assets/community/stefano-bd6a2c19.webp": {
+    "width": 1360,
+    "height": 613,
+    "bytes": 142002,
+    "sha256": "bd6a2c19e1ae9112c21222a13feb0457b3345ffcd8f98b42af3c4803ee6303dc",
+    "small": "assets/community/stefano-bd6a2c19-768.webp"
+  },
+  "assets/community/steven-bff0f36c.webp": {
+    "width": 765,
+    "height": 1020,
+    "bytes": 135662,
+    "sha256": "bff0f36cc24ccd39a1402a7f4a6f162e998fca29f5d905b73784470c894a73ab"
+  },
+  "assets/community/tomaz-96f3508e.webp": {
+    "width": 1360,
+    "height": 765,
+    "bytes": 182674,
+    "sha256": "96f3508ed40b99661809c5a64e52919c99141a39132438bb4dbd4d3d81f8877a",
+    "small": "assets/community/tomaz-96f3508e-768.webp"
+  },
+  "assets/community/tomaz-a3e72513.webp": {
+    "width": 574,
+    "height": 1020,
+    "bytes": 113532,
+    "sha256": "a3e72513eede4f81ea6f74edbff39007877aad2765858782ba0bdf74e936407e"
+  },
+  "assets/community/zoxer-e070b464.webp": {
+    "width": 496,
+    "height": 1020,
+    "bytes": 82804,
+    "sha256": "e070b464bc5bbbed5fcc1c521f061a4105d59f24ad247b01f4ea406f751a0aa1"
   }
 }

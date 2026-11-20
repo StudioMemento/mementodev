@@ -39,7 +39,7 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_4.7 — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_4.8 — preview'));assert.ok(html.includes('noindex,nofollow'));
 const crustStart = html.lastIndexOf('<section',html.indexOf('id="cornicione"'));
 const takeawayStart = html.lastIndexOf('<section',html.indexOf('id="asporto"'));
 assert.equal((balanced(html,crustStart,'section').match(/class="crust-card"/g)||[]).length,3);
@@ -72,7 +72,8 @@ assert.equal(pizzas.length,40);
 assert.deepEqual(data.FORNO.map(row => row.slice(1)),pizzas);
 assert.equal(new Set(data.FORNO.map(row => row[0])).size,40);
 const unescape = s => s.replaceAll('&#x27;',"'").replaceAll('&amp;','&').replaceAll('&quot;','"');
-assert.deepEqual([...captions.matchAll(/<h3>(.*?)<\/h3><p>(.*?)<\/p>/g)].map(m => m.slice(1,3).map(unescape)),pizzas);
+assert.deepEqual([...captions.matchAll(/<h3>(.*?)<\/h3><ul>(.*?)<\/ul>/g)].map(([,name,list]) =>
+  [unescape(name), [...list.matchAll(/<li>(.*?)<\/li>/g)].map(m => unescape(m[1])).join(', ')]), pizzas);
 const images = JSON.parse(await readFile('src/data/images.json','utf8'));
 for (const [src] of data.FORNO) {
   const meta = images[src];

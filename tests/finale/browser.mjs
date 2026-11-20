@@ -37,7 +37,7 @@ async function galleries(page, touch) {
   for (const [key, photos] of Object.entries(original.GALLERY_ALBUMS))
     assert.equal(await page.locator(`#album-${key} .ribbon-card`).count(), photos.length);
   assert.equal(await rooms.locator(".photo-controls,.photo-expand,[aria-live] + button").count(), 0);
-  assert.equal(await page.locator("#customer .photo-byline").count(), 11);
+  assert.equal(await page.locator("#customer .photo-byline").count(), 47);
   assert.deepEqual(await page.locator("#customer .photo-byline").allTextContents(), original.CUSTOMER.map(p => p.name));
   assert.equal(await page.locator("#table-title").getAttribute("aria-label"), "Ricordi condivisi dalla community");
 
@@ -134,11 +134,14 @@ async function galleries(page, touch) {
     const frame = await photo.evaluate(async el => {
       const im = el.querySelector("img"); await im.decode();
       const b = im.getBoundingClientRect();
-      return { origin: im.getAttribute("src"), ratio: im.naturalWidth / im.naturalHeight, actual: b.width / b.height,
+      return { origin: im.getAttribute("src"), ratio: Number(im.getAttribute("width")) / Number(im.getAttribute("height")), actual: b.width / b.height,
+        decodedWidth:im.naturalWidth, decodedHeight:im.naturalHeight,
         center: b.left + b.width / 2, right: b.right, width: b.width, height: b.height,
         leftCaption: el.querySelector("figcaption").getBoundingClientRect().left - b.left };
     });
     assert.equal(frame.origin, "/" + original.CUSTOMER[i].src);
+    // srcset density correction rounds natural dimensions to whole CSS pixels.
+    assert.ok(Math.abs(frame.decodedWidth - frame.ratio * frame.decodedHeight) <= 1 + frame.ratio);
     assert.ok(Math.abs(frame.ratio - frame.actual) < .006 && Math.abs(frame.leftCaption) < 1);
     assert.ok(Math.abs(frame.center - stripBounds.width / 2) < 1);
     ratios.add(Math.round(frame.actual * 100));
@@ -149,7 +152,7 @@ async function galleries(page, touch) {
     await page.keyboard.press("ArrowRight");
   }
   assert.ok(ratios.size >= 5); assert.equal(await strip.getAttribute("data-active"), "0");
-  await page.keyboard.press("ArrowLeft"); assert.equal(await strip.getAttribute("data-active"), "10");
+  await page.keyboard.press("ArrowLeft"); assert.equal(await strip.getAttribute("data-active"), String(original.CUSTOMER.length-1));
   await page.keyboard.press("Home");
   if (!touch) {
     const b = await strip.boundingBox(), before = await position(strip);
@@ -303,22 +306,22 @@ async function finalLayout(page) {
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
   assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
   const [social,visit]=result.areas;
-  assert.equal(social.length,6);assert.equal(visit.length,5);
-  const [ig,fb,...reviews]=social, [map,logo,hours,wa,phone]=visit;
+  assert.equal(social.length,6);assert.equal(visit.length,4);
+  const [ig,fb,...reviews]=social, [map,hours,wa,phone]=visit;
   const close=(a,b)=>Math.abs(a-b)<1.6;
   const square=tile=>close(tile.w,tile.h);
   const wide=tile=>Math.abs(tile.w/tile.h-2)<.12;
   assert.ok([ig,fb].every(result.squareSocial?square:wide) && reviews.every(square));
-  assert.ok([map,wa,phone].every(square) && [logo,hours].every(wide));
-  assert.ok(close(logo.w,hours.w) && close(wa.t,phone.t) && close(wa.w,phone.w) && phone.l>wa.r);
-  assert.ok(close(logo.l,hours.l) && close(hours.l,wa.l) && close(hours.r,phone.r) && hours.t>logo.b && wa.t>hours.b);
+  assert.ok([map,wa,phone].every(square) && (result.mobile ? Math.abs(hours.w/hours.h-1.15)<.03 : square(hours)));
+  assert.ok(close(wa.t,phone.t) && close(wa.w,phone.w) && phone.l>wa.r);
+  assert.ok(close(hours.l,wa.l) && close(hours.r,phone.r) && wa.t>hours.b);
   if(result.mobile) {
     assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews[0].t>fb.b && close(ig.l,reviews[0].l) && close(fb.r,reviews[1].r));
     assert.ok(close(reviews[0].t,reviews[1].t) && close(reviews[2].t,reviews[3].t) && reviews[2].t>reviews[1].b);
-    assert.ok(logo.t>map.b && close(map.w,logo.w) && close(map.l,logo.l));
+    assert.ok(hours.t>map.b && close(map.w,hours.w) && close(map.l,hours.l));
   } else {
     assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews.every(r=>r.t>ig.b && close(r.t,reviews[0].t)));
-    assert.ok(close(map.t,logo.t) && logo.l>map.r && close(map.b,phone.b));
+    assert.ok(close(map.t,hours.t) && hours.l>map.r && close(map.b,phone.b));
   }
   assert.equal(await page.locator(".opening-time").innerText(),"18:00 - 23:00");
   assert.equal(await page.locator(".hours-note").textContent(),"CHIUSO IL LUNEDÌ");
@@ -374,7 +377,7 @@ async function particles() {
   await page.clock.runFor(1150);assert.equal(await field.count(),1,"The exit lasts the full three seconds");
   await page.clock.runFor(110);assert.equal(await field.count(),0);
   await page.clock.resume();
-  const logo=page.locator(".sign-tile");
+  const logo=page.locator(".hours-tile");
   await center(logo);await logo.hover();await logo.locator("canvas").waitFor();
   await page.waitForTimeout(650);assert.equal(await logo.locator(".sign-mark").evaluate(e=>getComputedStyle(e,"::after").opacity),"1");
   await page.mouse.move(1,1);await page.waitForTimeout(700);assert.equal(await logo.locator(".sign-mark").evaluate(e=>getComputedStyle(e,"::after").opacity),"0");
