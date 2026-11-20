@@ -18,7 +18,7 @@ const hooks={
 };
 let layoutReads=0;
 class Element {
- constructor(){this.style={};this.dataset={};this.capture=new Set();this.classes=new Set();this.classList={add:x=>this.classes.add(x),remove:x=>this.classes.delete(x)};}
+ constructor(){this.offsetWidth=300;this.style={};this.dataset={};this.capture=new Set();this.classes=new Set();this.classList={add:x=>this.classes.add(x),remove:x=>this.classes.delete(x)};}
  getBoundingClientRect(){layoutReads++;return{width:300};}
  setPointerCapture(x){this.capture.add(x)} hasPointerCapture(x){return this.capture.has(x)} releasePointerCapture(x){this.capture.delete(x)}
 }
@@ -37,21 +37,23 @@ const hook=runInNewContext(code+';useCarousel',context);
 function commit(){let n=0;do{assert.ok(++n<8);dirty=false;cursor=0;result=hook(10,'it');result.rootRef.current=root;result.stageRef.current=stage;for(const {n,fn}of effects.splice(0)){slots[n].cleanup?.();slots[n].cleanup=fn();}}while(dirty)}
 function frame(dt=16){clock+=dt;for(const[n,t]of[...timers])if(t.at<=clock){timers.delete(n);t.fn()}const f=[...raf.values()];raf.clear();f.forEach(fn=>fn(clock));if(dirty)commit();}
 function settle(){for(let i=0;i<300&&raf.size;i++)frame();assert.equal(raf.size,0,'Idle or paused slider must stop RAF');}
-function visible(v){ios.at(-1).fn([{isIntersecting:v}]);}
+function visible(v){ios.at(-1).fn([{isIntersecting:v,intersectionRatio:v ? 1 : 0}]);}
 function event(x,y){return{button:0,isPrimary:true,pointerId:1,clientX:x,clientY:y,currentTarget:stage,target:stage,pointerType:'mouse',preventDefault(){}};}
 commit();assert.equal(raf.size,0);assert.equal(timers.size,0);
-visible(true);const reads=layoutReads;for(let i=0;i<120;i++)frame();assert.equal(layoutReads,reads,'No layout reads in animation loop');assert.equal(raf.size,1);
+visible(true);const reads=layoutReads;for(let i=0;i<120;i++)frame();assert.equal(layoutReads,reads,'No layout reads in animation loop');assert.equal(raf.size,0);assert.equal(timers.size,1,'Centered slide waits without RAF');
+frame(5200);assert.equal(raf.size,1,'The timer advances to the next pizza');settle();assert.equal(result.index,1);
 result.rootBind.onPointerEnter({pointerType:'mouse'});settle();assert.equal(timers.size,0);
 const before=cards[0].style.transform;
 result.bind.onPointerDown(event(250,50));clock+=20;result.bind.onPointerMove(event(190,50));frame();assert.notEqual(cards[0].style.transform,before);
-clock+=200;result.bind.onPointerUp(event(190,50));frame();const released=cards[0].style.transform;settle();assert.equal(cards[0].style.transform,released,'No center snapping after a held fractional drag');
+clock+=200;result.bind.onPointerUp(event(190,50));frame();const released=cards[0].style.transform;settle();assert.notEqual(cards[0].style.transform,released,'A released plate settles back into the focus position');
+assert.equal(cards[0].style.transform,before);
 result.bind.onPointerDown(event(250,50));result.bind.onPointerMove(event(249,90));assert.equal(stage.capture.size,0,'Vertical scroll must not be captured');result.bind.onPointerUp(event(249,90));settle();
-result.rootBind.onPointerLeave({pointerType:'mouse'});clock+=6000;frame();assert.equal(raf.size,1);
+result.rootBind.onPointerLeave({pointerType:'mouse'});frame();frame(5100);assert.equal(raf.size,1);
 visible(false);assert.equal(raf.size,0);assert.equal(timers.size,0);
 visible(true);document.hidden=true;listeners.get('visibilitychange')();assert.equal(raf.size,0);
-document.hidden=false;listeners.get('visibilitychange')();frame();assert.equal(raf.size,1);
-modal={kind:'photo'};commit();assert.equal(raf.size,0);modal=null;commit();frame();assert.equal(raf.size,1);
+document.hidden=false;listeners.get('visibilitychange')();frame();settle();assert.equal(timers.size,1);
+modal={kind:'photo'};commit();assert.equal(raf.size,0);modal=null;commit();frame();settle();assert.equal(timers.size,1);
 media.matches=true;media.fn();settle();assert.equal(timers.size,0);
 result.move(1);frame();settle();assert.ok(captions.some(c=>c.style.opacity==='1.0000'),'Reduced-motion navigation must still work');
 slots.forEach(s=>s.cleanup?.());assert.equal(raf.size,0);assert.equal(timers.size,0);assert.equal(listeners.size,0);assert.ok(ios.every(x=>x.disconnected)&&ros.every(x=>x.disconnected));
-console.log('SCHEDULER_OK — offscreen/hidden/dialog/reduced/hover pause, drag axis, no snap, no frame layout reads, cleanup.');
+console.log('SCHEDULER_OK — offscreen/hidden/dialog/reduced/hover pause, drag axis, centered release, no frame layout reads, cleanup.');

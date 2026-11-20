@@ -125,7 +125,7 @@ async function testViewport(width,height,touch) {
       const after=getComputedStyle(el,"::after");
       return { opacity:after.opacity, image:after.backgroundImage,gold:after.backgroundColor,mask:after.maskImage || after.webkitMaskImage };
     });
-    assert.equal(flameStyle.opacity,"1"); assert.ok(flameStyle.image==="none" && !neutral(flameStyle.gold) && flameStyle.mask.includes("/assets/flame.png"));
+    assert.equal(flameStyle.opacity,"1"); assert.ok(flameStyle.image==="none" && !neutral(flameStyle.gold) && flameStyle.mask.includes("/assets/via-roma-orizzontale.svg"));
     await flame.blur();
     for (const [id,ratio] of [["home",0],["menu",null],["gallery",null],["dove",1]]) {
       await page.evaluate(({id,ratio})=>{
@@ -154,8 +154,8 @@ async function testViewport(width,height,touch) {
     }
     const footer=await page.locator(".footer-row").evaluate(el=>{
       const nav=el.querySelector("nav"), credit=el.querySelector(".studio-credit"), mark=credit.querySelector("img");
-      return {divider:getComputedStyle(nav).borderBottomWidth, wordmark:mark.getBoundingClientRect().width,
-        stacked:nav.getBoundingClientRect().bottom<=credit.getBoundingClientRect().top};
+      return {divider:getComputedStyle(nav).borderTopWidth, wordmark:mark.getBoundingClientRect().width,
+        stacked:credit.getBoundingClientRect().bottom<=nav.getBoundingClientRect().top};
     });
     assert.equal(footer.divider,footer.stacked ? "1px" : "0px");
     assert.equal(footer.stacked, width<=767 || touch && width<=1000 && height<=540);

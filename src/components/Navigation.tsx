@@ -4,6 +4,8 @@ import { Icon } from "./Icon";
 import GradualBlur from "./hero/GradualBlur";
 import { usePresentationInteractions } from "./hero/usePresentationInteractions";
 
+const languageNames = { it: "Italiano", en: "English", de: "Deutsch", fr: "Français" };
+
 type PagePosition = { active: string; progress: number };
 type PositionListener = (position: PagePosition) => void;
 const positionListeners = new Set<PositionListener>();
@@ -107,9 +109,9 @@ export function Header() {
           aria-label="Pizzeria Via Roma — home"
         >
           <img
-            src="/assets/flame.png"
-            width="42"
-            height="46"
+            src="/assets/via-roma-orizzontale.svg"
+            width="1110"
+            height="199"
             alt="Pizzeria Via Roma"
           />
         </a>
@@ -121,6 +123,7 @@ export function Header() {
               data-lang={l}
               className={language === l ? "on" : ""}
               onClick={() => setLanguage(l)}
+              title={languageNames[l]}
               aria-pressed={language === l}
               lang={l}
             >

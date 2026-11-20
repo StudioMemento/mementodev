@@ -62,7 +62,7 @@
 .bento-tile {
   --light:1; --gold:0; --saturation:.8; container-type:inline-size; position:relative; isolation:isolate;
   display:flex; aspect-ratio:1; min-width:0; min-height:0; overflow:hidden;
-  border:1px solid #ffffff2b; background:var(--bento-surface); color:#e5e5e5;
+  border:1px solid var(--satin-rim); background:var(--bento-surface); color:#e5e5e5;
   transition:color .45s,border-color .45s,background-color .45s;
 }
 .platform-instagram,.platform-facebook { aspect-ratio:2 / 1; }
@@ -117,9 +117,12 @@
 .hours-note { color:inherit; font-size:clamp(10px,4.35cqi,31px); }
 .visit-footer { position:relative; z-index:45; padding-bottom:calc(82px + env(safe-area-inset-bottom)); }
 .footer-row {
-  width:var(--vr-content); margin:auto; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; column-gap:clamp(10px,2vw,48px);
+  width:var(--vr-content); margin:auto; display:grid; grid-template-columns:1fr auto 1fr; grid-template-areas:"brand legal credit"; align-items:center; column-gap:clamp(10px,2vw,48px);
   padding-block:clamp(18px,3svh,40px); color:#c6c3ba;
 }
+.footer-row p { grid-area:brand; }
+.footer-row nav { grid-area:legal; }
+.studio-credit { grid-area:credit; }
 .footer-row p,.studio-credit span { font-size:clamp(9px,.73vw,12px); line-height:1.4; text-transform:uppercase; letter-spacing:.09em; font-weight:400; }
 .footer-row nav { display:flex; justify-content:center; gap:clamp(10px,1.4vw,26px); }
 .footer-row nav a,.studio-credit { display:flex; align-items:center; min-height:44px; }
@@ -129,8 +132,8 @@
 .studio-credit img { width:clamp(90px,10vw,165px); height:auto; }
 .footer-row a:hover { color:var(--vr-highlight); }
 @media(max-width:767px),(pointer:coarse) and (max-width:1000px) and (max-height:540px) {
-  .footer-row { grid-template-columns:minmax(0,1fr) auto; gap:16px 12px; }
-  .footer-row nav { grid-column:1 / -1; grid-row:1; display:grid; grid-template-columns:1fr auto 1fr; padding-bottom:10px; border-bottom:1px solid #ffffff26; }
+  .footer-row { grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"brand credit" "legal legal"; gap:8px 12px; }
+  .footer-row nav { display:grid; grid-template-columns:1fr auto 1fr; padding-top:10px; border-top:1px solid #ffffff26; }
   .footer-row nav a:last-child { justify-self:end; }
   .studio-credit span { white-space:nowrap; font-size:clamp(8px,2vw,10px); letter-spacing:.06em; }
 }

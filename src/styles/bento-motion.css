@@ -1,11 +1,14 @@
+.sign-mark::after,.bento-tile::after {
+  content:""; position:absolute; inset:0; opacity:var(--gold); transition:opacity .48s; pointer-events:none;
+}
 .sign-mark::after {
-  content:""; position:absolute; inset:0; opacity:var(--gold); transition:opacity .55s;
   background:var(--vr-logo-gold);
   mask:url("/assets/logo.png") center / contain no-repeat;
 }
 .bento-tile::after {
-  content:""; position:absolute; z-index:1; inset:0; pointer-events:none; opacity:var(--gold);
-  box-shadow:inset 0 0 clamp(16px,7cqi,48px) #c6ab701d, inset 0 0 8px #f2d89d13; transition:opacity .45s;
+  z-index:1;
+  background:radial-gradient(ellipse 75% 73% at 50% 127%,#b58e4959,transparent 82%),
+    linear-gradient(0deg,#c8a05b12,transparent 40%);
 }
 .tile-particles { position:absolute; z-index:1; inset:0; width:100%; height:100%; pointer-events:none; }
 @media(prefers-reduced-motion:reduce) { .bento-tile::after,.sign-mark::after { transition:none; } }

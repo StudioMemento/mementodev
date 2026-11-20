@@ -15,30 +15,35 @@ export function PizzaSlider() {
   })), [language]);
   const carousel = useCarousel(slides.length, language);
   return <section className="vr-pizza-carousel pizza-clean" id="pizza-slider" ref={carousel.rootRef} {...carousel.rootBind} aria-label={t.strip_k}>
-    <header className="oven-header">
-      <h2 className="oven-heading">{t.strip_k}</h2>
-    </header>
-    <div className="vr-pizza-viewport">
-      <div className="vr-pizza-stage" id="forno" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.strip_k}>
-        {Array.from({length:carousel.renderCount},(_,slot) => {
-          const logical = slot % slides.length;
-          const { src, name } = slides[logical];
-          const offset = ((slot + carousel.renderCount / 2) % carousel.renderCount) - carousel.renderCount / 2;
-          return <figure key={slot} className="vr-pizza-card" data-carousel-card data-forno-index={logical} aria-hidden={slot !== 0} style={{ "--slide-x": `${offset * 390}px`, "--slide-distance": Math.abs(offset) } as CSSProperties}>
-            <div className="vr-pizza-image"><Photo src={src} alt={name} enabled={carousel.isLoaded(logical)} eager sizes="(max-width: 767px) 80vw, (max-width: 1199px) 42vw, 500px" /></div>
-          </figure>;
-        })}
+    <div className="pizza-frame">
+      <header className="oven-header"><h2 className="oven-heading">{t.strip_k}</h2></header>
+      <div className="vr-pizza-viewport">
+        <div className="vr-pizza-stage" id="forno" ref={carousel.stageRef} {...carousel.bind} tabIndex={0} role="region" aria-roledescription="carousel" aria-label={t.strip_k}>
+          {Array.from({ length: carousel.renderCount }, (_, slot) => {
+            const logical = slot % slides.length;
+            const { src, name } = slides[logical];
+            const offset = slot < carousel.renderCount / 2 ? slot : slot - carousel.renderCount;
+            return <figure key={slot} className="vr-pizza-card" data-carousel-card data-forno-index={logical}
+              data-active={slot === 0} aria-hidden={slot !== 0}
+              style={{ "--slot": offset, "--side": Math.sign(offset) } as CSSProperties}>
+              <div className="vr-pizza-image">
+                <Photo src={src} alt={name} enabled={carousel.isLoaded(logical)} eager
+                  sizes="(max-width: 700px) 62vw, min(52dvh, 640px)" />
+              </div>
+            </figure>;
+          })}
+        </div>
+        <div className="pizza-controls" role="group" aria-label={copy.navigation}>
+          <button className="pizza-arrow previous" type="button" aria-controls="forno pizza-copy" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
+          <button className="pizza-arrow next" type="button" aria-controls="forno pizza-copy" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
+        </div>
       </div>
-    </div>
-    <div className="pizza-controls" role="group" aria-label={copy.navigation}>
-      <button className="pizza-arrow previous" type="button" aria-controls="forno pizza-copy" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
       <div className="pizza-copy" id="pizza-copy">
         {slides.map(({ name, ingredients }, i) => <div className="pizza-caption" key={i} aria-hidden={i !== carousel.index}>
           <h3>{name}</h3>
           <ul>{ingredients.map((item, part) => <li key={part}>{item}</li>)}</ul>
         </div>)}
       </div>
-      <button className="pizza-arrow next" type="button" aria-controls="forno pizza-copy" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
     </div>
   </section>;
 }

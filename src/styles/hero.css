@@ -4,7 +4,8 @@
   --vr-gold-muted: #a89b7b;
   --vr-highlight: #dac18b; /* sampled from LE CLASSICHE, matches .mcat h3 */
   --vr-logo-gold:linear-gradient(120deg,#a98242 8%,#f5dc9d 32%,#ffefc5 40%,#be984e 62%,#ebd092 83%);
-  --satin-rim:#626262;
+  --satin-rim:rgb(255 255 255 / .12);
+  --specks:none;
   --satin-ink:#bebebe;
   --selected-rim:#d8b772;
   --selected-ink:#f2d594;
@@ -12,6 +13,7 @@
   --selected-light:inset 0 -2px 6px #dfb55f33,0 1px 9px #bd944916;
   --vr-hero-gradient-speed: 5s;
 }
+@media(prefers-reduced-motion:no-preference) and (forced-colors:none) { :root { --lit-specks:url("/assets/satin-specks.svg"); } }
 .vr-hero { position:relative; isolation:isolate; background:var(--vr-carbon); }
 .hero-glimmer { position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; }
 .hero-logo { position:relative; aspect-ratio:1; flex:none; filter:drop-shadow(0 0 9px rgb(218 193 139 / 0)); transition:filter .7s ease; }
@@ -42,31 +44,36 @@
 .vr-edge-blur--bottom { bottom:0; height:calc(clamp(7rem,16vh,10rem) + env(safe-area-inset-bottom)); }
 .vr-edge-blur > div { position:absolute; inset:0; background:transparent; }
 /* The light sits in the glass. Glyphs inherit one opaque colour. */
-.dock-tile,.lang {
+.dock-tile,.lang,.chips button {
   overflow:hidden; isolation:isolate; color:var(--satin-ink); border-color:var(--satin-rim);
-  background:linear-gradient(145deg,#252525c9,#191919a8); box-shadow:inset 0 1px #ffffff1c,0 2px 8px #0002;
-  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  background:var(--specks),linear-gradient(145deg,#252525c9,#191919a8); box-shadow:0 2px 8px #0002;
+  -webkit-backdrop-filter:blur(var(--satin-blur,12px)); backdrop-filter:blur(var(--satin-blur,12px));
+}
+.lang { border-color:#ffffff12; background:linear-gradient(145deg,#242424ba,#161616a6); }
+@media(max-width:360px) {
+  .site-top { padding-inline:max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-right)); }
 }
 .site-brand::after {
   content:""; position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .35s;
-  background:var(--selected-ink); mask:url("/assets/flame.png") center / 28px auto no-repeat;
+  background:var(--selected-ink); mask:url("/assets/via-roma-orizzontale.svg") left center / 100% auto no-repeat;
 }
 .site-brand:focus-visible::after,.site-brand:active::after { opacity:1; }
-.dock-tile svg { width:24px; height:24px; }
 .dock-flame { width:21px; height:22px; background:currentColor; mask:url("/assets/flame.png") center/contain no-repeat; }
 .hero-down,.hero-down svg { width:clamp(72px,6.8vw,96px); height:clamp(72px,6.8vw,96px); }
 .hero-down svg path { stroke-width:1.55; }
 @media(max-height:540px) { .hero-down,.hero-down svg { width:60px; height:60px; } }
-.lang button { border:0; transition:background-color .25s; }
+.lang button { border:0; background-image:var(--specks); transition:background-color .25s; }
 .lang button.on,.vr-dock a[aria-current] .dock-tile,.vr-dock a:active .dock-tile,.chips button.on {
-  color:var(--selected-ink); border:1px solid var(--selected-rim); background:var(--selected-glass); box-shadow:var(--selected-light);
+  color:var(--selected-ink); border:1px solid var(--selected-rim); --specks:var(--lit-specks,none); background:var(--specks),var(--selected-glass); box-shadow:var(--selected-light);
 }
+.vr-dock a:focus-visible,:is(.lang,.chips) button:focus-visible { --specks:var(--lit-specks,none); }
 .vr-dock a:focus-visible,.lang button:focus-visible { outline-color:#eee; }
 .lang button:focus-visible { outline-offset:-2px; }
 @media(hover:hover) {
   .site-brand:hover::after { opacity:1; }
-  .lang button:not(.on):hover { background:#ffffff12; }
-  .vr-dock a:not([aria-current]):not(:active):hover .dock-tile { border-color:#888; }
+  .vr-dock a:hover,:is(.lang,.chips) button:hover { --specks:var(--lit-specks,none); }
+  .lang button:not(.on):hover { background-color:#ffffff12; }
+  .vr-dock a:not([aria-current]):not(:active):hover .dock-tile { border-color:#ffffff30; }
 }
 @media(max-height:320px) and (orientation:landscape) {
   .site-top { padding-top:calc(6px + env(safe-area-inset-top)); }
@@ -84,7 +91,7 @@ input,textarea,[contenteditable=true] { -webkit-user-select:text; user-select:te
   .site-brand::after,.lang button,.hero-logo,.hero-logo::after { transition:none; }
 }
 /* Keep optical blur when the OS reports reduced transparency: the old rule hid it entirely on the review browser. */
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .vr-edge-blur { display:none; } .dock-tile,.lang { background:#252525e0; } }
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .vr-edge-blur { display:none; } .dock-tile,.lang,.chips button { background:#252525e0; } }
 @media(forced-colors:active) {
   .hero-slogan { color:CanvasText; -webkit-text-fill-color:CanvasText; background:none; text-shadow:none; }
   .hero-glimmer,.hero-liquid,.hero-logo::after,.vr-edge-blur { display:none; }

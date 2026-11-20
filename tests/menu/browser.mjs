@@ -125,14 +125,14 @@ try {
    const art=page.locator('#cat-audaci .menu-art');
    const snapshot=el=>{
     const style=(target,pseudo,keys)=>Object.fromEntries(keys.map(k=>[k,getComputedStyle(target,pseudo)[k]]));
-    return {frame:style(el,'::before',['height','clipPath','backgroundColor','filter','transitionDuration']),after:style(el,'::after',['height','clipPath','backgroundColor','filter','transitionDuration']),mask:getComputedStyle(el.querySelector('.menu-art-window')).maskImage,image:style(el.querySelector('img'),null,['filter','transform','opacity','mixBlendMode']),containerFilter:getComputedStyle(el).filter};
+    return {frame:style(el,'::before',['height','backgroundImage','backgroundSize','filter','transitionDuration']),after:style(el,'::after',['height','backgroundImage','backgroundSize','filter','transitionDuration']),mask:getComputedStyle(el.querySelector('.menu-art-window')).maskImage,image:style(el.querySelector('img'),null,['filter','transform','opacity','mixBlendMode']),containerFilter:getComputedStyle(el).filter};
    };
    const before=await art.evaluate(snapshot);
    await art.hover();const after=await art.evaluate(snapshot);
    assert.deepEqual(after,before,'Image hover changed the image or stroke/fade geometry');
-   assert.ok(parseFloat(before.frame.height)>=2 && parseFloat(before.frame.height)<=3);
-   assert.deepEqual(before.frame,before.after);assert.ok(before.frame.clipPath.includes('1px'));
-   assert.equal(before.frame.backgroundColor,'rgb(203, 178, 122)');assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');
+   assert.ok(parseFloat(before.frame.height)>=2 && parseFloat(before.frame.height)<=4);
+   assert.deepEqual(before.frame,before.after);assert.ok(before.frame.backgroundImage.includes('filetto.svg'));
+   assert.equal(before.frame.backgroundSize,'100% 100%');assert.equal(before.frame.filter,'none');assert.equal(before.frame.transitionDuration,'0s');
    assert.equal(before.mask,'none');assert.equal(before.image.filter,'none');assert.equal(before.containerFilter,'none');
   }
   await page.screenshot({path:`${out}/audaci-${width}x${height}.png`});

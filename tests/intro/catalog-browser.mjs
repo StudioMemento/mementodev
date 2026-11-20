@@ -99,9 +99,9 @@ try {
       const shell=page.locator("#asporto .crust-card-shell");
       await hoverCard(shell);
       await page.waitForFunction(() => document.querySelector("#asporto .crust-card-shell").dataset.tiltActive==="true");
-      assert.equal(await card.evaluate(el => getComputedStyle(el).getPropertyValue("--card-scale").trim()),"1.09");
-      assert.equal(await card.evaluate(el=>getComputedStyle(el).transform),"none");
-      await page.waitForFunction(()=>new DOMMatrix(getComputedStyle(document.querySelector("#asporto img")).transform).a>1.025);
+      assert.equal(await card.evaluate(el => getComputedStyle(el).getPropertyValue("--card-scale").trim()),"1.1");
+      await page.waitForFunction(()=>getComputedStyle(document.querySelector("#asporto .crust-card")).transform.startsWith("matrix3d"));
+      assert.equal(await card.locator("img").evaluate(el=>getComputedStyle(el).transform),"none");
     }
     assert.deepEqual(errors,[]);
     await page.close();

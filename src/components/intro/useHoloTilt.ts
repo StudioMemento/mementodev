@@ -1,8 +1,6 @@
 import { useEffect, type RefObject } from "react";
 
-export type CardEffect = "tilt" | "window";
-
-export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef: RefObject<HTMLElement | null>, effect: CardEffect = "tilt") {
+export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const shell = shellRef.current, face = faceRef.current;
     if (!shell || !face) return;
@@ -14,13 +12,8 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
     const paint = () => {
       frame = 0;
       if (disposed) return;
-      if (effect === "tilt") {
-        face.style.setProperty("--tilt-x", `${(-y * 15).toFixed(2)}deg`);
-        face.style.setProperty("--tilt-y", `${(x * 15).toFixed(2)}deg`);
-      } else {
-        face.style.setProperty("--photo-x", `${(-x * 2.2).toFixed(2)}%`);
-        face.style.setProperty("--photo-y", `${(-y * 2.4).toFixed(2)}%`);
-      }
+      face.style.setProperty("--tilt-x", `${(-y * 15).toFixed(2)}deg`);
+      face.style.setProperty("--tilt-y", `${(x * 15).toFixed(2)}deg`);
       shell.dataset.tiltActive = String(active);
     };
     const queue = () => { if (!frame && !disposed) frame = requestAnimationFrame(paint); };
@@ -79,8 +72,8 @@ export function useHoloTilt(shellRef: RefObject<HTMLDivElement | null>, faceRef:
       media.removeEventListener("change", reset);
       window.removeEventListener("resize", invalidate); window.removeEventListener("scroll", invalidate);
       document.removeEventListener("visibilitychange", onVisibility);
-      face.style.removeProperty("--photo-x"); face.style.removeProperty("--photo-y"); face.style.removeProperty("--tilt-x"); face.style.removeProperty("--tilt-y");
+      face.style.removeProperty("--tilt-x"); face.style.removeProperty("--tilt-y");
       delete shell.dataset.tiltActive;
     };
-  }, [shellRef, faceRef, effect]);
+  }, [shellRef, faceRef]);
 }

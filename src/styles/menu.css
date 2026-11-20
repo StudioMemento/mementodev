@@ -22,7 +22,7 @@
 .chipbar-inner { position:relative; pointer-events:auto; }
 .chips { position:relative; display:flex; overflow-x:auto; gap:8px; padding:7px 2px; scroll-padding-inline:2px; scrollbar-width:none; overscroll-behavior-x:contain; }
 .chips::-webkit-scrollbar { display:none; }
-.chips button { flex:1 0 auto; min-height:40px; padding:9px 16px; border:1px solid var(--satin-rim); border-radius:24px; color:var(--satin-ink); font-size:11px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; background:linear-gradient(150deg,rgb(37 37 36 / .8),rgb(37 37 36 / .62) 55%,rgb(37 37 36 / .74)); box-shadow:inset 0 1px 0 rgb(255 255 255 / .06),0 2px 8px rgb(9 9 9 / .15); -webkit-backdrop-filter:blur(22px); backdrop-filter:blur(22px); -webkit-mask-image:var(--chip-edge,none); mask-image:var(--chip-edge,none); transition:color .45s ease,border-color .45s ease,box-shadow .45s ease; }
+.chips button { --satin-blur:22px; flex:1 0 auto; min-height:40px; padding:9px 16px; border:1px solid; border-radius:24px; font-size:11px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; -webkit-mask-image:var(--chip-edge,none); mask-image:var(--chip-edge,none); transition:color .45s,border-color .45s; }
 @media (min-width:768px) { .chips button { letter-spacing:.16em; } }
 .chips button:focus-visible { outline-color:#fff; outline-offset:-4px; }
 .chips button.on:focus-visible { outline-color:var(--vr-highlight); }
@@ -40,11 +40,11 @@
 .menu-art { width:100%; aspect-ratio:2048/487; position:relative; margin:28px 0; }
 :root { --section-rule:1px solid #766644; --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); }
 .menu-art::before,.menu-art::after {
-  content:""; position:absolute; z-index:1; inset-inline:0; height:clamp(2px,.21vw,3px); pointer-events:none; background:#cbb27a;
-  clip-path:polygon(0 0,100% 0,100% 1px,62% 100%,38% 100%,0 1px);
+  content:""; position:absolute; z-index:1; inset-inline:0; height:clamp(2.5px,.23vw,4px); pointer-events:none;
+  background:url("/assets/menu/filetto.svg") center / 100% 100% no-repeat;
 }
 .menu-art::before { top:0; }
-.menu-art::after { bottom:0; transform:scaleY(-1); }
+.menu-art::after { bottom:0; }
 .menu-art-window { position:absolute; inset:0; overflow:hidden; }
 .menu-art img { width:100%; height:100%; object-fit:contain; }
 .item { position:relative; padding:10px 0; min-width:0; }
@@ -117,7 +117,7 @@
 @media(hover:hover) {
   .menu-head:hover h2 span { filter:drop-shadow(0 0 12px rgb(218 193 139 / .23)); }
   .mcat-head:hover h3 span { animation:vr-menu-gold 4s ease-in-out infinite alternate; filter:drop-shadow(0 0 10px rgb(218 193 139 / .23)); }
-  .chips button:not(.on):hover { color:#d5d5d5; border-color:#737373; }
+  .chips button:not(.on):hover { color:#d5d5d5; border-color:#ffffff30; }
   .item button.nome:hover,.allergen-trigger:hover { color:var(--vr-highlight); }
 }
 @media(max-width:767px) {
@@ -158,7 +158,7 @@
   .modal-allergens[data-density=minimum] .allergen-description { margin-top:.5px; }
 }
 @media(prefers-reduced-motion:reduce) { .menu-head h2 span,.mcat-head:hover h3 span { animation:none; } .menu-head h2 span,.mcat h3 span,.chips button { transition:none; } }
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .chips button { background:rgb(37 37 36 / .88); } .modal-allergens::backdrop { background:rgb(9 9 9 / .96); } }
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .modal-allergens::backdrop { background:rgb(9 9 9 / .96); } }
 @media(forced-colors:active) { .menu-head h2 span,.mcat h3 span { background:none; -webkit-text-fill-color:CanvasText; filter:none; } .chips button.on { outline:2px solid Highlight; outline-offset:-4px; } .allergen-list li { color:GrayText; } .allergen-list .contains { color:Highlight; } .allergen-panel .modal-close:focus-visible { outline:1px solid Highlight; } }
 
 /* The existing content widths reserve the requested side bands:

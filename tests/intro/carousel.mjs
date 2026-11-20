@@ -1,38 +1,40 @@
-import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import {stripTypeScriptTypes} from 'node:module';
-import {runInNewContext} from 'node:vm';
-const source=stripTypeScriptTypes((await readFile('src/hooks/carouselMotion.ts','utf8')).replaceAll('export ',''));
-const {carouselWindow,loopDistance}=runInNewContext(source+';({carouselWindow,loopDistance})');
-const count=10;
-let recycled=0,samples=0;
-for(const [viewport,cardWidth] of [[320,256],[390,312],[768,322.56],[1440,460.8],[2560,500],[3440,500],[3840,500],[5120,500],[7680,500]]){
- const w=carouselWindow(viewport,cardWidth,count), edge=viewport/2+cardWidth/2;
- assert.ok(w.renderCount>=count&&w.renderCount%count===0);
- assert.ok(w.renderCount*w.step/2>edge,'Physical belt wraps on screen');
- const previous=new Map();
- for(let t=0;t<=w.renderCount*3*100;t++){
-  const position=t/100, nearest=Math.round(position);
-  const loaded=new Set();for(let d=-w.preload;d<=w.preload;d++)loaded.add(((nearest+d)%count+count)%count);
-  const actual=[];
-  for(let slot=0;slot<w.renderCount;slot++){
-   const d=loopDistance(slot,position,w.renderCount),x=d*w.step,visible=Math.abs(d)<w.radius;
-   if(Math.abs(x)<edge){assert.ok(visible,'Visible pizza is culled');assert.ok(loaded.has(slot%count),'Visible pizza image was not preloaded');actual.push(x);}
-   const old=previous.get(slot);
-   if(old&&Math.abs(x-old.x)>w.step*2){assert.ok(Math.abs(x)>edge&&Math.abs(old.x)>edge,'Recycling teleports a visible pizza');recycled++;}
-   if(old&&visible!==old.visible)assert.ok(Math.abs(x)>edge&&Math.abs(old.x)>edge,'Visibility toggles inside viewport');
-   previous.set(slot,{x,visible});
+import assert from "node:assert/strict";
+import {readFile} from "node:fs/promises";
+import {stripTypeScriptTypes} from "node:module";
+import {runInNewContext} from "node:vm";
+const code=stripTypeScriptTypes((await readFile("src/hooks/carouselMotion.ts","utf8")).replaceAll("export ",""));
+const {carouselWindow,loopDistance,pizzaPose}=runInNewContext(code+";({carouselWindow,loopDistance,pizzaPose})");
+for(const [width,plate] of [[320,180],[390,241],[768,360],[1440,468],[2560,560],[3440,640],[5120,500],[7680,500]]){
+  const count=10, w=carouselWindow(width,plate,count);
+  assert.ok(w.renderCount>=count && w.renderCount%count===0);
+  const center=pizzaPose(0,w.step,w.focusStep), side=pizzaPose(1,w.step,w.focusStep);
+  assert.equal(center.scale,1); assert.ok(side.scale<.75);
+  const gap=side.x-plate*side.scale/2-plate/2;
+  assert.ok(gap>=47.999 && gap<=104.001);
+  const outer=pizzaPose(2,w.step,w.focusStep);
+  assert.ok(outer.x-side.x-plate*side.scale<gap);
+  const previous=new Map();
+  for(let offset=0;offset<=w.renderCount*2*32;offset++){
+    const position=offset/32;
+    const painted=new Set();
+    for(let i=0;i<w.renderCount;i++){
+      const d=loopDistance(i,position,w.renderCount);
+      const {x,scale}=pizzaPose(d,w.step,w.focusStep);
+      const inFrame=Math.abs(x)<=width/2+plate*scale/2;
+      if(inFrame){
+        assert.ok(Math.abs(d)<w.radius);
+        assert.ok(Math.abs(loopDistance(i%count,Math.round(position),count))<=w.preload);
+        painted.add(Math.round(d*32));
+      }
+      const old=previous.get(i);
+      if(old && Math.abs(x-old.x)>2*w.focusStep) assert.ok(!inFrame && !old.inFrame,"Visible wrap");
+      previous.set(i,{x,inFrame});
+    }
+    for(let logical=Math.floor(position-w.radius);logical<=position+w.radius;logical++){
+      const d=logical-position, pose=pizzaPose(d,w.step,w.focusStep);
+      if(Math.abs(pose.x)<=width/2+plate*pose.scale/2) assert.ok(painted.has(Math.round(d*32)),"Missing visible plate");
+    }
   }
-  const expected=[];
-  for(let offset=-Math.ceil(edge/w.step)-1;offset<=Math.ceil(edge/w.step)+1;offset++){
-   const x=(nearest+offset-position)*w.step;if(Math.abs(x)<edge)expected.push(x);
-  }
-  actual.sort((a,b)=>a-b);expected.sort((a,b)=>a-b);
-  assert.equal(actual.length,expected.length,'Gap or duplicated pizza in visible belt');
-  actual.forEach((x,i)=>assert.ok(Math.abs(x-expected[i])<1e-7));samples++;
- }
 }
-assert.ok(recycled>100,'Positive control: wrap boundaries were exercised');
-assert.ok(2.6*(500+16)<3440/2+250,'Regression control must reproduce the old ultrawide cutoff');
-await import('./carousel-runtime.mjs');
-console.log(`INTRO_CAROUSEL_OK — ${samples} positions across 320–7680px, ${recycled} offscreen recycles, full visible coverage and image preload.`);
+await import("./carousel-runtime.mjs");
+console.log("INTRO_CAROUSEL_OK — smooth scale, central and outer spacing, culling, image preload and offscreen recycling at 320–7680px.");

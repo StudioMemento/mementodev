@@ -39,7 +39,7 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_4.9 — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_5.0 — preview'));assert.ok(html.includes('noindex,nofollow'));
 const crustStart = html.lastIndexOf('<section',html.indexOf('id="cornicione"'));
 const takeawayStart = html.lastIndexOf('<section',html.indexOf('id="asporto"'));
 assert.equal((balanced(html,crustStart,'section').match(/class="crust-card"/g)||[]).length,3);
@@ -60,7 +60,8 @@ assert.ok((await readFile('public/legal.css','utf8')).includes('background:#0909
 const kitchen=balanced(html,html.indexOf('<section class="mcat fx on has-art" id="cat-cucina"'),'section');
 assert.match(kitchen,/Anche se incredibile\.\.\.<br class="kitchen-mobile-break"\/><span class="kitchen-desktop-space"> <\/span>non si ha sempre voglia di pizza\?/);
 assert.ok(!css.includes('.menu-art:hover'),'Obsolete artwork hover layers remain');
-assert.match(css,/\.menu-art::before,\.menu-art::after \{[^}]*background:#[0-9a-f]{6};[^}]*clip-path:polygon/);
+assert.match(css,/\.menu-art::before,\.menu-art::after \{[^}]*filetto\.svg/);
+assert.match(await readFile('public/assets/menu/filetto.svg','utf8'), /preserveAspectRatio="none"[\s\S]*<path[^>]+d="[^"]*C/);
 assert.ok(!html.includes('class="pizza-count"'));
 const head=balanced(html,html.indexOf('<header class="menu-head"'),'header');
 assert.equal(text(head),'Menù');assert.equal((head.match(/<h2/g)||[]).length,1);

@@ -12,6 +12,10 @@ function Footer() {
   return <footer className="visit-footer" role="contentinfo">
     <div className="footer-row">
       <p><span>© 2026</span> <span>Pizzeria Via Roma</span></p>
+      <a className="studio-credit" href="https://mementostudio.it" target="_blank" rel="noopener noreferrer">
+        <span lang="en">Powered by</span>
+        <img src="/assets/memento-wordmark.svg" width="202" height="9" loading="lazy" alt="MEMENTO" />
+      </a>
       <nav aria-label={ui.legal_notes}>
         {([["privacy", copy.privacy], ["cookie", copy.cookies], ["note-legali", ui.legal_notes]] as const).map(([slug, label]) =>
           <a key={slug} href={legalPath(language, slug)} aria-haspopup="dialog" onClick={event => {
@@ -19,10 +23,6 @@ function Footer() {
             event.preventDefault(); open({ kind: "legal", slug });
           }}>{label}</a>)}
       </nav>
-      <a className="studio-credit" href="https://mementostudio.it" target="_blank" rel="noopener noreferrer">
-        <span lang="en">Powered by</span>
-        <img src="/assets/memento-wordmark.svg" width="202" height="9" loading="lazy" alt="MEMENTO" />
-      </a>
     </div>
   </footer>;
 }
@@ -54,7 +54,7 @@ export default function Contacts() {
           <span className="tile-bottom"><span><span className="action-label">WhatsApp</span><small>380 2453 757</small></span><TileArrow /></span>
         </a>
         <a className="bento-tile contact-tile phone-tile" href="tel:+390427541232">
-          <img className="tile-art" src="/assets/social/smartphone.webp?v=46" width="512" height="512" loading="lazy" decoding="async" alt="" />
+          <img className="tile-art" src="/assets/social/telefono.webp" width="512" height="512" loading="lazy" decoding="async" alt="" />
           <span className="tile-bottom"><span><span className="action-label">{ui.call}</span><small>0427 541232</small></span><TileArrow /></span>
         </a>
       </BentoGrid>

@@ -186,7 +186,7 @@ async function contactAndLegal(page, touch) {
   assert.equal(await page.locator(".phone-tile").getAttribute("href"),"tel:+390427541232");
   assert.equal(await page.locator(".wa-tile").getAttribute("href"),"https://wa.me/393802453757");
   assert.equal(await page.locator(".wa-tile img").getAttribute("src"),"/assets/social/whatsapp.webp?v=46");
-  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/smartphone.webp?v=46");
+  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/telefono.webp");
   assert.equal(await page.locator(".studio-credit").getAttribute("href"),"https://mementostudio.it");
   assert.deepEqual(await links.locator(".tile-bottom > span:first-child").allTextContents(),["Instagram","Facebook","Google Reviews","Tripadvisor","Restaurant Guru","Sluurpy"]);
   await center(page.locator("#social"));await Promise.all((await links.locator("img").all()).map(el=>el.evaluate(im=>im.decode())));
@@ -303,7 +303,7 @@ async function finalLayout(page) {
     return {validTitles:titles.length===8 && titles.every(atGutters),lines, pairs, mobile:innerWidth<=700, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
-      footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderBottomWidth,
+      footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
       stackedFooter:matchMedia("(max-width:767px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches,
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
       blockSizes:[...document.querySelectorAll("#social,#dove")].every(el=>rect(el).height+1>=innerHeight),
