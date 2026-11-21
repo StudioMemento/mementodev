@@ -7,3 +7,7 @@
 .ribbon-stage.is-dragging { cursor:grabbing; }
 .flat:has(.ribbon-stage[data-enhanced]:focus-visible)::after { content:none; }
 .flat .ribbon-stage:focus-visible .is-current .photo-byline { text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:.22em; text-decoration-color:var(--vr-highlight); }
+
+.ribbon-pause { display:block; font-size:.875rem; line-height:1.4; margin:.4rem auto 0; min-height:32px; padding:3px 12px; color:#c6c0b3; }
+.ribbon-pause span { color:var(--vr-highlight); }
+@media(prefers-reduced-motion:reduce) { .ribbon-pause { display:none; } }

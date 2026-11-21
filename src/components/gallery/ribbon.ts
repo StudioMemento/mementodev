@@ -2,7 +2,7 @@ import { bindHorizontalDrag } from "../../hooks/horizontalDrag";
 import { wrap } from "../../hooks/useDrag";
 
 export type Variant = "panorama" | "flat";
-export type RibbonController = { focusCard(index: number): void; refresh(): void; destroy(): void };
+export type RibbonController = { focusCard(index: number): void; refresh(): void; setPaused(value: boolean): void; destroy(): void };
 
 const perspective = 1800;
 const angularSpeed = 3.2 * Math.PI / 180;
@@ -14,7 +14,7 @@ function distance(index: number, position: number, count: number) {
   return wrap(index - position + count / 2, count) - count / 2;
 }
 
-export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: HTMLElement, paceReference?: HTMLElement | null): RibbonController {
+export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: HTMLElement, paceReference?: HTMLElement | null, onPause?: (value: boolean) => void): RibbonController {
   const track = stage.querySelector<HTMLElement>(".ribbon-track")!;
   const cards = Array.from(track.children) as HTMLElement[];
   const images = cards.map(card => card.querySelector("img")!);
@@ -167,6 +167,14 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
     },
     end(coast) { interacting = false; velocity = coast && !motion.matches ? velocity * momentum : 0; refresh(); },
   });
+  function setPaused(value: boolean) {
+    paused = value;
+    if (paused) { velocity = 0; goal = null; }
+    keyboard = false; hovered = false;
+    onPause?.(paused);
+    refresh();
+  }
+  stage.addEventListener("pointerdown", e => { if (e.pointerType === "touch") setPaused(true); }, options);
   function hover(e: PointerEvent) {
     if (e.pointerType === "mouse") { hovered = e.type === "pointerenter"; refresh(); }
   }
@@ -176,7 +184,7 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
   stage.addEventListener("focusout", e => { if (!stage.contains(e.relatedTarget as Node | null)) { keyboard = false; refresh(); } }, options);
   stage.addEventListener("keydown", e => {
     const current = nearest(goal ?? position);
-    if (e.key === " ") { e.preventDefault(); paused = !paused; keyboard = paused; hovered = false; refresh(); return; }
+    if (e.key === " ") { e.preventDefault(); setPaused(!paused); return; }
     if (panorama && e.key === "Enter" && e.target === stage) { e.preventDefault(); cards[current].click(); return; }
     const targets: Record<string, number> = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 0, End: cards.length - 1 };
     if (!(e.key in targets)) return;
@@ -200,7 +208,7 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
   if (paceReference) resize.observe(paceReference);
   document.addEventListener("visibilitychange", refresh, options);
   motion.addEventListener("change", resetMotion, options);
-  return { focusCard, refresh, destroy() {
+  return { focusCard, refresh, setPaused, destroy() {
     listeners.abort(); resize.disconnect(); observer.disconnect(); cancelAnimationFrame(frame);
     delete stage.dataset.enhanced; delete stage.dataset.active;
     stage.classList.remove("is-dragging"); track.style.removeProperty("clip-path");

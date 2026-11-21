@@ -1,10 +1,10 @@
-import { useCallback, useId, useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useCallback, useId, useLayoutEffect, useRef, useState } from "react";
 import { useOnApproach } from "../../hooks/useOnApproach";
 import { useI18n } from "../../i18n";
 import metadata from "../../data/images.json";
 import { closingCopy } from "../../data/closing-copy";
 import { useDialog } from "../DialogContext";
-import { Photo } from "../Photo";
+import { releaseCopy } from "../../data/release-copy";
 import type { RibbonController, Variant } from "./ribbon";
 
 type GalleryPhoto = { src: string; caption: string };
@@ -16,13 +16,14 @@ export function PhotoRibbon({ photos, title, variant }: Props) {
   const engine = useRef<RibbonController | null>(null);
   const announcement = useRef<HTMLSpanElement>(null);
   const helpId = useId();
-  const flat = variant === "flat";
+  const [paused, setPaused] = useState(false);
+  const [ready, setReady] = useState(false);
 
   const loadRibbon = useCallback(async () => {
     const { mountRibbon } = await import("./ribbon");
     return (element: HTMLDivElement) => {
-      const paceReference = variant === "flat" ? element.closest("main")?.querySelector<HTMLElement>(".panorama .ribbon-card") : null;
-      const controller = mountRibbon(element, variant, announcement.current!, paceReference);
+      const controller = mountRibbon(element, variant, announcement.current!, null, setPaused);
+      setReady(true);
       engine.current = controller;
       return () => { controller.destroy(); engine.current = null; };
     };
@@ -43,19 +44,10 @@ export function PhotoRibbon({ photos, title, variant }: Props) {
   return <div className={`photo-ribbon ${variant}`}>
     <p className="sr-only" id={helpId}>{closingCopy[language].galleryKeys}</p>
     <div className="ribbon-stage" ref={stage} tabIndex={0} role="group" aria-label={title} aria-describedby={helpId}
-      aria-keyshortcuts={flat ? "ArrowLeft ArrowRight Home End Space" : "ArrowLeft ArrowRight Home End Space Enter"}>
+      aria-keyshortcuts="ArrowLeft ArrowRight Home End Space Enter">
       <div className="ribbon-track">
         {photos.map(({ src, caption }, index) => {
-          const { width, height } = metadata[src as keyof typeof metadata];
-          if (flat) {
-            const ratio = width / height;
-            const sizes = `(max-width: 620px) and (orientation: portrait) ${Math.ceil(52 * ratio)}vw, max(${10 * ratio}vw, min(${28 * ratio}vw, ${46 * ratio}svh))`;
-            return <figure key={`${src}-${caption}-${index}`} className="ribbon-card" aria-label={caption} style={{ "--photo-ratio": ratio } as CSSProperties}>
-              <Photo src={src} alt={caption} className="ribbon-image" sizes={sizes} deferred />
-              <noscript><Photo src={src} alt={caption} className="ribbon-image" sizes={sizes} /></noscript>
-              <figcaption className="photo-byline">{caption}</figcaption>
-            </figure>;
-          }
+          const { width } = metadata[src as keyof typeof metadata];
           const thumb = `/assets/ribbons/${src.split("/").pop()}`;
           return <button className="ribbon-card" type="button" key={src} tabIndex={-1} aria-label={caption} onClick={() => centerPanel(index)}>
             <img className="ribbon-image" src={thumb} srcSet={`${thumb} 640w, /${src.replace(".webp", "-768.webp")} 768w, /${src} ${width}w`}
@@ -66,5 +58,8 @@ export function PhotoRibbon({ photos, title, variant }: Props) {
       </div>
       <span ref={announcement} className="sr-only ribbon-announcement" aria-live="polite" aria-atomic="true" />
     </div>
+    {ready && <button className="ribbon-pause" type="button" aria-label={(paused ? releaseCopy[language].play : releaseCopy[language].hold) + " · " + title} onClick={() => engine.current?.setPaused(!paused)}>
+      <span aria-hidden="true">{paused ? "▷" : "Ⅱ"}</span> {paused ? releaseCopy[language].play : releaseCopy[language].hold}
+    </button>}
   </div>;
 }

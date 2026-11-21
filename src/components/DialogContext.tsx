@@ -1,6 +1,7 @@
 import {
   createContext,
   useCallback,
+  useEffect,
   useContext,
   useLayoutEffect,
   useRef,
@@ -12,19 +13,34 @@ export type ModalState =
   | { kind: "legal"; slug: "privacy" | "cookie" | "note-legali" };
 const DialogContext = createContext<{
   modal: ModalState | null;
-  open: (value: ModalState) => void;
+  open: (value: ModalState, trigger?: HTMLElement) => void;
   close: () => void;
   update: (value: ModalState) => void;
 }>({ modal: null, open: () => {}, close: () => {}, update: () => {} });
 export function DialogProvider({ children }: { children: ReactNode }) {
   const [modal, setModal] = useState<ModalState | null>(null);
   const opener = useRef<HTMLElement | null>(null);
-  const open = useCallback((value: ModalState) => {
-    opener.current = document.activeElement as HTMLElement;
+  const closing = useRef(false);
+  const open = useCallback((value: ModalState, trigger?: HTMLElement) => {
+    closing.current = false;
+    opener.current = trigger ?? document.activeElement as HTMLElement;
+    history.pushState({ ...history.state, viaRomaDialog: value }, "");
     setModal(value);
   }, []);
   const close = useCallback(() => {
-    setModal(null);
+    if (closing.current) return;
+    if (history.state?.viaRomaDialog) { closing.current = true; history.back(); }
+    else setModal(null);
+  }, []);
+  useEffect(() => {
+    const sync = () => { closing.current = false; setModal(history.state?.viaRomaDialog ?? null); };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+  const update = useCallback((value: ModalState) => {
+    history.replaceState({ ...history.state, viaRomaDialog: value }, "");
+    setModal(value);
   }, []);
   useLayoutEffect(() => {
     if (modal !== null) return;
@@ -35,7 +51,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
     if (target?.isConnected) target.focus({ preventScroll: true });
   }, [modal]);
   return (
-    <DialogContext.Provider value={{ modal, open, close, update: setModal }}>
+    <DialogContext.Provider value={{ modal, open, close, update }}>
       {children}
     </DialogContext.Provider>
   );

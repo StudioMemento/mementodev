@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { publicVat, publicFood, venueLegal } from "./scripts/venue-legal.ts";
 export default defineConfig({
+  define: { __VENUE_VAT__: JSON.stringify(publicVat), __FOOD_PUBLIC__: JSON.stringify(publicFood) },
   plugins: [
     {
       name: "render-image-metadata",
@@ -18,7 +20,7 @@ export default defineConfig({
         return { code: JSON.stringify(images), map: null };
       },
     },
-    react(),
+    venueLegal(), react(),
   ],
   build: {
     target: "es2022",

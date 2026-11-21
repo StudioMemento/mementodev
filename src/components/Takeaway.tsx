@@ -1,5 +1,9 @@
+import { LinkArrow } from "./Icon";
 import { useI18n, type Language } from "../i18n";
 import { HoloCard } from "./intro/HoloCard";
+
+import { releaseCopy } from "../data/release-copy";
+import { phoneUrl } from "../data/venue-links";
 
 const titles: Record<Language, [string, string, string]> = {
   it: ["Gusto Via Roma", "nel comfort di casa?", "Facciamo anche servizio da asporto!"],
@@ -19,11 +23,14 @@ export function Takeaway() {
           sizes="(min-width: 2400px) 40vw, (min-width: 1200px) 60vw, (min-width: 768px) 70vw, 80vw"
           width="1600" height="900" loading="lazy" decoding="async" draggable={false} alt="" />
         <div className="crust-card-shade" aria-hidden="true" />
-        <div className="takeaway-copy">
+        <a className="takeaway-copy" href={phoneUrl}>
           <h2 id="takeaway-title">{firstLine}<br />{secondLine}</h2>
           <p>{answer}</p>
-        </div>
+          <span className="takeaway-call">{releaseCopy[language].phone} <LinkArrow /></span>
+        </a>
       </HoloCard>
+      <p className="media-credit">{releaseCopy[language].ai}</p>
+      <p className="takeaway-allergens"><a href="#menu">{releaseCopy[language].beforeOrder}</a></p>
     </section>
   );
 }

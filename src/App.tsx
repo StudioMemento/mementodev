@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { useEffect } from "react";
 import { LanguageProvider, useI18n } from "./i18n";
 import { DialogProvider, useDialog } from "./components/DialogContext";
 import { Header, Dock } from "./components/Navigation";
@@ -12,14 +12,11 @@ import { FinaleAtmosphere } from "./components/FinaleAtmosphere";
 import Community from "./components/Community";
 import Social from "./components/Social";
 import Contacts from "./components/Contacts";
-const DialogRoot = lazy(() => import("./components/Dialogs"));
+import DialogRoot from "./components/Dialogs";
+
 function DialogHost() {
   const { modal } = useDialog();
-  return modal ? (
-    <Suspense fallback={null}>
-      <DialogRoot />
-    </Suspense>
-  ) : null;
+  return modal ? <DialogRoot /> : null;
 }
 function Page() {
   const { copy } = useI18n();

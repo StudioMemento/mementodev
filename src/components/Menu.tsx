@@ -1,12 +1,21 @@
+import type { MouseEvent } from "react";
+import { AllergenSummary, AllergenLegend, DrinkAllergens } from "./AllergenDetails";
+import { releaseCopy } from "../data/release-copy";
 import data from "../data/menu.json";
 import { Copy, translateDescription, translateName, useI18n } from "../i18n";
-import { getAllergenInfo } from "../data/allergen-info";
+import { foodId, getAllergenInfo } from "../data/allergen-info";
 import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
 import { MenuTitle } from "./menu/MenuTitle";
 import { categoryOrder, categoryLabels, useMenuNavigation } from "./menu/useMenuNavigation";
 export { categoryOrder } from "./menu/useMenuNavigation";
+
+function openPlainClick(event: MouseEvent<HTMLAnchorElement>, action: () => void) {
+  if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  action();
+}
 
 function ItemName({ name, description = "", codes = "", translate = true, interactive = true }: {
   name: string; description?: string; codes?: string; translate?: boolean; interactive?: boolean;
@@ -15,9 +24,9 @@ function ItemName({ name, description = "", codes = "", translate = true, intera
   const { open } = useDialog();
   const label = translate ? translateName(name, language) : name;
   if (!interactive || name === "Coperto") return <span className="nome">{label}</span>;
-  return <button type="button" className="nome" aria-haspopup="dialog"
+  return <a className="nome" href={`#allergeni-${foodId(name)}`} aria-haspopup="dialog"
     aria-label={`${label}: ${copy.allergens}`}
-    onClick={() => open({ kind: "allergens", name, description, codes })}>{label}</button>;
+    onClick={e => openPlainClick(e, () => open({ kind: "allergens", name, description, codes }, e.currentTarget))}>{label}</a>;
 }
 
 export function AllergenTrigger({
@@ -34,16 +43,16 @@ export function AllergenTrigger({
   const info = getAllergenInfo(name, description, codes);
   if (name === "Coperto" || (!info.codes.length && !info.frozen)) return null;
   return (
-    <button
+    <a
       className="allergen-trigger"
-      type="button"
+      href={`#allergeni-${foodId(name)}`}
       aria-haspopup="dialog"
       aria-label={`${copy.allergens}: ${translateName(name, language)}, ${info.codes.join(", ")}`}
-      onClick={() => open({ kind: "allergens", name, description, codes })}
+      onClick={e => openPlainClick(e, () => open({ kind: "allergens", name, description, codes }, e.currentTarget))}
     >
       {info.codes.join(" · ")}
       {info.frozen && <span className="frozen-mark">*</span>}
-    </button>
+    </a>
   );
 }
 function MenuItem({ row, inlineDescription = false, showAllergens = true }: { row: string[]; inlineDescription?: boolean; showAllergens?: boolean }) {
@@ -55,7 +64,7 @@ function MenuItem({ row, inlineDescription = false, showAllergens = true }: { ro
       part ? part.charAt(0).toUpperCase() + part.slice(1) : part,
     );
   return (
-    <div className="item" data-menu-item={name}>
+    <div className="item" data-menu-item={name} id={`piatto-${foodId(name)}`}>
       <div className="row">
         <span className="label">
           <ItemName name={name} description={description} codes={codes} interactive={showAllergens} />
@@ -79,6 +88,10 @@ function MenuItem({ row, inlineDescription = false, showAllergens = true }: { ro
         </p>
       )}
       {showAllergens && <AllergenTrigger name={name} codes={codes} description={description} />}
+      {showAllergens && name !== "Coperto" && <section className="allergen-inline" id={`allergeni-${foodId(name)}`} tabIndex={-1}>
+        <h4>{translateName(name, language)}</h4><AllergenSummary name={name} description={description} codes={codes} />
+        <a href="#legenda-allergeni">{releaseCopy[language].legend}</a> · <a href={`#piatto-${foodId(name)}`}>{releaseCopy[language].back}</a>
+      </section>}
     </div>
   );
 }
@@ -124,7 +137,7 @@ function DrinkTable({
             <div className="pricegrid">
               {sizes.map((size, i) => (
                 <span className="drink-price-cell" key={size}>
-                  <span className="sr-only drink-size-label">{size}<span className="sr-only">: </span></span>
+                  <span className="sr-only drink-size-label">{size}: </span>
                   <b>{prices[i]}</b>
                 </span>
               ))}
@@ -140,6 +153,7 @@ function Drinks() {
   const bottles = data.BOTTIGLIA as [string, string, string[][]][];
   return (
     <>
+      <DrinkAllergens />
       <Rows rows={data.ACQUA_BIBITE} showAllergens={false} />
       <p className="groupline">{t.bottiglia}</p>
       {bottles.map(([name, desc, rows]) => (
@@ -211,6 +225,9 @@ export default function Menu() {
         </div>
       </div>
       <div id="carta">
+        <details className="menu-disclosure"><summary>{releaseCopy[language].legend}</summary>
+          <div id="legenda-allergeni"><AllergenLegend /></div><p className="food-frozen">* {copy.frozenTitle} · {copy.frozen}</p>
+        </details>
         {categoryOrder.map((id) => {
           const [title, tag] = t.cats[id];
           const kitchenBreak = id === "cucina" && language === "it" ? tag.indexOf("...") + 3 : 0;
@@ -240,7 +257,7 @@ export default function Menu() {
                     <Rows rows={data.CORNICE} />
                   </>
                 )}
-                {id === "dolci" && <p className="dolci-note">{t.dolci_note}</p>}
+                {id === "dolci" && <><p className="dolci-note">{t.dolci_note}</p><p className="dessert-allergens">{releaseCopy[language].dessert}</p></>}
                 {id === "bevande" && <Drinks />}
               </div>
             </section>

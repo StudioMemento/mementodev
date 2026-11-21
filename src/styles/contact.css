@@ -175,3 +175,22 @@
   .bento-tile,.tile-art { transition:none; }
 }
 @media(forced-colors:active) { .spread-ink { background:none; color:CanvasText; } .bento-tile { border-color:CanvasText; } .photo-ribbon::after { forced-color-adjust:none; background:Highlight; } }
+.contact-tile .action-label { font-size:clamp(.875rem,6.5cqi,1.55rem); overflow-wrap:anywhere; }
+@media (max-width:420px) {
+  .contact-tile .tile-bottom { background:linear-gradient(transparent,#090909e8 28%); }
+}
+
+@media(max-width:319px) {
+  .visit-bento { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-areas:"map map" "hours hours" "wa wa" "phone phone"; grid-template-rows:auto; }
+  .visit-bento .contact-tile { aspect-ratio:3/2; }
+}
+
+@media(max-width:319px) {
+  .footer-row { grid-template-columns:minmax(0,1fr); grid-template-areas:"brand" "credit" "legal"; }
+  .footer-row p span { white-space:normal; overflow-wrap:anywhere; }
+  .footer-row nav { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:.3em .75em; }
+  .footer-row nav a,.studio-credit { max-width:100%; overflow-wrap:anywhere; }
+  .spread-title .spread-line { flex-wrap:wrap; }
+}
+.hours-note.spread-line { flex-wrap:wrap; }
+@media(max-width:319px) { .studio-credit { flex-wrap:wrap; justify-self:start; min-width:0; } }

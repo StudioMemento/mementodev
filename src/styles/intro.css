@@ -120,3 +120,35 @@
   .takeaway-copy { align-self:end; margin-bottom:clamp(12px,4.4cqi,24px); }
 }
 @media(prefers-reduced-motion:reduce) { .crust-card { transform:none; transition:none; } }
+
+.community-feature { position:relative; z-index:1; width:var(--vr-content); margin:clamp(72px,16svh,200px) auto; container-type:inline-size; }
+.community-feature .crust-card-shell { aspect-ratio:16/9; }
+.community-feature .crust-photo { width:100%; height:100%; object-fit:cover; }
+.community-feature .crust-card-shade { inset:0; background:linear-gradient(0deg,#090909eb,transparent 71%); }
+.feature-action { position:absolute; z-index:2; inset:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start; padding:clamp(14px,4.4cqi,64px); color:var(--vr-ivory); text-decoration:none; }
+.feature-action h2 { color:var(--vr-highlight); font-size:clamp(20px,4.8cqi,54px); line-height:1.08; font-weight:400; }
+.feature-cta,.takeaway-call { display:inline-flex; align-items:center; gap:.55em; font-weight:500; text-decoration:underline; text-underline-offset:.2em; }
+.feature-cta { margin-top:.55em; font-size:clamp(14px,2.4cqi,24px); }
+.feature-action:focus-visible { outline:2px solid var(--vr-highlight); outline-offset:-4px; }
+.takeaway-call { margin-top:.4em; color:var(--vr-highlight); pointer-events:auto; font-size:clamp(13px,2cqi,20px); }
+.takeaway a.takeaway-copy { position:absolute; inset:0; margin:0; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:clamp(12px,4.4cqi,64px); pointer-events:auto; color:inherit; text-decoration:none; }
+.takeaway-copy:focus-visible { outline:2px solid var(--vr-highlight); outline-offset:-4px; }
+@media (max-width:620px) { .takeaway a.takeaway-copy { justify-content:flex-end; } }
+.media-credit,.takeaway-allergens { color:#b6b0a5; font-size:.875rem; line-height:1.35; }
+.media-credit { margin:.5em 0; }
+.vr-crust-intro > .media-credit { text-align:center; }
+.pizza-credit { width:var(--vr-content); margin-top:.65em; color:#b6b0a5; }
+.takeaway-allergens { max-width:56ch; }
+.takeaway-allergens a { color:inherit; text-decoration:underline; text-underline-offset:.18em; }
+.pizza-caption h3 { white-space:normal; overflow-wrap:anywhere; }
+@media (max-width:767px) and (orientation:portrait) {
+  #pizza-slider { height:auto; min-height:120svh; }
+  .pizza-frame { height:auto; min-height:100svh; }
+  .vr-pizza-viewport { flex:none; height:clamp(112px,48vw,43svh); }
+}
+@media(max-width:420px) {
+  .community-feature .crust-card-shell,.takeaway .crust-card-shell { aspect-ratio:auto; }
+  .community-feature .crust-card,.takeaway .crust-card { display:grid; height:auto; min-height:calc(var(--vr-content) * .5625); }
+  .community-feature .crust-photo,.takeaway .crust-photo { position:absolute; inset:0; }
+  .community-feature .feature-action,.takeaway a.takeaway-copy { position:relative; inset:auto; align-self:stretch; grid-area:1/1; }
+}

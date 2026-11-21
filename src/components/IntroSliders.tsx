@@ -8,6 +8,8 @@ import { Photo } from "./Photo";
 import { SpreadLetters } from "./SpreadTitle";
 import { HoloCard } from "./intro/HoloCard";
 import { useIntroVisibility } from "./intro/useIntroVisibility";
+import { releaseCopy } from "../data/release-copy";
+
 export function PizzaSlider() {
   const { t, language, copy } = useI18n();
   const slides = useMemo(() => data.FORNO.map(([src, name, description]) => ({
@@ -51,6 +53,7 @@ export function PizzaSlider() {
           <ul>{ingredients.map((item, part) => <li key={part}>{item}</li>)}</ul>
         </div>)}
       </div>
+      <p className="media-credit pizza-credit">{releaseCopy[language].sliderAi}</p>
     </div>
   </section>;
 }
@@ -78,5 +81,6 @@ export function Cornicione() {
         <div className="crust-card-copy"><h3>{option.name}</h3><p className="crust-price">€ {data.CORNICE[i][2]}</p></div>
       </HoloCard>)}
     </div>
+    <p className="media-credit">{releaseCopy[language].ai}</p>
   </section>;
 }
