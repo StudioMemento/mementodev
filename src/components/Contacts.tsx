@@ -2,10 +2,18 @@ import { Fragment } from "react";
 import { useI18n } from "../i18n";
 import { closingCopy } from "../data/closing-copy";
 import { legalPath } from "../data/legal-path";
+import operator from "../data/operator.json";
 import { mapUrl } from "../data/venue-links";
 import { useDialog } from "./DialogContext";
 import { BentoGrid, TileArrow } from "./BentoGrid";
 import { SpreadLetters, SpreadTitle } from "./SpreadTitle";
+
+const vatLabels = {
+  it: ["P. IVA", "anteprima"],
+  en: ["VAT no.", "preview"],
+  de: ["USt.-Nr.", "Vorschau"],
+  fr: ["TVA", "aperçu"],
+} as const;
 
 function MapPin({ kind, label }: { kind: "venue" | "square"; label: string }) {
   return <span className={`map-pin ${kind}-pin`}>
@@ -16,6 +24,7 @@ function MapPin({ kind, label }: { kind: "venue" | "square"; label: string }) {
 function Footer() {
   const { ui, copy, language } = useI18n();
   const { open } = useDialog();
+  const [vatLabel, previewLabel] = vatLabels[language];
   return <footer className="visit-footer" role="contentinfo">
     <div className="footer-row">
       <p><span>© 2026</span><span>PIZZERIA VIA ROMA</span></p>
@@ -34,6 +43,7 @@ function Footer() {
             }}>{label}</a>
           </Fragment>)}
       </nav>
+      <small className="footer-vat">{vatLabel} {operator.vatNumber}{operator.preview && ` · ${previewLabel}`}</small>
     </div>
   </footer>;
 }

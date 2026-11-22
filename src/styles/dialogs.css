@@ -40,7 +40,7 @@
 .allergen-panel .modal-close svg { width:24px; height:24px; }
 .allergen-list { list-style:none; columns:var(--allergen-columns,1); column-gap:14px; }
 .allergen-list li + li { margin-top:var(--row-gap); }
-.allergen-list li { display:grid; grid-template-columns:1.2em minmax(0,1fr); column-gap:.62em; align-items:baseline; color:#555; font-size:var(--name); line-height:1.17; break-inside:avoid; }
+.allergen-list li { display:grid; grid-template-columns:1.2em minmax(0,1fr); column-gap:.62em; align-items:baseline; color:#888; font-size:var(--name); line-height:1.17; break-inside:avoid; }
 .allergen-code { font-weight:400; text-align:center; }
 .allergen-code .frozen-mark { font-size:1.1em; }
 .allergen-text { min-width:0; overflow-wrap:break-word; }
@@ -48,6 +48,7 @@
 .allergen-description { display:block; font-size:var(--detail); line-height:1.18; margin-top:1px; }
 .nut-phrase { white-space:nowrap; }
 .allergen-list .contains { color:var(--vr-highlight); }
+.contains .allergen-code { text-decoration:underline; text-underline-offset:.14em; }
 .allergen-note { font-size:clamp(15px,2.1dvh,20px); line-height:1.25; font-weight:400; }
 @media(max-height:560px) {
   .modal-allergens[data-density=minimum] { --inset:7px; --section-gap:3px; --row-gap:0px; }

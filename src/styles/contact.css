@@ -126,6 +126,7 @@
 .footer-row p,.studio-credit span { font-size:clamp(11px,1.3cqi,15px); font-weight:300; line-height:1.35; }
 .footer-row p { grid-area:brand; display:grid; justify-self:start; gap:3px; letter-spacing:.045em; }
 .footer-row p span:last-child { font-size:max(12px,calc(var(--wordmark-width) / 10.2)); font-weight:400; letter-spacing:.075em; white-space:nowrap; }
+.footer-vat { grid-column:1/-1; justify-self:center; font-size:12px; color:var(--vr-muted); }
 .studio-credit span { letter-spacing:.14em; }
 .footer-row nav { grid-area:legal; display:flex; place-items:center; justify-content:center; gap:clamp(6px,1.25cqi,16px); }
 .footer-row nav > span { color:var(--vr-gold); }

@@ -51,8 +51,9 @@ assert.ok(js < 112_000, `JS budget exceeded: ${js}`);
 // Check the stylesheet needed by the first page separately from the on-demand dialog styles.
 const initialStyles = new Set([...initialKeys].flatMap(key => manifest[key].css || []));
 const initialCss = [...initialStyles].reduce((sum, file) => sum + cssSizes.get(file), 0);
-assert.ok(initialCss < 10_450, `Initial CSS budget exceeded: ${initialCss}`);
-assert.ok(css < 12_100, `Total CSS budget exceeded: ${css}`);
+// Includes image provenance, published operator details and accessible allergen markers.
+assert.ok(initialCss < 10_600, `Initial CSS budget exceeded: ${initialCss}`);
+assert.ok(css < 12_300, `Total CSS budget exceeded: ${css}`);
 const edgeKey = "src/components/bento/effects.ts";
 assert.ok(manifest[edgeKey]?.isDynamicEntry && !initialKeys.has(edgeKey), "Finale field must load on approach");
 assert.ok(jsSizes.get(manifest[edgeKey].file) < 3000, "Combined edge and card particles exceed their deferred budget");

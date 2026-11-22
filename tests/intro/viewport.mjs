@@ -24,6 +24,7 @@ function measureOven() {
     return [...range.getClientRects()];
   };
   const question = textBox(takeawayTitle.firstChild);
+  const mark = box(takeawayTitle.querySelector(".takeaway-mark"));
   const answer = textBox(takeaway.querySelector("p").firstChild);
   const card = box(takeaway.querySelector(".crust-card"));
   const caption = box(takeaway.querySelector(".takeaway-copy"));
@@ -31,6 +32,8 @@ function measureOven() {
   const titleSize = parseFloat(getComputedStyle(takeawayTitle).fontSize);
   const captionSize = parseFloat(getComputedStyle(takeaway.querySelector("p")).fontSize);
   const textFits = titleSize >= captionSize * 2 && question.length <= 2 && answer.length <= 2 &&
+    mark.left >= question.at(-1).right - 1 && mark.right <= caption.right + 1 &&
+    mark.top < question.at(-1).bottom && mark.bottom > question.at(-1).top &&
     question[0].top >= card.top && question.at(-1).top < answer[0].top && Math.abs(x - y) < 1 &&
     [...question, ...answer].every(r => Math.abs(r.left - caption.left) < 1 && r.right <= card.right - x + 1 && r.bottom <= card.bottom);
   const guest = document.querySelector("#customer");

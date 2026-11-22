@@ -1,6 +1,8 @@
-# Via Roma 5.9
+# Via Roma 5.9.1
 
-La 5.9 parte dalla 5.8. Il checkpoint di riferimento per il ripristino è la 5.3.
+La 5.9.1 parte dalla 5.9. Il [rapporto di verifica](docs/Audit_5.9.1.md) riporta i risultati dei test e i dati aziendali da completare. Il checkpoint di riferimento per il ripristino è la 5.3.
+
+I campi in A e 0 sono dimostrativi. Compilare i sette valori aziendali in `src/data/operator.json` e impostare `preview` a `false` quando i valori sono verificati. `npm run dev` e `npm run build` aggiornano automaticamente Privacy e Note legali nelle quattro lingue. Il footer legge la partita IVA dallo stesso file. La visibilità sui motori di ricerca ha una configurazione separata.
 
 Build di sviluppo per Pizzeria Via Roma a Maniago. Sui telefoni il selettore conserva le quattro lingue a vista e un’area di tocco alta 44 px. Il marchio orizzontale in testata usa i tracciati originali ingranditi. Le cinque icone della navbar condividono la stessa griglia e lo stesso spessore di tratto. La lingua e la categoria attive conservano il bordo e il glow dorato. Le particelle appaiono soltanto sul controllo sotto il puntatore. Il focus da tastiera mantiene un contorno dedicato.
 
@@ -33,7 +35,7 @@ Lo scorrimento permette di leggere il documento per intero.
 
 ## Ingredienti e allergeni
 
-Il [confronto voce per voce](docs/Allergeni_5.9.md) indica la pagina del menù stampato, i codici sulla carta e i codici presentati sul sito.
+Il [confronto voce per voce](docs/Allergeni_5.9.1.md) indica la pagina del menù stampato, i codici sulla carta e i codici presentati sul sito.
 La quarta voce di ogni riga alimentare in `src/data/menu.json` comprende le indicazioni della carta, degli ingredienti espliciti e della base di pizza o calzone. L’asterisco conserva l’indicazione di prodotto surgelato. Per le voci alimentari prive di codici, il nome apre la scheda. Il nome delle bevande apre la relativa scheda. Per le birre alla spina e i vini i codici sono nell’ultima colonna, dopo i tre prezzi.
 
 Prima dell’uso con il pubblico, il gestore deve confrontare le indicazioni con le ricette e le schede effettivamente in uso, in particolare per impasti, lisozima nel grana, pesto, salumi, salse, panature e olio di frittura. Per i dolci del giorno, i vini e le bevande generiche serve la scheda del prodotto effettivamente servito. Restano da confermare l’identità societaria del titolare e i criteri di conservazione adottati dal locale.
@@ -61,4 +63,4 @@ node tests/menu/browser.mjs
 node tests/menu/dialog-viewport.mjs
 ```
 
-`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_5.9_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.
+`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_5.9.1_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.

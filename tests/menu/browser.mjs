@@ -155,7 +155,7 @@ try {
     return { idle:row.color, active:getComputedStyle(el.querySelector("li.contains")).color,
       weight:note.fontWeight, noteSize:parseFloat(note.fontSize), detailSize:parseFloat(getComputedStyle(el.querySelector(".allergen-description")).fontSize) };
   });
-  assert.equal(appearance.idle, "rgb(85, 85, 85)");
+  assert.equal(appearance.idle, "rgb(136, 136, 136)");
   assert.equal(appearance.weight, width >= 768 ? "300" : "400");
   assert.notEqual(appearance.active, appearance.idle);
   assert.ok(appearance.noteSize >= 15 && appearance.noteSize <= 20 && appearance.noteSize > appearance.detailSize);
