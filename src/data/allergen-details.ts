@@ -8,15 +8,36 @@ const sources = {
   pistachios: { it: "Pistacchi.", en: "Pistachios.", de: "Pistazien.", fr: "Pistaches." },
   walnuts: { it: "Noci.", en: "Walnuts.", de: "Walnüsse.", fr: "Noix." },
 };
-const barleyBeers = new Set(["Flag", "Iron Bridge", "Liquidambra", "Guglielmo", "Cordelia", "Amleto", "Hirter Marzen", "Hirter Morchl"]);
+const barleyBeers = new Set(["Rush More", "Flag", "Iron Bridge", "Liquidambra", "Guglielmo", "Cordelia", "Amleto", "Hirter Marzen", "Hirter Morchl"]);
 const nutSources: Record<string, keyof typeof sources> = { Caprina: "almonds", Povera: "pistachios", Delicata: "walnuts" };
+// These groups are printed for the dish, but the ingredient list does not identify their source.
+const printedGroups: Record<string, number[]> = {
+  "Marinara Classica": [7], "Marinara d'Oro": [7],
+  Valtellina: [5], Greca: [5], Saporita: [5], Sarah: [5], Golosa: [5],
+  "Aggiunta di Burrata": [1], "Tagliere di Affettati Misti e Formaggi": [8],
+  "Caesar Salad": [1, 3, 5], "Panino Vegetariano e Patate Fritte": [3, 5, 10],
+  "Hot Dog e Patate Fritte": [5, 7, 10], "Montanare 4pz": [3, 4, 5],
+};
+const printedDetail = {
+  it: "In carta, da confermare.",
+  en: "On menu, please confirm.",
+  de: "Laut Karte, bitte prüfen.",
+  fr: "Sur la carte, à confirmer.",
+};
 export function ingredientSource(name: string, code: number, language: Language) {
+  if (printedGroups[name]?.includes(code)) return printedDetail[language];
   if (code === 8 && nutSources[name]) return sources[nutSources[name]][language];
   if (code === 1 && barleyBeers.has(name)) return sources.barley[language];
   if (code === 1 && name === "Wieze Blanche") return sources.wheat[language];
 }
 
 const notes = {
+  water: {
+    it: "Acqua naturale o frizzante.",
+    en: "Still or sparkling water.",
+    de: "Stilles Wasser oder Sprudelwasser.",
+    fr: "Eau plate ou gazeuse.",
+  },
   missing: {
     it: "Allergeni da verificare sulla ricetta o sull’etichetta.",
     en: "Check the recipe or label for allergens.",
@@ -29,6 +50,12 @@ const notes = {
     de: "Zutaten des Pestos prüfen, insbesondere Schalenfrüchte.",
     fr: "Vérifier les ingrédients du pesto, notamment les fruits à coque.",
   },
+  pestoNuts: {
+    it: "Chiedi quale frutta a guscio contiene il pesto.",
+    en: "Ask which tree nuts are in the pesto.",
+    de: "Bitte die Schalenfruchtart im Pesto erfragen.",
+    fr: "Demandez quels fruits à coque contient le pesto.",
+  },
   grana: {
     it: "Da verificare l’eventuale lisozima da uovo nel grana.",
     en: "Check the grana cheese for egg-derived lysozyme.",
@@ -36,16 +63,16 @@ const notes = {
     fr: "Vérifier si le grana contient du lysozyme issu de l’œuf.",
   },
   fried: {
-    it: "Da verificare la preparazione, l’olio e l’uso condiviso della friggitrice.",
-    en: "Check the preparation, oil and use of a shared fryer.",
-    de: "Zubereitung, Frittieröl und gemeinsame Nutzung der Fritteuse prüfen.",
-    fr: "Vérifier la préparation, l’huile et le partage de la friteuse.",
+    it: "Verificare preparazione, olio e friggitrice condivisa.",
+    en: "Check ingredients, oil and shared fryer.",
+    de: "Rezeptur, Öl und gemeinsame Fritteuse prüfen.",
+    fr: "Vérifier la recette, l’huile et la friteuse partagée.",
   },
   caesar: {
-    it: "Da verificare la salsa Caesar, il pollo fritto e l’eventuale lisozima da uovo nel grana.",
-    en: "Check the Caesar dressing, fried chicken and possible egg-derived lysozyme in the grana.",
-    de: "Caesar-Dressing, Brathähnchen und mögliches Ei-Lysozym im Grana prüfen.",
-    fr: "Vérifier la sauce César, le poulet frit et l’éventuel lysozyme d’œuf du grana.",
+    it: "Verificare salsa Caesar, pollo fritto e lisozima da uovo nel grana.",
+    en: "Check the dressing and chicken, and the grana for egg lysozyme.",
+    de: "Dressing, Backhuhn und Ei-Lysozym im Grana prüfen.",
+    fr: "Vérifier la sauce, le poulet frit et le lysozyme d’œuf du grana.",
   },
   label: {
     it: "Consultare l’etichetta del prodotto servito.",
@@ -70,12 +97,14 @@ const wines = new Set(["Cabernet Franc", "Friulano", "Prosecco DOC Treviso"]);
 const friedFoods = new Set(["Cotoletta e Patate Fritte", "Stuzzica Mix", "Patatine Fritte", "Alette di Pollo 6pz",
   "Anelli di Cipolla 6pz", "Mini Frico 8pz", "Pepite di Asiago 8pz", "Panino Vegetariano e Patate Fritte", "Hot Dog e Patate Fritte"]);
 export function recipeNote(name: string, description: string, hasCodes: boolean, language: Language) {
+  if (name === "Acqua") return notes.water[language];
   if (name === "Flag") return notes.flag[language];
   if (wines.has(name)) return notes.wine[language];
   if (name === "Caesar Salad") return notes.caesar[language];
   if (friedFoods.has(name)) return notes.fried[language];
+  if (name === "Genovese") return notes.pestoNuts[language];
   if (/pesto/i.test(description)) return notes.pesto[language];
   if (/grana/i.test(description)) return notes.grana[language];
-  if (barleyBeers.has(name) || ["Wieze Blanche", "Rush More", "Bibite"].includes(name)) return notes.label[language];
+  if (barleyBeers.has(name) || ["Wieze Blanche", "Bibite"].includes(name)) return notes.label[language];
   return hasCodes ? undefined : notes.missing[language];
 }

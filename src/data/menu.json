@@ -5,13 +5,13 @@
         "Marinara Classica",
         "pomodoro, aglio, olio, origano",
         "6,50",
-        "1"
+        "1 - 7"
       ],
       [
         "Marinara d'Oro",
         "passata di pomodorino giallo, aglio, origano",
         "8,00",
-        "1"
+        "1 - 7"
       ],
       [
         "Margherita Classica",
@@ -151,19 +151,19 @@
         "Valtellina",
         "pomodoro, mozzarella, bresaola, rucola, Grana Padano in scaglie",
         "12,00",
-        "1 - 7"
+        "1 - 5 - 7"
       ],
       [
         "Greca",
         "pomodoro, olive, cipolla rossa, pomodorini, feta, rucola",
         "11,00",
-        "1 - 7"
+        "1 - 5 - 7"
       ],
       [
         "Saporita",
         "pomodoro, mozzarella, porro, guanciale, formaggio salato, miele piccante",
         "13,00",
-        "1 - 7"
+        "1 - 5 - 7"
       ],
       [
         "Estiva",
@@ -187,7 +187,7 @@
         "Genovese",
         "passata di pomodorino giallo, bufala in cottura, pesto genovese, pomodorini semi dry",
         "12,00",
-        "1 - 7"
+        "1 - 7 - 8"
       ],
       [
         "Caprina",
@@ -199,7 +199,7 @@
         "Sarah",
         "pomodoro, mozzarella, patate al forno, brie, salamino",
         "10,00",
-        "1 - 7"
+        "1 - 5 - 7"
       ]
     ],
     "bianche": [
@@ -213,7 +213,7 @@
         "Golosa",
         "passata di peperoni, mozzarella, 'nduja, salsiccia, patate al forno",
         "12,00",
-        "1 - 7"
+        "1 - 5 - 7"
       ],
       [
         "Povera",
@@ -290,7 +290,7 @@
         "Tagliere di Affettati Misti e Formaggi",
         "",
         "15,00",
-        "7"
+        "7 - 8"
       ],
       [
         "Caprese con Bufala e Pomodorini",
@@ -302,13 +302,13 @@
         "Cotoletta e Patate Fritte",
         "",
         "12,00",
-        "*"
+        "1 - 3 - 5 - 7 - 10 - *"
       ],
       [
         "Caesar Salad",
         "misticanza, pollo fritto, grana a scaglie, pomodorini, salsa caesar",
         "12,00",
-        "7 - *"
+        "1 - 3 - 5 - 7 - *"
       ],
       [
         "Insalata Mista",
@@ -326,13 +326,13 @@
         "Panino Vegetariano e Patate Fritte",
         "pane con impasto della pizza, verdure miste e bufala",
         "10,00",
-        "1 - 7"
+        "1 - 3 - 5 - 7 - 10"
       ],
       [
         "Hot Dog e Patate Fritte",
         "pane con impasto della pizza e wurstel",
         "8,00",
-        "1"
+        "1 - 5 - 7 - 10"
       ]
     ],
     "stuzzicherie": [
@@ -340,43 +340,43 @@
         "Stuzzica Mix",
         "",
         "12,00",
-        "*"
+        "1 - 3 - 5 - 6 - 7 - 8 - 10 - *"
       ],
       [
         "Patatine Fritte",
         "",
         "5,00",
-        "*"
+        "1 - 3 - 4 - 5 - 6 - 7 - 10 - *"
       ],
       [
         "Alette di Pollo 6pz",
         "",
         "6,00",
-        "*"
+        "1 - 3 - 4 - 5 - 6 - 7 - 8 - 10 - *"
       ],
       [
         "Anelli di Cipolla 6pz",
         "",
         "6,00",
-        "*"
+        "1 - 3 - 4 - 5 - 6 - 7 - 8 - 10 - *"
       ],
       [
         "Mini Frico 8pz",
         "",
         "7,00",
-        "7 - *"
+        "1 - 3 - 4 - 5 - 6 - 7 - 8 - 10 - *"
       ],
       [
         "Pepite di Asiago 8pz",
         "",
         "7,00",
-        "7 - *"
+        "1 - 3 - 4 - 5 - 6 - 7 - 8 - 10 - *"
       ],
       [
         "Montanare 4pz",
         "pizzette fritte con pomodoro, mozzarella e grana",
         "12,00",
-        "1 - 7"
+        "1 - 3 - 4 - 5 - 7"
       ]
     ]
   },
@@ -401,7 +401,7 @@
       "Aggiunta di Burrata",
       "",
       "4,00",
-      "7"
+      "1 - 7"
     ],
     [
       "Aggiunta di Crudo",
@@ -477,7 +477,7 @@
           "Rush More",
           "American pale ale · 0,3 l",
           "5,00",
-          ""
+          "1"
         ],
         [
           "Flag",

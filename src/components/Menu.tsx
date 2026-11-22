@@ -14,7 +14,7 @@ function ItemName({ name, description = "", codes = "", translate = true }: {
   const { language, copy } = useI18n();
   const { open } = useDialog();
   const label = translate ? translateName(name, language) : name;
-  if (name === "Coperto" || name === "Acqua") return <span className="nome">{label}</span>;
+  if (name === "Coperto") return <span className="nome">{label}</span>;
   return <button type="button" className="nome" aria-haspopup="dialog"
     aria-label={`${label}: ${copy.allergens}`}
     onClick={() => open({ kind: "allergens", name, description, codes })}>{label}</button>;
@@ -32,18 +32,18 @@ export function AllergenTrigger({
   const { copy, language } = useI18n();
   const { open } = useDialog();
   const info = getAllergenInfo(codes);
-  if (name === "Coperto" || name === "Acqua") return null;
-  const label = info.codes.length ? info.codes.join(" · ") : copy.checkAllergens;
+  if (!info.codes.length && !info.frozen) return null;
+  const label = info.codes.join(" · ");
   return (
     <button
       className="allergen-trigger"
       type="button"
       aria-haspopup="dialog"
-      aria-label={`${copy.allergens}: ${translateName(name, language)}, ${label}${info.frozen ? ", " + copy.frozenTitle : ""}`}
+      aria-label={[`${copy.allergens}: ${translateName(name, language)}`, label, info.frozen && copy.frozenTitle].filter(Boolean).join(", ")}
       onClick={() => open({ kind: "allergens", name, description, codes })}
     >
-      {label}
-      {info.frozen && <span className="frozen-mark">*</span>}
+      {label && <span>{label}</span>}
+      {info.frozen && <span className="frozen-mark" aria-hidden="true">*</span>}
     </button>
   );
 }
@@ -212,7 +212,6 @@ export default function Menu() {
         </div>
       </div>
       <div id="carta">
-        <p className="menu-allergen-guide">{copy.staffNotice}</p>
         {categoryOrder.map((id) => {
           const [title, tag] = t.cats[id];
           const kitchenBreak = id === "cucina" && language === "it" ? tag.indexOf("...") + 3 : 0;

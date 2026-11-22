@@ -85,7 +85,7 @@ try {
         gap:document.querySelector("#gallery").getBoundingClientRect().top-card.bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
     assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
-    assert.match(dimensions.file,/pizza-in-cartone-(480|960|1600)\.webp$/);
+    assert.match(dimensions.file,/pizzata-(480|960|1600)\.webp$/);
     assert.ok(dimensions.gap >= Math.min(280, Math.max(120, height * .23)) - 1);
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");

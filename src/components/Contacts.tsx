@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { useI18n } from "../i18n";
 import { closingCopy } from "../data/closing-copy";
 import { legalPath } from "../data/legal-path";
@@ -17,17 +18,21 @@ function Footer() {
   const { open } = useDialog();
   return <footer className="visit-footer" role="contentinfo">
     <div className="footer-row">
-      <p><span>© 2026</span> <span>Pizzeria Via Roma</span></p>
+      <p><span>© 2026</span><span>PIZZERIA VIA ROMA</span></p>
       <a className="studio-credit" href="https://mementostudio.it" target="_blank" rel="noopener noreferrer">
         <span lang="en">Powered by</span>
         <img src="/assets/memento-wordmark.svg?v=56" width="824" height="64" loading="lazy" alt="MEMENTO" />
       </a>
       <nav aria-label={ui.legal_notes}>
-        {([["cookie", copy.cookies], ["privacy", copy.privacy], ["note-legali", ui.legal_notes]] as const).map(([slug, label]) =>
-          <a key={slug} href={legalPath(language, slug)} aria-haspopup="dialog" onClick={event => {
-            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-            event.preventDefault(); open({ kind: "legal", slug });
-          }}>{label}</a>)}
+        {([["cookie", copy.cookies], ["privacy", copy.privacy], ["note-legali", ui.legal_notes]] as const).map(([slug, label], index) =>
+          <Fragment key={slug}>
+            {index > 0 && <span aria-hidden="true">·</span>}
+            <a href={legalPath(language, slug)} aria-haspopup="dialog" onClick={event => {
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              event.preventDefault();
+              open({ kind: "legal", slug });
+            }}>{label}</a>
+          </Fragment>)}
       </nav>
     </div>
   </footer>;
@@ -57,11 +62,17 @@ export default function Contacts() {
         </div>
         <a className="bento-tile contact-tile wa-tile" href="https://wa.me/393802453757" target="_blank" rel="noopener noreferrer">
           <img className="tile-art" src="/assets/social/whatsapp.webp?v=46" width="512" height="512" loading="lazy" decoding="async" alt="" />
-          <span className="tile-bottom"><span><span className="action-label">WhatsApp</span><span className="contact-purpose">{closingCopy[language].whatsappPurpose}</span><small>380 2453 757</small></span><TileArrow /></span>
+          <span className="tile-bottom"><span>
+            <span className="contact-heading"><span className="action-label">WhatsApp</span>{" "}<small>380 2453 757</small></span>
+            <span className="contact-purpose">{closingCopy[language].whatsappPurpose}</span>
+          </span><TileArrow /></span>
         </a>
         <a className="bento-tile contact-tile phone-tile" href="tel:+390427541232">
           <img className="tile-art" src="/assets/social/telefono.webp" width="512" height="512" loading="lazy" decoding="async" alt="" />
-          <span className="tile-bottom"><span><span className="action-label">{ui.call}</span><span className="contact-purpose">{closingCopy[language].phonePurpose}</span><small>0427 541232</small></span><TileArrow /></span>
+          <span className="tile-bottom"><span>
+            <span className="contact-heading"><span className="action-label">{ui.call}</span>{" "}<small>0427 541232</small></span>
+            <span className="contact-purpose">{closingCopy[language].phonePurpose}</span>
+          </span><TileArrow /></span>
         </a>
       </BentoGrid>
     </section>

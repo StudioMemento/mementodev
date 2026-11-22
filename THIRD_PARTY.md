@@ -20,7 +20,7 @@ Le otto immagini in `public/assets/social` sono visual generati e ottimizzati in
 
 Le 40 immagini dello slider provengono dal pacchetto ViaRoma_40_Pizze_Slider. La pizza Via Roma deriva dal campione fotografico fornito, le altre 39 sono ricostruzioni generate.
 
-Le fotografie delle card asporto e «Ricordi condivisi dalla community» sono state generate per la 5.6.
+La foto della pizza da asporto e il pin dorato della card «Ricordi condivisi dalla community!» sono stati generati per la 5.7.
 Le tre risoluzioni WebP sono in `public/assets/asporto` e `public/assets/foto-ospiti`.
 Il link della seconda card apre le foto degli ospiti su Google Maps.
 Il wordmark nel footer conserva i tracciati Memento con una spaziatura ottica più compatta.

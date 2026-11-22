@@ -39,7 +39,7 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_5.6 — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_5.7 — preview'));assert.ok(html.includes('noindex,nofollow'));
 const crustStart = html.lastIndexOf('<section',html.indexOf('id="cornicione"'));
 const takeawayStart = html.lastIndexOf('<section',html.indexOf('id="asporto"'));
 assert.equal((balanced(html,crustStart,'section').match(/class="crust-card"/g)||[]).length,3);
@@ -58,11 +58,11 @@ assert.match(await readFile('src/styles/intro.css','utf8'),/#pizza-slider \{[^}]
 assert.ok(!(await readFile('src/styles/contact.css','utf8')).includes('background: #000;'));
 assert.ok((await readFile('public/legal.css','utf8')).includes('background:#090909;'));
 assert.equal((html.match(/class="finale-field-view"/g)||[]).length,2);
-assert.match(html,/<h2 id="takeaway-title">Gusto Via Roma nel comfort di casa\?<\/h2>/);
+assert.match(html,/<h2 id="takeaway-title">Pizzata nel comfort di casa\?<\/h2>/);
 assert.match(html,/<p>Facciamo anche servizio da asporto!<\/p>/);
-assert.match(html,/<h2 id="guest-photos-title">Ricordi condivisi dalla community</);
+assert.match(html,/<h2 id="guest-photos-title">Ricordi condivisi dalla community!</);
 assert.doesNotMatch(html,/I numeri indicano gli allergeni|Tocca il nome della bevanda/);
-assert.match(html,/<p class="menu-allergen-guide">Per allergie o intolleranze,[^<]+<\/p>/);
+assert.doesNotMatch(html,/menu-allergen-guide|Per allergie o intolleranze|Verifica allergeni/);
 const kitchen=balanced(html,html.indexOf('<section class="mcat fx on has-art" id="cat-cucina"'),'section');
 assert.match(kitchen,/Anche se incredibile\.\.\.<br class="kitchen-mobile-break"\/><span class="kitchen-desktop-space"> <\/span>non si ha sempre voglia di pizza\?/);
 assert.ok(!css.includes('.menu-art:hover'),'Obsolete artwork hover layers remain');
@@ -97,14 +97,17 @@ assert.match(guestCard, /class="feature-card-link" href="https:\/\/www.google.co
 assert.equal((guestCard.match(/<img /g) || []).length, 1);
 const foodRows = [...Object.values(data.MENU).flat(), ...data.VARIANTI, ...data.CORNICE];
 const markers = new Map(foodRows.map(([name, , , codes]) => [name, codes]));
-for (const [name, expected] of Object.entries({
-  "Marinara Classica": "1", "Marinara d'Oro": "1", Siciliana: "1 - 4 - 7", "Tonno e Cipolla": "1 - 4 - 7",
-  Carbonara: "1 - 3 - 7", Caprina: "1 - 7 - 8", Povera: "1 - 7 - 8", Delicata: "1 - 7 - 8",
-  Greca: "1 - 7", Valtellina: "1 - 7", Saporita: "1 - 7", Golosa: "1 - 7", Sarah: "1 - 7",
-  Estiva: "1 - 7", Genovese: "1 - 7", "Aggiunta di Burrata": "7", "Cornicione ripieno di Brie": "1 - 7",
-  "Insalata Bufalina": "4 - 7", "Stuzzica Mix": "*", "Pepite di Asiago 8pz": "7 - *",
-  "Patatine Fritte": "*", "Aggiunta di Porcini": "*", "Insalata Mista": ""
-})) assert.equal(markers.get(name), expected, name);
+// Compare every production code with the published, page-by-page reconciliation.
+const audit = await readFile('docs/Allergeni_5.7.md', 'utf8');
+const expectedCodes = new Map(audit.split('\n').filter(line => /^\| [^|]+ \| \d+ \|/.test(line)).map(line => {
+  const [, name, , , codes] = line.split('|').map(s => s.trim());
+  return [name, codes === '—' ? '' : codes.replaceAll(' · ', ' - ').replace('✱', '*')];
+}));
+const drinkRows = [...data.ACQUA_BIBITE, ...data.BOTTIGLIA.flatMap(group => group[2]), ...data.SPINA, ...data.VINI];
+for (const row of drinkRows) markers.set(row[0], row.at(-1));
+assert.equal(expectedCodes.size, markers.size + 1);
+for (const [name, codes] of markers) assert.equal(codes, expectedCodes.get(name), name);
+assert.equal(expectedCodes.get('Dolci del giorno'), '');
 for (const [name, , , tokens] of foodRows) {
   if (name === 'Coperto') continue;
   const escaped = name.replaceAll("'", '&#x27;').replaceAll('&', '&amp;').replaceAll('&amp;#x27;', '&#x27;');
@@ -112,9 +115,14 @@ for (const [name, , , tokens] of foodRows) {
   assert.ok(start >= 0, name);
   const item = balanced(html, start, 'div');
   const match = item.match(/<button class="allergen-trigger"[^>]*>(.*?)<\/button>/);
+  if (!tokens) {
+    assert.equal(match, null, name);
+    assert.ok(item.includes('aria-haspopup="dialog"'), name);
+    continue;
+  }
   assert.ok(match, name);
   const groups = tokens.match(/\d+/g) || [];
-  const expected = (groups.length ? groups.join(' · ') : 'Verifica allergeni') + (tokens.includes('*') ? '*' : '');
+  const expected = groups.join(' · ') + (tokens.includes('*') ? '*' : '');
   assert.equal(text(match[1]), expected, name);
 }
 for (const [src] of data.FORNO) {
@@ -129,7 +137,7 @@ const items=[...html.matchAll(/<div class="item\b[^>]*data-menu-item="([^"]*)"/g
 const multiPriceNames=new Set([...data.SPINA,...data.VINI].map(row=>row[0]));
 for(const m of items){
  const s=balanced(html,m.index,'div');
- if(m[1]==='Acqua' || m[1]==='Coperto') assert.match(s,/<span class="nome">/);
+ if(m[1]==='Coperto') assert.match(s,/<span class="nome">/);
  else assert.match(s,/<button type="button" class="nome" aria-haspopup="dialog"/);
  if(beverageNames.has(m[1])) assert.ok(!s.includes('class="allergen-trigger"'),'Beverage rows use the name for allergen details');
  assert.ok(s.includes('class="dots" aria-hidden="true"'), 'Every price row needs a desktop leader');

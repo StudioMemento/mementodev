@@ -13,5 +13,6 @@ h2 { margin:0 0 4px; font-size:1.07em; color:var(--gold); font-weight:500; }
 p { margin:0; }
 a { color:var(--gold); text-underline-offset:3px; }
 a:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
-nav { display:flex; flex-wrap:wrap; gap:0 20px; margin-top:26px; }
+nav { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0 clamp(4px,2vw,16px); margin-top:26px; }
+nav > span { color:var(--gold); }
 nav [aria-current] { text-decoration:none; }

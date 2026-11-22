@@ -78,7 +78,7 @@ export default function Dialogs() {
         close();
       }}
       onClick={(e) => {
-        if (modal.kind === "allergens" || e.target === e.currentTarget) close();
+        if (modal.kind === "allergens" || e.target === e.currentTarget || window.matchMedia("(max-width:767px), (pointer:coarse) and (max-width:1000px)").matches) close();
       }}
       onKeyDown={(e) => {
         if (modal.kind === "legal" && (e.target as HTMLElement).closest(".modal-header")) {
@@ -127,7 +127,7 @@ export default function Dialogs() {
                 </li>
               ))}
               <li className={info.frozen ? "contains" : ""}>
-                <b className="allergen-code">*</b>
+                <b className="allergen-code"><span className="frozen-mark">*</span></b>
                 <span className="allergen-text">
                   <strong className="allergen-name">
                     {copy.frozenTitle}

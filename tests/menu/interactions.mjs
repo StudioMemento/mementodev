@@ -67,14 +67,16 @@ assert.equal(details.recipeNote('Verdure', '', true, 'it'), undefined);
 assert.match(details.recipeNote('Genovese', 'pesto', true, 'it'), /frutta a guscio/);
 assert.match(details.recipeNote('Flag', '', true, 'it'), /malto d’orzo/);
 assert.match(details.recipeNote('Insalata Mista', '', false, 'it'), /verificare/);
+assert.match(details.ingredientSource('Marinara Classica',7,'it'),/confermare/);
+assert.match(details.ingredientSource('Rush More',1,'it'),/orzo/);
 const shared={getAllergenInfo,ingredientSource:details.ingredientSource,recipeNote:details.recipeNote,useDialog:()=>({open:v=>{opened=v},modal,close:()=>{closed++},update:()=>{}}),useI18n:()=>({language:currentLang,copy,ui:{legal_notes:'Note legali'}}),translateName:n=>n,translateDescription:n=>n,data};
 const items=await source('src/components/Menu.tsx',shared);
 const row=['Deliziosa','Bordo ripieno di ricotta, pomodoro, mozzarella di Bufala in cottura','13,00','1 · 7'];
 let view=items.MenuItem({row});const name=nodes(view,n=>n.type==='button'&&n.props.className==='nome')[0];name.props.onClick();const fromName=clone(opened);nodes(view,n=>n.props.className==='allergen-trigger')[0].props.onClick();assert.deepEqual(clone(opened),fromName);assert.equal(opened.codes,'1 · 7');
-const noCodes=items.ItemName({name:'Acqua'});assert.equal(noCodes.type,'span');assert.equal(noCodes.props.onClick,undefined);assert.equal(items.ItemName({name:'Coperto'}).type,'span');
+const noCodes=items.ItemName({name:'Acqua'});assert.equal(noCodes.type,'button');noCodes.props.onClick();assert.equal(opened.name,'Acqua');assert.equal(items.ItemName({name:'Coperto'}).type,'span');
 for(const drinkRow of [...data.ACQUA_BIBITE,...data.BOTTIGLIA.flatMap(group=>group[2])]) {
  const drink=items.MenuItem({row:drinkRow,showCodes:false});
- assert.equal(nodes(drink,n=>n.type==='button').length,drinkRow[0]==='Acqua'?0:1,'Drink name opens its product information');
+ assert.equal(nodes(drink,n=>n.type==='button').length,1,'Drink name opens its product information');
  assert.equal(nodes(drink,n=>n.props.className==='allergen-trigger').length,0);
 }
 for(const rows of [data.SPINA.map(b=>({name:b[0],qualifier:b[1],prices:b.slice(2,5)})),data.VINI.map(v=>({name:v[0],prices:v.slice(1,4)}))]) {
@@ -82,8 +84,8 @@ for(const rows of [data.SPINA.map(b=>({name:b[0],qualifier:b[1],prices:b.slice(2
  assert.equal(nodes(table,n=>n.type==='button').length,rows.length);
 }
 const dialogEffects=[];
-let nativeOpen=false;const rootStyle={overflow:'auto'},dialogRef={current:{clientWidth:390,clientHeight:844,scrollHeight:844,scrollWidth:390,style:{setProperty(){}},dataset:{},showModal:()=>{nativeOpen=true},close:()=>{nativeOpen=false}}};
-const dialog=await source('src/components/Dialogs.tsx',{...shared,allergens,LegalReader:()=>null,useRef:()=>dialogRef,useLayoutEffect:fn=>dialogEffects.push(fn),ResizeObserver:class{observe(){} disconnect(){}},document:{documentElement:{style:rootStyle},fonts:{ready:Promise.resolve()}},useDrag:()=>({}),Icon:()=>null,Photo:()=>null,wrap:(v,n)=>(v%n+n)%n});
+let nativeOpen=false, compactLegal=false;const rootStyle={overflow:'auto'},dialogRef={current:{clientWidth:390,clientHeight:844,scrollHeight:844,scrollWidth:390,style:{setProperty(){}},dataset:{},showModal:()=>{nativeOpen=true},close:()=>{nativeOpen=false}}};
+const dialog=await source('src/components/Dialogs.tsx',{...shared,allergens,window:{matchMedia:()=>({matches:compactLegal})},LegalReader:()=>null,useRef:()=>dialogRef,useLayoutEffect:fn=>dialogEffects.push(fn),ResizeObserver:class{observe(){} disconnect(){}},document:{documentElement:{style:rootStyle},fonts:{ready:Promise.resolve()}},useDrag:()=>({}),Icon:()=>null,Photo:()=>null,wrap:(v,n)=>(v%n+n)%n});
 for(const lang of ['it','en','de','fr']){
  currentLang=lang;modal={kind:'allergens',name:row[0],description:row[1],codes:'1 · 7 *'};view=dialog.Dialogs();
  const header=nodes(view,n=>n.props.className==='modal-header')[0];assert.equal(nodes(header,n=>n.type==='h2').length,1);assert.equal(nodes(header,n=>n.type==='p').length,0,'Redundant allergen eyebrow must be removed');
@@ -96,4 +98,5 @@ for(const lang of ['it','en','de','fr']){
  mounts.reverse().forEach(fn=>fn?.());assert.equal(nativeOpen,false);assert.equal(rootStyle.overflow,'auto');
 }
 modal={kind:'legal',slug:'privacy'};view=dialog.Dialogs();const before=closed;view.props.onClick({target:{},currentTarget:{}});assert.equal(closed,before,'Legal content must not close on inside click');const outside={};view.props.onClick({target:outside,currentTarget:outside});assert.equal(closed,before+1);
+compactLegal=true;view.props.onClick({target:{},currentTarget:{}});assert.equal(closed,before+2,'Tapping legal text dismisses the mobile dialog');
 console.log('MENU_INTERACTIONS_OK — fitted title/font loading/resize/translations; 8-category scrollspy, exact unclipped rail endpoints, pill-only edge masks, cached layout and reduced motion; item and number triggers, 15 allergen rows in four languages, any-click/Escape/close handlers, scroll-lock cleanup and legal-dialog isolation.');

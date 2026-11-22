@@ -58,7 +58,7 @@
 .item .dots { display:block; flex:1 0 20px; min-width:20px; height:1px; align-self:baseline; background:var(--price-dots); transform:translateY(-4px); }
 .item .desc { font-size:18px; line-height:1.45; margin-top:6px; letter-spacing:.005em; color:#d0cabe; max-width:80ch; }
 .allergen-trigger { display:flex; align-items:center; gap:5px; min-height:28px; padding:3px 0; font-size:12px; font-weight:400; letter-spacing:.12em; color:#969590; }
-.frozen-mark { font-size:17px; }
+.frozen-mark { display:inline-block; font-size:1.35em; line-height:1; transform:translateY(.17em); }
 .groupline { margin:32px 0 12px; font-size:12px; text-transform:uppercase; letter-spacing:.18em; color:var(--vr-gold); }
 .groupsub { margin:18px 0 8px; color:#c1b7a4; font-size:15px; }
 .groupsub strong { font-weight:400; }
@@ -128,4 +128,3 @@
 .menu-side-viewport { position:sticky; top:0; height:100svh; width:100%; display:flex; justify-content:space-between; overflow:clip; }
 .menu-side-band { display:block; width:var(--vr-gutter); height:100%; flex:none; contain:paint; will-change:transform; }
 
-.menu-allergen-guide { width:var(--vr-content); margin:clamp(20px,4svh,48px) auto 0; text-align:center; font-size:clamp(14px,1vw,17px); line-height:1.45; color:var(--vr-muted); text-wrap:pretty; }

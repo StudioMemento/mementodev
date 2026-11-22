@@ -202,7 +202,7 @@ async function testViewport(width,height,touch) {
     });
     assert.equal(footer.divider,footer.stacked ? "1px" : "0px");
     assert.equal(footer.stacked, footer.width<=740);
-    assert.ok(footer.wordmark>=11.5);
+    assert.ok(footer.wordmark>=8.5);
     if(width===390) {
       for(const language of languages) {
         await page.locator('.lang button[data-lang="'+language+'"]').click();

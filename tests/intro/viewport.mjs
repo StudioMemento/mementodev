@@ -39,8 +39,9 @@ function measureOven() {
   const communityFits = Math.abs((guestCopy.left - guestCard.left) - (guestCard.bottom - guestCopy.bottom)) < 1 &&
     guestInk.every(r => r.left >= guestCopy.left - 1 && r.right <= guestCopy.right + 1 && r.bottom <= guestCard.bottom) &&
     !guest.querySelector(".takeaway-copy p") && photoLink.getAttribute("aria-label").includes("Google Maps") &&
-    getComputedStyle(guest.querySelector(".crust-card-shade")).backgroundImage ===
-    getComputedStyle(takeaway.querySelector(".crust-card-shade")).backgroundImage;
+    Math.abs(box(guestHeading.querySelector("svg")).right - guestCopy.right) < 1 &&
+    box(guest.querySelector(".community-pin")).bottom <= guestCopy.top + 1 &&
+    guest.querySelector("img").getAttribute("src").includes("/maps-pin-");
   const head = box(document.querySelector(".site-top"));
   const oven = document.querySelector("#pizza-slider");
   const area = box(oven);

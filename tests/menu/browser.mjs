@@ -148,9 +148,10 @@ try {
     const row = getComputedStyle(el.querySelector("li:not(.contains)"));
     const note = getComputedStyle(el.querySelector(".allergen-note"));
     return { idle:row.color, active:getComputedStyle(el.querySelector("li.contains")).color,
-      noteSize:parseFloat(note.fontSize), detailSize:parseFloat(getComputedStyle(el.querySelector(".allergen-description")).fontSize) };
+      weight:note.fontWeight, noteSize:parseFloat(note.fontSize), detailSize:parseFloat(getComputedStyle(el.querySelector(".allergen-description")).fontSize) };
   });
-  assert.equal(appearance.idle, "rgb(122, 122, 122)");
+  assert.equal(appearance.idle, "rgb(85, 85, 85)");
+  assert.equal(appearance.weight, width >= 768 ? "300" : "400");
   assert.notEqual(appearance.active, appearance.idle);
   assert.ok(appearance.noteSize >= 16 && appearance.noteSize > appearance.detailSize);
   assert.deepEqual(dialog.active,['1','7']);assert.equal(dialog.count,15);assert.equal(dialog.bg,'rgba(0, 0, 0, 0)');assert.ok(dialog.blur.includes('blur'));assert.ok(dialog.rows.every(v=>v==='grid'));assert.ok(dialog.font>=12.5);assert.deepEqual(dialog.headerOrder,['H2']);assert.equal(dialog.note,'Per ulteriori info, chiedi al personale.');const alignedColumns = new Set(dialog.indent.map(x => Math.round(x)));
@@ -189,7 +190,7 @@ try {
    }
   }
   await page.locator('.lang button').filter({hasText:/^IT$/}).click();
-  assert.equal(await page.locator('#cat-bevande .item button.nome').count(),14,'Drink names open product information');
+  assert.equal(await page.locator('#cat-bevande .item button.nome').count(),15,'Drink names open product information');
   const kitchen=await page.locator('#cat-cucina .tag').evaluate(el=>({height:el.getBoundingClientRect().height,line:parseFloat(getComputedStyle(el).lineHeight),break:getComputedStyle(el.querySelector('br')).display}));
   assert.equal(kitchen.break,width<768?'block':'none');
   if(width<768)assert.ok(Math.abs(kitchen.height-2*kitchen.line)<1,'Kitchen copy must occupy exactly two lines');

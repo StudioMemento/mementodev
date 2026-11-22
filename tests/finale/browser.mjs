@@ -38,7 +38,7 @@ async function galleries(page, touch) {
     assert.equal(await page.locator(`#album-${key} .ribbon-card`).count(), photos.length);
   assert.equal(await rooms.locator(".photo-controls,.photo-expand,[aria-live] + button").count(), 0);
   assert.equal(await page.locator("#customer .ribbon-stage, #customer .photo-byline").count(), 0);
-  assert.equal(await page.locator("#customer .crust-photo").count(), 1);
+  assert.equal(await page.locator("#customer .community-pin").count(), 1);
   const photoLink = page.getByRole("link", {name:/Ricordi condivisi dalla community.*Google Maps/});
   assert.equal(await photoLink.getAttribute("href"), "https://www.google.com/maps/place//data=!4m3!3m2!1s0x477983a3cc4c3b4f:0x641962f142805885!10e5");
   const stage = rooms.first().locator(".ribbon-stage");
@@ -104,7 +104,7 @@ async function contactAndLegal(page, touch) {
     const stem=getComputedStyle(pin,"::before"), dot=getComputedStyle(pin,"::after");
     const glass=getComputedStyle(label,"::before");
     return {text:label.textContent, ink:style.color, softLabel:(glass.backdropFilter||glass.webkitBackdropFilter).includes("blur"),
-      tipAnchored:parseFloat(stem.width) === 1 && parseFloat(stem.bottom) === 0 && parseFloat(dot.width) >= 4,
+      tipAnchored:parseFloat(stem.width) === 1 && parseFloat(stem.bottom) === 0 && dot.content === "none",
       aligned:Math.abs(rect.top - parseFloat(stem.height) - box.bottom) < 1 && box.left < rect.left && box.right >= rect.left,
       fits:box.left>=map.left && box.top>=map.top && box.right<=map.right && box.bottom<=map.bottom,
       x:(rect.left-map.left)/map.width, y:(rect.top-map.top)/map.height};
@@ -176,6 +176,12 @@ async function contactAndLegal(page, touch) {
       assert.ok(Math.abs(dims.width-dims.innerWidth)<2 && Math.abs(dims.height-dims.innerHeight)<2 && dims.closeFits);
       assert.ok(dims.back.includes("blur"));assert.equal(dims.bar,"none");assert.equal(dims.hidden,dims.range<=1);
       if (dims.range>1) {
+        if (touch && lang==="it" && i===1 && dims.range>20) {
+          const reader=dialog.locator(".legal-scroll"), bounds=await reader.boundingBox();
+          const x=bounds.x+bounds.width/2;
+          await touchSwipe(page,{x,y:bounds.y+bounds.height*.75},{x,y:bounds.y+bounds.height*.24});
+          await page.waitForFunction(()=>document.querySelector("dialog[open] .legal-scroll")?.scrollTop>1);
+        }
         await page.keyboard.press("End");
         await page.waitForFunction(()=>{const v=document.querySelector(".legal-scroll");return v.scrollTop>=v.scrollHeight-v.clientHeight-1;});
         // The native scroll event is delivered after scrollTop updates.
@@ -186,7 +192,15 @@ async function contactAndLegal(page, touch) {
       }
       assert.equal(path.split("/").pop(), ["cookie.html","privacy.html","note-legali.html"][i]);
       assert.equal(await text.locator("p br").count(), 0, "Sentences are separate paragraphs");
-      if (i===2 && !touch) await page.mouse.click(3,3); else await page.keyboard.press("Escape");
+      if (touch) {
+        const paragraph = text.locator("p").first();
+        await paragraph.scrollIntoViewIfNeeded();
+        await paragraph.tap({position:{x:2,y:4}});
+      } else {
+        await text.locator("h2").first().click();
+        assert.equal(await dialog.count(), 1);
+        if (i===2) await page.mouse.click(3,3); else await page.keyboard.press("Escape");
+      }
       await dialog.waitFor({state:"detached"});assert.ok(await link.evaluate(e=>e===document.activeElement));
     }
   }
@@ -209,6 +223,14 @@ async function contactTextFits(page) {
       && Math.abs((time.right+time.left)-(box.right+box.left))<2 && time.left-box.left>box.width*.055;
   }),"Centered, equal-width hours and closing day in every language");
   assert.deepEqual(clipped,[],"Labels must fit the card");
+  const orderFits = await page.locator(".contact-tile").evaluateAll(tiles => tiles.every(tile => {
+    const ink = e => { const r = document.createRange(); r.selectNodeContents(e); return [...r.getClientRects()]; };
+    const [label] = ink(tile.querySelector(".action-label")), [phone] = ink(tile.querySelector("small"));
+    const purpose = ink(tile.querySelector(".contact-purpose").firstChild);
+    return Math.abs(label.top-phone.top)<1 && label.right<=phone.left && purpose[0].top>label.top &&
+      (document.documentElement.lang!=="it" || purpose.length===1);
+  }));
+  assert.ok(orderFits,"Contact name and number share the first line above the purpose");
 }
 
 async function finalLayout(page) {
@@ -235,7 +257,7 @@ async function finalLayout(page) {
     const bento=[...document.querySelectorAll(".bento-grid")].map(grid=>[...grid.children].map(el=>{
       const r=rect(el);return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};
     }));
-    return {validTitles:titles.length===7 && titles.every(atGutters),pairs, mobile:innerWidth<=700, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
+    return {validTitles:titles.length===7 && titles.every(atGutters),pairs, mobile:innerWidth<=700, tablet:innerWidth>700 && innerWidth<1000, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
@@ -258,7 +280,11 @@ async function finalLayout(page) {
   const square=tile=>close(tile.w,tile.h);
   const wide=tile=>Math.abs(tile.w/tile.h-2)<.12;
   assert.ok([ig,fb].every(result.squareSocial?square:wide) && reviews.every(square));
-  assert.ok([map,wa,phone].every(square) && (result.mobile ? Math.abs(hours.w/hours.h-1.15)<.03 : square(hours)));
+  assert.ok([map,wa,phone].every(square));
+  const hoursAspect = hours.w / hours.h;
+  if (result.mobile) assert.ok(Math.abs(hoursAspect-1.15)<.03);
+  else if (result.tablet) assert.ok(hoursAspect>=1.8 && hoursAspect<=2.3);
+  else assert.ok(square(hours));
   assert.ok(close(wa.t,phone.t) && close(wa.w,phone.w) && phone.l>wa.r);
   assert.ok(close(hours.l,wa.l) && close(hours.r,phone.r) && wa.t>hours.b);
   if(result.mobile) {
@@ -286,7 +312,7 @@ async function finalLayout(page) {
     const row=el.querySelector(".footer-row").getBoundingClientRect(), left=el.querySelector("p").getBoundingClientRect(), nav=el.querySelector("nav").getBoundingClientRect(), credit=el.querySelector(".studio-credit").getBoundingClientRect();
     const title=el.querySelector(".studio-credit span"), wordmark=el.querySelector(".studio-credit img").getBoundingClientRect();
     const text=title.getBoundingClientRect();
-    return title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && text.right<=wordmark.left && Math.abs((text.top+text.bottom)-(wordmark.top+wordmark.bottom))<2 && Math.abs(row.left-left.left)<1 && (row.width<=460 ? Math.abs(row.left-credit.left)<1 && credit.top>=left.bottom : Math.abs(row.right-credit.right)<1 && credit.left>=left.right-1) && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
+    return title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && Math.abs(text.right-wordmark.right)<1 && text.bottom<=wordmark.top && wordmark.width>=105 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && credit.left>=left.right-1 && Math.abs(left.top-credit.top)<1 && el.querySelectorAll("nav > span[aria-hidden=true]").length===2 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
       Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
       links.every(a=>{ const r=a.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
   });
