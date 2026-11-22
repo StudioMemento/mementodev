@@ -37,26 +37,27 @@
 .allergen-panel .modal-header > div { min-width:0; }
 .allergen-panel .modal-header h2 { font-size:var(--title); font-weight:400; line-height:1.08; margin:0; overflow-wrap:break-word; }
 .allergen-panel .modal-close { width:32px; height:32px; position:relative; border:0; background:none; border-radius:0; outline:none; }
-.allergen-panel .modal-close::before { content:""; position:absolute; inset:-6px -8px; }
+.allergen-panel .modal-close::before { content:""; position:absolute; inset:-6px; }
 .allergen-panel .modal-close svg { width:24px; height:24px; }
 .allergen-panel .modal-close:focus-visible { color:var(--vr-ivory); filter:drop-shadow(0 0 5px var(--vr-highlight)); }
 .allergen-list { list-style:none; columns:var(--allergen-columns,1); column-gap:14px; }
 .allergen-list li + li { margin-top:var(--row-gap); }
-.allergen-list li { display:grid; grid-template-columns:1.2em minmax(0,1fr); column-gap:.62em; align-items:baseline; color:#8f8c83; font-size:var(--name); line-height:1.17; break-inside:avoid; }
+.allergen-list li { display:grid; grid-template-columns:1.2em minmax(0,1fr); column-gap:.62em; align-items:baseline; color:#7a7a7a; font-size:var(--name); line-height:1.17; break-inside:avoid; }
 .allergen-code { font-size:inherit; font-weight:400; }
 .allergen-text { min-width:0; overflow-wrap:break-word; }
 .allergen-name { display:block; font-size:inherit; font-weight:500; letter-spacing:.065em; text-transform:uppercase; }
 .allergen-description { display:block; font-size:var(--detail); line-height:1.18; margin-top:1px; }
 .nut-phrase { white-space:nowrap; }
 .allergen-list .contains { color:var(--vr-highlight); }
-.allergen-note { font-size:var(--detail); line-height:1.3; color:var(--vr-muted); }
+.recipe-detail { margin-top:.3em; font-size:var(--detail); line-height:1.2; color:var(--vr-muted); }
+.allergen-note { font-size:clamp(16px,2.4dvh,23px); line-height:1.25; font-weight:400; }
 @media(max-height:560px) {
-  .modal-allergens[data-density=minimum] { --inset:7px; --section-gap:5px; --row-gap:0px; }
+  .modal-allergens[data-density=minimum] { --inset:7px; --section-gap:3px; --row-gap:0px; }
   .modal-allergens[data-density=minimum] .allergen-list { column-gap:10px; }
   .modal-allergens[data-density=minimum] .allergen-list li { grid-template-columns:1em minmax(0,1fr); column-gap:.38em; }
   .modal-allergens[data-density=minimum] .allergen-list li,
   .modal-allergens[data-density=minimum] .allergen-description { line-height:1.15; }
   .modal-allergens[data-density=minimum] .allergen-description { margin-top:.5px; }
 }
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .modal-allergens::backdrop { background:rgb(9 9 9 / .96); } }
+.modal-allergens::backdrop { background:rgb(5 5 5 / .97); }
 @media(forced-colors:active) { .allergen-list li { color:GrayText; } .allergen-list .contains { color:Highlight; } .allergen-panel .modal-close:focus-visible { outline:1px solid Highlight; } }

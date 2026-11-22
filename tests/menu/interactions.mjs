@@ -63,6 +63,10 @@ const data=JSON.parse(await readFile('src/data/menu.json','utf8')),allergens=JSO
 let currentLang='it',opened,closed=0,modal;
 const copy={allergens:'Allergeni',close:'Chiudi',allergenIncluded:'Presente in questo piatto',allergenNote:'Per ulteriori info, chiedi al personale.',frozenTitle:'Prodotti surgelati',frozen:'Surgelato all’origine o in assenza del fresco.'};
 const details=await source('src/data/allergen-details.ts',{});
+assert.equal(details.recipeNote('Verdure', '', true, 'it'), undefined);
+assert.match(details.recipeNote('Genovese', 'pesto', true, 'it'), /frutta a guscio/);
+assert.match(details.recipeNote('Flag', '', true, 'it'), /malto d’orzo/);
+assert.match(details.recipeNote('Insalata Mista', '', false, 'it'), /verificare/);
 const shared={getAllergenInfo,ingredientSource:details.ingredientSource,recipeNote:details.recipeNote,useDialog:()=>({open:v=>{opened=v},modal,close:()=>{closed++},update:()=>{}}),useI18n:()=>({language:currentLang,copy,ui:{legal_notes:'Note legali'}}),translateName:n=>n,translateDescription:n=>n,data};
 const items=await source('src/components/Menu.tsx',shared);
 const row=['Deliziosa','Bordo ripieno di ricotta, pomodoro, mozzarella di Bufala in cottura','13,00','1 · 7'];

@@ -2,16 +2,16 @@ import { useI18n, type Language } from "../i18n";
 import { photosUrl } from "../data/venue-links";
 import { FeatureCard } from "./FeatureCard";
 
-const copy: Record<Language, [string, string, string]> = {
-  it: ["Le foto", "degli ospiti", "Apri su Google Maps"],
-  en: ["Photos from", "our guests", "View on Google Maps"],
-  de: ["Fotos", "unserer Gäste", "Auf Google Maps ansehen"],
-  fr: ["Les photos", "de nos clients", "Voir sur Google Maps"],
+const copy: Record<Language, [string, string]> = {
+  it: ["Ricordi condivisi dalla community", "Apri le foto su Google Maps"],
+  en: ["Memories shared by our community", "Open photos on Google Maps"],
+  de: ["Erinnerungen aus unserer Community", "Fotos auf Google Maps öffnen"],
+  fr: ["Les souvenirs de notre communauté", "Voir les photos sur Google Maps"],
 };
 
 export function GuestPhotos() {
   const { language } = useI18n();
-  const [first, second, action] = copy[language];
-  return <FeatureCard id="customer" titleId="guest-photos-title" imageBase="/assets/foto-ospiti/gallery"
-    heading={<>{first}<br />{second}</>} caption={action} href={photosUrl} />;
+  const [heading, label] = copy[language];
+  return <FeatureCard id="customer" titleId="guest-photos-title" imageBase="/assets/foto-ospiti/maps-dark"
+    heading={heading} link={{ href: photosUrl, label }} />;
 }

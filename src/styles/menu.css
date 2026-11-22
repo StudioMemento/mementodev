@@ -128,6 +128,4 @@
 .menu-side-viewport { position:sticky; top:0; height:100svh; width:100%; display:flex; justify-content:space-between; overflow:clip; }
 .menu-side-band { display:block; width:var(--vr-gutter); height:100%; flex:none; contain:paint; will-change:transform; }
 
-.menu-allergen-guide { width:var(--vr-content); margin:clamp(20px,4svh,48px) auto 0; text-align:center; }
-.menu-allergen-guide,.drink-allergen-note { font-size:clamp(14px,1vw,17px); line-height:1.45; color:var(--vr-muted); text-wrap:pretty; }
-.drink-allergen-note { margin-bottom:1em; }
+.menu-allergen-guide { width:var(--vr-content); margin:clamp(20px,4svh,48px) auto 0; text-align:center; font-size:clamp(14px,1vw,17px); line-height:1.45; color:var(--vr-muted); text-wrap:pretty; }

@@ -1,18 +1,16 @@
-import type { ReactNode } from "react";
 import { HoloCard } from "./intro/HoloCard";
 import { Chevron } from "./Icon";
 
 type FeatureCardProps = {
   id: string;
   titleId: string;
-  heading: ReactNode;
-  caption: string;
+  heading: string;
+  caption?: string;
   imageBase: string;
-  href?: string;
+  link?: { href: string; label: string };
 };
 
-export function FeatureCard({ id, titleId, heading, caption, imageBase, href }: FeatureCardProps) {
-  const captionId = titleId + "-caption";
+export function FeatureCard({ id, titleId, heading, caption, imageBase, link }: FeatureCardProps) {
   return (
     <section className="takeaway" id={id} aria-labelledby={titleId}>
       <HoloCard>
@@ -22,11 +20,11 @@ export function FeatureCard({ id, titleId, heading, caption, imageBase, href }: 
           width="1600" height="900" loading="lazy" decoding="async" draggable={false} alt="" />
         <div className="crust-card-shade" aria-hidden="true" />
         <div className="takeaway-copy">
-          <h2 id={titleId}>{heading}</h2>
-          <p id={captionId}>{caption}{href && <Chevron direction="right" />}</p>
+          <h2 id={titleId}>{heading}{link && <Chevron direction="right" />}</h2>
+          {caption && <p>{caption}</p>}
         </div>
-        {href && <a className="feature-card-link" href={href} target="_blank" rel="noopener noreferrer"
-          aria-labelledby={`${titleId} ${captionId}`} />}
+        {link && <a className="feature-card-link" href={link.href} target="_blank" rel="noopener noreferrer"
+          aria-label={`${heading}. ${link.label}`} />}
       </HoloCard>
     </section>
   );

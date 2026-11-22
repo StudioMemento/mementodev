@@ -137,11 +137,10 @@ function DrinkTable({
   );
 }
 function Drinks() {
-  const { t, copy, language } = useI18n();
+  const { t, language } = useI18n();
   const bottles = data.BOTTIGLIA as [string, string, string[][]][];
   return (
     <>
-      <p className="drink-allergen-note">{copy.drinkNotice}</p>
       <Rows rows={data.ACQUA_BIBITE} showCodes={false} />
       <p className="groupline">{t.bottiglia}</p>
       {bottles.map(([name, desc, rows]) => (
@@ -213,7 +212,7 @@ export default function Menu() {
         </div>
       </div>
       <div id="carta">
-        <p className="menu-allergen-guide">{copy.ingredientNotice}<br />{copy.staffNotice}</p>
+        <p className="menu-allergen-guide">{copy.staffNotice}</p>
         {categoryOrder.map((id) => {
           const [title, tag] = t.cats[id];
           const kitchenBreak = id === "cucina" && language === "it" ? tag.indexOf("...") + 3 : 0;

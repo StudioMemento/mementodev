@@ -34,12 +34,12 @@ const after=entries(html);assert.ok(before.length>80);assert.equal(after.length,
 assert.equal(bottled.size,7);
 for(const name of bottled){const item=html.match(new RegExp(`<div class="item" data-menu-item="${name}"`));assert.ok(item);const markup=balanced(html,item.index,'div');const description=markup.match(/<p class="desc">(.*?)<\/p>/)[1];assert.ok(!description.includes('<br'),'Bottle description still has a forced line break');}
 assert.ok(html.includes('IPA 0,5 l'));
-assert.match(html,/<p class="dolci-note">Chiedi al personale quali dolci sono disponibili oggi e quali allergeni contengono.<\/p>/);
+assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità del giorno!<\/p>/);
 // Prove the comparison can detect a changed price, not just a missing section.
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_5.5 — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_5.6 — preview'));assert.ok(html.includes('noindex,nofollow'));
 const crustStart = html.lastIndexOf('<section',html.indexOf('id="cornicione"'));
 const takeawayStart = html.lastIndexOf('<section',html.indexOf('id="asporto"'));
 assert.equal((balanced(html,crustStart,'section').match(/class="crust-card"/g)||[]).length,3);
@@ -58,8 +58,11 @@ assert.match(await readFile('src/styles/intro.css','utf8'),/#pizza-slider \{[^}]
 assert.ok(!(await readFile('src/styles/contact.css','utf8')).includes('background: #000;'));
 assert.ok((await readFile('public/legal.css','utf8')).includes('background:#090909;'));
 assert.equal((html.match(/class="finale-field-view"/g)||[]).length,2);
-assert.match(html,/Gusto Via Roma<br\s*\/?>nel comfort di casa\?/);
-assert.match(html,/Facciamo anche servizio da asporto!/);
+assert.match(html,/<h2 id="takeaway-title">Gusto Via Roma nel comfort di casa\?<\/h2>/);
+assert.match(html,/<p>Facciamo anche servizio da asporto!<\/p>/);
+assert.match(html,/<h2 id="guest-photos-title">Ricordi condivisi dalla community</);
+assert.doesNotMatch(html,/I numeri indicano gli allergeni|Tocca il nome della bevanda/);
+assert.match(html,/<p class="menu-allergen-guide">Per allergie o intolleranze,[^<]+<\/p>/);
 const kitchen=balanced(html,html.indexOf('<section class="mcat fx on has-art" id="cat-cucina"'),'section');
 assert.match(kitchen,/Anche se incredibile\.\.\.<br class="kitchen-mobile-break"\/><span class="kitchen-desktop-space"> <\/span>non si ha sempre voglia di pizza\?/);
 assert.ok(!css.includes('.menu-art:hover'),'Obsolete artwork hover layers remain');

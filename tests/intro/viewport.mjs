@@ -23,12 +23,24 @@ function measureOven() {
     range.selectNodeContents(node);
     return [...range.getClientRects()];
   };
-  const lines = [...takeawayTitle.childNodes].filter(n => n.nodeType === Node.TEXT_NODE).map(textBox);
+  const question = textBox(takeawayTitle.firstChild);
   const answer = textBox(takeaway.querySelector("p").firstChild);
   const card = box(takeaway.querySelector(".crust-card"));
-  const textFits = lines.length === 2 && lines.every(line => line.length === 1) &&
-    lines[0][0].top < lines[1][0].top && lines[1][0].top < answer[0].top &&
-    [...lines.flat(), ...answer].every(r => r.left >= card.left && r.right <= card.right && r.bottom <= card.bottom);
+  const caption = box(takeaway.querySelector(".takeaway-copy"));
+  const x = caption.left - card.left, y = card.bottom - caption.bottom;
+  const textFits = question.length === 1 && answer.length === 1 &&
+    question[0].top < answer[0].top && Math.abs(x - y) < 1 &&
+    [...question, ...answer].every(r => Math.abs(r.left - caption.left) < 1 && r.right <= card.right - x + 1 && r.bottom <= card.bottom);
+  const guest = document.querySelector("#customer");
+  const guestCard = box(guest.querySelector(".crust-card")), guestCopy = box(guest.querySelector(".takeaway-copy"));
+  const guestHeading = guest.querySelector("h2");
+  const guestInk = [...textBox(guestHeading.firstChild), box(guestHeading.querySelector("svg"))];
+  const photoLink = guest.querySelector("a");
+  const communityFits = Math.abs((guestCopy.left - guestCard.left) - (guestCard.bottom - guestCopy.bottom)) < 1 &&
+    guestInk.every(r => r.left >= guestCopy.left - 1 && r.right <= guestCopy.right + 1 && r.bottom <= guestCard.bottom) &&
+    !guest.querySelector(".takeaway-copy p") && photoLink.getAttribute("aria-label").includes("Google Maps") &&
+    getComputedStyle(guest.querySelector(".crust-card-shade")).backgroundImage ===
+    getComputedStyle(takeaway.querySelector(".crust-card-shade")).backgroundImage;
   const head = box(document.querySelector(".site-top"));
   const oven = document.querySelector("#pizza-slider");
   const area = box(oven);
@@ -60,7 +72,7 @@ function measureOven() {
         nameBottom:name.bottom, start:ink(ingredients[0]).top, last:ink(ingredients.at(-1)).bottom,dock:nav.top});
   }
   return {height:area.height, device:innerHeight, top:area.top, black:getComputedStyle(oven).backgroundColor, problems,
-    textFits, answerLines:answer.length, image:center.width, title:title.top, header:head.bottom, headingAligned:Math.abs(box(oven.querySelector("h2")).left-nav.left)<1,
+    textFits, communityFits, image:center.width, title:title.top, header:head.bottom, headingAligned:Math.abs(box(oven.querySelector("h2")).left-nav.left)<1,
     headingFilled: Math.abs(ink(oven.querySelector(".spread-line > :first-child")).left-title.left)<1 &&
       Math.abs(ink(oven.querySelector(".spread-line > :last-child")).right-box(oven.querySelector("h2")).right)<2,
     titleGap:stage.top-title.bottom, landscape:innerWidth>innerHeight && innerHeight<=490, measures, gap,
@@ -83,7 +95,7 @@ try {
         await page.waitForFunction(lang=>document.documentElement.lang===lang,lang);
         const info = await page.evaluate(measureOven);
         assert.ok(!info.overflow && Math.abs(info.top)<1 && Math.abs(info.device*1.2-info.height)<1 && info.image>85 && info.stage>72, JSON.stringify({width,height,lang,info}));
-        assert.ok(info.textFits && (lang !== "it" || info.answerLines === 1), "Takeaway copy must fit: "+JSON.stringify({width,height,lang,info}));
+        assert.ok(info.textFits && info.communityFits, "Feature card captions must fit: "+JSON.stringify({width,height,lang,info}));
         assert.equal(info.black,"rgb(9, 9, 9)");
         assert.ok(info.blurAbove && info.headingAligned && info.headingFilled && info.title>info.header-2, JSON.stringify({width,height,lang,info}));
         assert.ok(info.landscape || info.titleGap >= 12, "Section title touches the stage: "+JSON.stringify(info));

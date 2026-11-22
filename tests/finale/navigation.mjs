@@ -197,12 +197,12 @@ async function testViewport(width,height,touch) {
     }
     const footer=await page.locator(".footer-row").evaluate(el=>{
       const nav=el.querySelector("nav"), credit=el.querySelector(".studio-credit"), mark=credit.querySelector("img");
-      return {divider:getComputedStyle(nav).borderTopWidth, wordmark:mark.getBoundingClientRect().width,
+      return {divider:getComputedStyle(nav).borderTopWidth, width:el.getBoundingClientRect().width, wordmark:mark.getBoundingClientRect().height,
         stacked:credit.getBoundingClientRect().bottom<=nav.getBoundingClientRect().top};
     });
     assert.equal(footer.divider,footer.stacked ? "1px" : "0px");
-    assert.equal(footer.stacked, width<=767 || touch && width<=1000 && height<=540);
-    assert.ok(footer.wordmark>=89.9);
+    assert.equal(footer.stacked, footer.width<=740);
+    assert.ok(footer.wordmark>=11.5);
     if(width===390) {
       for(const language of languages) {
         await page.locator('.lang button[data-lang="'+language+'"]').click();

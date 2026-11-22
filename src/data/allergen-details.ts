@@ -17,47 +17,41 @@ export function ingredientSource(name: string, code: number, language: Language)
 }
 
 const notes = {
-  recipe: {
-    it: "Chiedi al personale di verificare la ricetta e gli eventuali contatti in cucina prima di ordinare.",
-    en: "Before ordering, ask staff to check the recipe and possible cross-contact in the kitchen.",
-    de: "Bitte vor der Bestellung die Rezeptur und mögliche Kreuzkontakte mit dem Personal klären.",
-    fr: "Avant de commander, demandez au personnel de vérifier la recette et les risques de contact croisé.",
-  },
   missing: {
-    it: "Per questo prodotto, chiedi al personale di verificare gli allergeni sulla ricetta o sull’etichetta prima di ordinare.",
-    en: "Ask staff to check the recipe or label for this product’s allergens before ordering.",
-    de: "Bitte vor der Bestellung die Allergene dieses Produkts anhand der Rezeptur oder des Etiketts erfragen.",
-    fr: "Avant de commander, demandez au personnel de vérifier les allergènes de ce produit sur la recette ou l’étiquette.",
+    it: "Allergeni da verificare sulla ricetta o sull’etichetta.",
+    en: "Check the recipe or label for allergens.",
+    de: "Allergene anhand der Rezeptur oder des Etiketts prüfen.",
+    fr: "Allergènes à vérifier sur la recette ou l’étiquette.",
   },
   pesto: {
-    it: "Chiedi al personale quali ingredienti contiene il pesto utilizzato, in particolare la frutta a guscio.",
-    en: "Ask staff which ingredients the pesto contains, especially tree nuts.",
-    de: "Bitte beim Personal die Zutaten des verwendeten Pestos erfragen, insbesondere Schalenfrüchte.",
-    fr: "Demandez au personnel quels ingrédients composent le pesto, en particulier les fruits à coque.",
+    it: "Da verificare gli ingredienti del pesto, in particolare la frutta a guscio.",
+    en: "Check the pesto ingredients, especially tree nuts.",
+    de: "Zutaten des Pestos prüfen, insbesondere Schalenfrüchte.",
+    fr: "Vérifier les ingrédients du pesto, notamment les fruits à coque.",
   },
   grana: {
-    it: "Chiedi al personale se il grana utilizzato contiene lisozima da uovo.",
-    en: "Ask staff whether the grana cheese used contains egg-derived lysozyme.",
-    de: "Bitte nachfragen, ob der verwendete Grana Lysozym aus Ei enthält.",
-    fr: "Demandez si le grana utilisé contient du lysozyme issu de l’œuf.",
+    it: "Da verificare l’eventuale lisozima da uovo nel grana.",
+    en: "Check the grana cheese for egg-derived lysozyme.",
+    de: "Grana auf Lysozym aus Ei prüfen.",
+    fr: "Vérifier si le grana contient du lysozyme issu de l’œuf.",
   },
   fried: {
-    it: "Chiedi al personale di verificare la preparazione, l’olio e l’uso della friggitrice per altri alimenti.",
-    en: "Ask staff to check the preparation, frying oil and whether other foods use the same fryer.",
-    de: "Bitte Zubereitung, Frittieröl und die Nutzung der Fritteuse für andere Speisen erfragen.",
-    fr: "Demandez au personnel de vérifier la préparation, l’huile et les autres aliments cuits dans la même friteuse.",
+    it: "Da verificare la preparazione, l’olio e l’uso condiviso della friggitrice.",
+    en: "Check the preparation, oil and use of a shared fryer.",
+    de: "Zubereitung, Frittieröl und gemeinsame Nutzung der Fritteuse prüfen.",
+    fr: "Vérifier la préparation, l’huile et le partage de la friteuse.",
   },
   caesar: {
-    it: "Chiedi al personale di verificare la salsa Caesar, la preparazione del pollo fritto e l’eventuale lisozima da uovo nel grana.",
-    en: "Ask staff to check the Caesar dressing, the fried chicken preparation and any egg-derived lysozyme in the cheese.",
-    de: "Bitte Caesar-Dressing, die Zubereitung des frittierten Hähnchens und mögliches Ei-Lysozym im Grana erfragen.",
-    fr: "Faites vérifier la sauce César, la préparation du poulet frit et l’éventuel lysozyme d’œuf dans le grana.",
+    it: "Da verificare la salsa Caesar, il pollo fritto e l’eventuale lisozima da uovo nel grana.",
+    en: "Check the Caesar dressing, fried chicken and possible egg-derived lysozyme in the grana.",
+    de: "Caesar-Dressing, Brathähnchen und mögliches Ei-Lysozym im Grana prüfen.",
+    fr: "Vérifier la sauce César, le poulet frit et l’éventuel lysozyme d’œuf du grana.",
   },
   label: {
-    it: "Per la composizione del prodotto servito, chiedi al personale di controllare l’etichetta.",
-    en: "Ask staff to check the label of the product being served.",
-    de: "Bitte das Personal nach den Angaben auf dem Etikett des servierten Produkts fragen.",
-    fr: "Demandez au personnel de vérifier l’étiquette du produit servi.",
+    it: "Consultare l’etichetta del prodotto servito.",
+    en: "Check the label of the product served.",
+    de: "Etikett des servierten Produkts prüfen.",
+    fr: "Vérifier l’étiquette du produit servi.",
   },
   flag: {
     it: "Il birrificio indica «senza glutine» e riporta il malto d’orzo tra gli ingredienti.",
@@ -66,10 +60,10 @@ const notes = {
     fr: "La brasserie indique « sans gluten » et mentionne le malt d’orge parmi les ingrédients.",
   },
   wine: {
-    it: "Prima di ordinare, chiedi al personale di controllare i solfiti e gli altri allergeni sull’etichetta del vino servito.",
-    en: "Before ordering, ask staff to check the wine label for sulphites and other allergens.",
-    de: "Bitte vor der Bestellung das Weinetikett auf Sulfite und weitere Allergene prüfen lassen.",
-    fr: "Avant de commander, faites vérifier la présence de sulfites et d’autres allergènes sur l’étiquette du vin servi.",
+    it: "Verificare solfiti e altri allergeni sull’etichetta del vino servito.",
+    en: "Check the wine label for sulphites and other allergens.",
+    de: "Weinetikett auf Sulfite und weitere Allergene prüfen.",
+    fr: "Vérifier les sulfites et autres allergènes sur l’étiquette du vin servi.",
   },
 };
 const wines = new Set(["Cabernet Franc", "Friulano", "Prosecco DOC Treviso"]);
@@ -83,5 +77,5 @@ export function recipeNote(name: string, description: string, hasCodes: boolean,
   if (/pesto/i.test(description)) return notes.pesto[language];
   if (/grana/i.test(description)) return notes.grana[language];
   if (barleyBeers.has(name) || ["Wieze Blanche", "Rush More", "Bibite"].includes(name)) return notes.label[language];
-  return hasCodes ? notes.recipe[language] : notes.missing[language];
+  return hasCodes ? undefined : notes.missing[language];
 }

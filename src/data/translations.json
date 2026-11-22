@@ -34,7 +34,7 @@
       "m_eyebrow": "La carta",
       "m_title": "Il Menù",
       "sel_cta": "Scopri la selezione",
-      "dolci_note": "Chiedi al personale quali dolci sono disponibili oggi e quali allergeni contengono.",
+      "dolci_note": "Chiedi al personale la disponibilità del giorno!",
       "g_categories": {
         "bancone": "Bancone",
         "sala_sinistra": "Sala sinistra",
@@ -137,7 +137,7 @@
       "m_eyebrow": "The menu",
       "m_title": "The Menu",
       "sel_cta": "Discover the selection",
-      "dolci_note": "Ask our staff which desserts are available today and which allergens they contain.",
+      "dolci_note": "Ask our staff about today’s selection.",
       "g_categories": {
         "bancone": "Counter",
         "sala_sinistra": "Left room",
@@ -240,7 +240,7 @@
       "m_eyebrow": "Die Karte",
       "m_title": "Die Speisekarte",
       "sel_cta": "Zur Auswahl",
-      "dolci_note": "Unser Personal informiert über die heutigen Desserts und ihre Allergene.",
+      "dolci_note": "Fragen Sie unser Personal nach der Auswahl des Tages.",
       "g_categories": {
         "bancone": "Theke",
         "sala_sinistra": "Linker Saal",
@@ -343,7 +343,7 @@
       "m_eyebrow": "La carte",
       "m_title": "Le Menu",
       "sel_cta": "Découvrir la sélection",
-      "dolci_note": "Demandez au personnel quels desserts sont proposés aujourd’hui et quels allergènes ils contiennent.",
+      "dolci_note": "Demandez au personnel la disponibilité du jour !",
       "g_categories": {
         "bancone": "Comptoir",
         "sala_sinistra": "Salle gauche",

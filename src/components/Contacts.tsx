@@ -20,7 +20,7 @@ function Footer() {
       <p><span>© 2026</span> <span>Pizzeria Via Roma</span></p>
       <a className="studio-credit" href="https://mementostudio.it" target="_blank" rel="noopener noreferrer">
         <span lang="en">Powered by</span>
-        <img src="/assets/memento-wordmark.svg" width="202" height="9" loading="lazy" alt="MEMENTO" />
+        <img src="/assets/memento-wordmark.svg?v=56" width="824" height="64" loading="lazy" alt="MEMENTO" />
       </a>
       <nav aria-label={ui.legal_notes}>
         {([["cookie", copy.cookies], ["privacy", copy.privacy], ["note-legali", ui.legal_notes]] as const).map(([slug, label]) =>

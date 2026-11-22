@@ -39,7 +39,7 @@ async function galleries(page, touch) {
   assert.equal(await rooms.locator(".photo-controls,.photo-expand,[aria-live] + button").count(), 0);
   assert.equal(await page.locator("#customer .ribbon-stage, #customer .photo-byline").count(), 0);
   assert.equal(await page.locator("#customer .crust-photo").count(), 1);
-  const photoLink = page.getByRole("link", {name:/Le foto.*degli ospiti.*Google Maps/});
+  const photoLink = page.getByRole("link", {name:/Ricordi condivisi dalla community.*Google Maps/});
   assert.equal(await photoLink.getAttribute("href"), "https://www.google.com/maps/place//data=!4m3!3m2!1s0x477983a3cc4c3b4f:0x641962f142805885!10e5");
   const stage = rooms.first().locator(".ribbon-stage");
   await center(stage); await page.waitForSelector("#album-esterno [data-enhanced]");
@@ -239,7 +239,7 @@ async function finalLayout(page) {
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
-      stackedFooter:matchMedia("(max-width:767px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches,
+      stackedFooter:rect(document.querySelector(".footer-row")).width<=740,
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
       blockSizes:[...document.querySelectorAll("#social,#dove")].every(el=>rect(el).height+1>=innerHeight),
       validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
@@ -286,7 +286,7 @@ async function finalLayout(page) {
     const row=el.querySelector(".footer-row").getBoundingClientRect(), left=el.querySelector("p").getBoundingClientRect(), nav=el.querySelector("nav").getBoundingClientRect(), credit=el.querySelector(".studio-credit").getBoundingClientRect();
     const title=el.querySelector(".studio-credit span"), wordmark=el.querySelector(".studio-credit img").getBoundingClientRect();
     const text=title.getBoundingClientRect();
-    return title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && text.right<=wordmark.left && Math.abs((text.top+text.bottom)-(wordmark.top+wordmark.bottom))<2 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
+    return title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && text.right<=wordmark.left && Math.abs((text.top+text.bottom)-(wordmark.top+wordmark.bottom))<2 && Math.abs(row.left-left.left)<1 && (row.width<=460 ? Math.abs(row.left-credit.left)<1 && credit.top>=left.bottom : Math.abs(row.right-credit.right)<1 && credit.left>=left.right-1) && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
       Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
       links.every(a=>{ const r=a.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
   });

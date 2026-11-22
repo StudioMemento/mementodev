@@ -144,7 +144,16 @@ try {
   const trigger=page.locator('[data-menu-item="Burrata e Crudo"] button.nome');
   await trigger.click();await page.locator('dialog.modal-allergens').waitFor({state:'visible'});
   const dialog=await page.locator('.modal-allergens').evaluate(el=>({active:[...el.querySelectorAll('.contains .allergen-code')].map(n=>n.textContent),count:el.querySelectorAll('li').length,bg:getComputedStyle(el).backgroundColor,blur:getComputedStyle(el,'::backdrop').backdropFilter,rows:[...el.querySelectorAll('li')].map(n=>getComputedStyle(n).display),font:parseFloat(getComputedStyle(el.querySelector('li')).fontSize),headerOrder:[...el.querySelector('.modal-header>div').children].map(n=>n.tagName),note:el.querySelector('.allergen-note').textContent,indent:[...el.querySelectorAll('.allergen-text')].map(n=>n.getBoundingClientRect().left),circle:getComputedStyle(el.querySelector('.allergen-code')).borderTopWidth,x:getComputedStyle(el.querySelector('.modal-close')).outlineStyle}));
-  assert.deepEqual(dialog.active,['1','7']);assert.equal(dialog.count,15);assert.equal(dialog.bg,'rgba(0, 0, 0, 0)');assert.ok(dialog.blur.includes('blur'));assert.ok(dialog.rows.every(v=>v==='grid'));assert.ok(dialog.font>=12.5);assert.deepEqual(dialog.headerOrder,['H2']);assert.match(dialog.note,/personale.*ricetta/);const alignedColumns = new Set(dialog.indent.map(x => Math.round(x)));
+  const appearance = await page.locator(".modal-allergens").evaluate(el => {
+    const row = getComputedStyle(el.querySelector("li:not(.contains)"));
+    const note = getComputedStyle(el.querySelector(".allergen-note"));
+    return { idle:row.color, active:getComputedStyle(el.querySelector("li.contains")).color,
+      noteSize:parseFloat(note.fontSize), detailSize:parseFloat(getComputedStyle(el.querySelector(".allergen-description")).fontSize) };
+  });
+  assert.equal(appearance.idle, "rgb(122, 122, 122)");
+  assert.notEqual(appearance.active, appearance.idle);
+  assert.ok(appearance.noteSize >= 16 && appearance.noteSize > appearance.detailSize);
+  assert.deepEqual(dialog.active,['1','7']);assert.equal(dialog.count,15);assert.equal(dialog.bg,'rgba(0, 0, 0, 0)');assert.ok(dialog.blur.includes('blur'));assert.ok(dialog.rows.every(v=>v==='grid'));assert.ok(dialog.font>=12.5);assert.deepEqual(dialog.headerOrder,['H2']);assert.equal(dialog.note,'Per ulteriori info, chiedi al personale.');const alignedColumns = new Set(dialog.indent.map(x => Math.round(x)));
   assert.equal(alignedColumns.size, await page.locator('.modal-allergens').evaluate(el=>Number(el.style.getPropertyValue('--allergen-columns'))));assert.equal(dialog.circle,'0px');assert.equal(dialog.x,'none');
   await page.screenshot({path:`${out}/allergens-${width}x${height}.png`});
   await page.locator('.allergen-name').first().click();await page.locator('dialog').waitFor({state:'detached'});
@@ -187,7 +196,7 @@ try {
   const bottles=await page.locator('.drink-bottle-group .desc').evaluateAll(els=>els.map(el=>({text:el.textContent,breaks:el.querySelectorAll('br').length,overflow:el.scrollWidth>el.clientWidth+1})));
   assert.equal(bottles.length,7);assert.ok(bottles.every(b=>!b.breaks&&!b.overflow));assert.ok(bottles.some(b=>b.text==='IPA 0,5 l'));
   const note=await page.locator('.dolci-note').evaluate(el=>({text:el.textContent,align:getComputedStyle(el).textAlign,color:getComputedStyle(el).color,size:parseFloat(getComputedStyle(el).fontSize)}));
-  assert.equal(note.text,'Chiedi al personale quali dolci sono disponibili oggi e quali allergeni contengono.');assert.equal(note.align,'center');assert.equal(note.color,'rgb(218, 193, 139)');assert.ok(note.size>=22);
+  assert.equal(note.text,'Chiedi al personale la disponibilità del giorno!');assert.equal(note.align,'center');assert.equal(note.color,'rgb(218, 193, 139)');assert.ok(note.size>=22);
   const drinks=[];
   for(const lang of ['de','fr','en','it']){
    await page.locator('.lang button').filter({hasText:new RegExp(`^${lang.toUpperCase()}$`)}).click();

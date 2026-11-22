@@ -110,18 +110,13 @@
   margin:clamp(52px,10svh,144px) auto 0; padding-bottom:clamp(120px,23svh,280px);
 }
 .takeaway .crust-card-shell { aspect-ratio:16/9; }
-.takeaway .crust-card { display:grid; align-items:center; }
-.takeaway .crust-photo,.takeaway-copy { grid-area:1/1; }
-.takeaway-copy { position:relative; z-index:2; margin-inline:clamp(12px,4.4cqi,64px); pointer-events:none; }
-.takeaway-copy h2 { color:var(--vr-highlight); font-size:clamp(17px,4.5cqi,54px); line-height:1.12; letter-spacing:-.018em; }
-.takeaway-copy p { margin-top:.68em; font-size:clamp(13px,2.4cqi,27px); line-height:1.27; }
-@media (max-width:767px) {
-  .takeaway { --shade-mid:#090909ac; }
-  .takeaway-copy { align-self:end; margin-bottom:clamp(12px,4.4cqi,24px); }
-}
+.takeaway .crust-card-shade { inset:0; background:linear-gradient(to top,#080808f5 4%,#080808c7 26%,#08080832 50%,transparent 68%); }
+.takeaway-copy { --pad:clamp(12px,4.4cqi,64px); position:absolute; inset:auto var(--pad) var(--pad); z-index:2; text-align:left; pointer-events:none; }
+.takeaway-copy h2 { color:var(--vr-highlight); font-size:clamp(14px,4.7cqi,54px); line-height:1.12; letter-spacing:-.018em; }
+.takeaway-copy p { margin-top:.22em; font-size:clamp(13px,3cqi,31px); line-height:1.22; }
 @media(prefers-reduced-motion:reduce) { .crust-card { transform:none; transition:none; } }
 
 .feature-card-link { position:absolute; inset:0; z-index:3; }
 .feature-card-link:focus-visible { outline:2px solid var(--vr-highlight); outline-offset:-4px; }
-.takeaway-copy p svg { display:inline-block; width:.8em; height:.8em; margin-inline-start:.35em; vertical-align:baseline; }
+.takeaway-copy svg { display:inline-block; width:.64em; height:.64em; margin-inline-start:.25em; vertical-align:baseline; }
 #customer.takeaway { z-index:1; }

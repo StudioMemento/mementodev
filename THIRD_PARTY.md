@@ -1,4 +1,4 @@
-# Risorse e licenze — Via Roma 5.5
+# Risorse e licenze — Via Roma 5.6
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.
@@ -18,6 +18,9 @@ Le gallerie e il bento della 4.1 riprendono i preset visivi Panorama, Flat e Mag
 
 Le otto immagini in `public/assets/social` sono visual generati e ottimizzati in WebP. La serie 4.6 comprende sei marchi delle piattaforme, WhatsApp e un pittogramma di smartphone per la scheda «Chiama». La finitura riprende il campione Instagram della 4.4. Le icone hanno fondo trasparente e condividono la superficie carbone delle schede. I marchi delle piattaforme appartengono ai rispettivi titolari.
 
-Le 40 immagini dello slider provengono dal pacchetto ViaRoma_40_Pizze_Slider. La pizza Via Roma deriva dal campione fotografico fornito, le altre 39 sono ricostruzioni generate. La fotografia illustrativa della Margherita nel cartone da asporto è stata generata per la 5.3 ed esportata in tre risoluzioni WebP.
+Le 40 immagini dello slider provengono dal pacchetto ViaRoma_40_Pizze_Slider. La pizza Via Roma deriva dal campione fotografico fornito, le altre 39 sono ricostruzioni generate.
 
-La copertina della card «Le foto degli ospiti» è stata generata per la 5.5. Le tre risoluzioni WebP sono in `public/assets/foto-ospiti`. Le immagini degli ospiti sono consultabili su Google Maps.
+Le fotografie delle card asporto e «Ricordi condivisi dalla community» sono state generate per la 5.6.
+Le tre risoluzioni WebP sono in `public/assets/asporto` e `public/assets/foto-ospiti`.
+Il link della seconda card apre le foto degli ospiti su Google Maps.
+Il wordmark nel footer conserva i tracciati Memento con una spaziatura ottica più compatta.

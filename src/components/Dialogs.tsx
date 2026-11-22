@@ -66,6 +66,8 @@ export default function Dialogs() {
     modal.kind === "allergens"
       ? getAllergenInfo(modal.codes)
       : null;
+  const detail = modal.kind === "allergens" && info
+    ? recipeNote(modal.name, modal.description, info.codes.length > 0, language) : undefined;
   return (
     <dialog
       ref={ref}
@@ -94,6 +96,7 @@ export default function Dialogs() {
         <header className="modal-header">
           <div>
             <h2 id="modal-title">{title}</h2>
+            {detail && <p className="recipe-detail">{detail}</p>}
           </div>
           <button
             className="modal-close"
@@ -134,7 +137,7 @@ export default function Dialogs() {
                 </span>
               </li>
             </ol>
-            <p className="allergen-note">{recipeNote(modal.name, modal.description, info.codes.length > 0, language)}</p>
+            <p className="allergen-note">{copy.allergenNote}</p>
           </>
         )}
         {modal.kind === "legal" && (
