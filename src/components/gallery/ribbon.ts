@@ -1,8 +1,7 @@
 import { bindHorizontalDrag } from "../../hooks/horizontalDrag";
 import { wrap } from "../../hooks/useDrag";
 
-export type Variant = "panorama" | "flat";
-export type RibbonController = { focusCard(index: number): void; refresh(): void; setPaused(value: boolean): void; destroy(): void };
+export type RibbonController = { focusCard(index: number): void; refresh(): void; destroy(): void };
 
 const perspective = 1800;
 const angularSpeed = 3.2 * Math.PI / 180;
@@ -14,11 +13,10 @@ function distance(index: number, position: number, count: number) {
   return wrap(index - position + count / 2, count) - count / 2;
 }
 
-export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: HTMLElement, paceReference?: HTMLElement | null, onPause?: (value: boolean) => void): RibbonController {
+export function mountRibbon(stage: HTMLElement, announcement: HTMLElement): RibbonController {
   const track = stage.querySelector<HTMLElement>(".ribbon-track")!;
   const cards = Array.from(track.children) as HTMLElement[];
   const images = cards.map(card => card.querySelector("img")!);
-  const panorama = variant === "panorama";
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
   const listeners = new AbortController();
   const signal = listeners.signal;
@@ -33,40 +31,19 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
   let interacting = false;
   let frame = 0, previous = 0;
 
-  const widths = cards.map(() => 1);
-  const centers = cards.map((_, i) => i);
-  function nearest(at: number) {
-    if (panorama) return wrap(Math.round(at), cards.length);
-    let best = 0, closest = Infinity;
-    for (let i = 0; i < centers.length; i++) {
-      const offset = Math.abs(distance(centers[i], at, cards.length));
-      if (offset < closest) { best = i; closest = offset; }
-    }
-    return best;
-  }
+  const nearest = (at: number) => wrap(Math.round(at), cards.length);
 
   function render() {
     const side = 2 * Math.sin(halfAngle) / cardWidth, depth = Math.cos(halfAngle);
     for (let i = 0; i < cards.length; i++) {
       const card = cards[i];
-      const delta = distance(centers[i], position, cards.length);
+      const delta = distance(i, position, cards.length);
       const angle = delta * stepAngle;
-      const offset = Math.abs(panorama ? angle : delta * pitch);
-      const edge = panorama ? viewAngle : (width + widths[i]) / 2;
-      const within = offset < edge + (panorama ? .015 : 1);
-      const near = offset < edge + (panorama ? stepAngle : pitch);
-      if (near && images[i].loading !== "eager") {
-        const image = images[i];
-        if (image.dataset.sources) image.srcset = image.dataset.sources;
-        if (image.dataset.file) image.src = image.dataset.file;
-        image.loading = "eager";
-      }
+      const offset = Math.abs(angle);
+      const within = offset < viewAngle + .015;
+      if (offset < viewAngle + stepAngle && images[i].loading !== "eager") images[i].loading = "eager";
       card.style.visibility = within ? "visible" : "hidden";
       if (!within) continue;
-      if (!panorama) {
-        card.style.transform = `translateX(${delta * pitch}px)`;
-        continue;
-      }
       // Project the four corners of a tangent panel on the inside of a cylinder.
       const sin = Math.sin(angle), cos = Math.cos(angle);
       card.style.transform = `matrix3d(${focal * cos * side},0,0,${-sin * side},0,1,0,0,0,0,1,0,${focal * sin * depth},0,0,${cos * depth})`;
@@ -87,22 +64,7 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
     cardWidth = Math.max(1, layoutWidth(cards[0]));
     const gap = parseFloat(getComputedStyle(track).columnGap);
     pitch = cardWidth + gap;
-    // Angular motion and the flat track share the same screen velocity at the optical center.
-    const venueWidth = paceReference ? layoutWidth(paceReference) : cardWidth;
-    focal = Math.min(perspective, venueWidth * 2.15, Math.max(venueWidth * 1.12, width * .54));
-    if (!panorama) {
-      // Distances use one average pitch, so a full lap still contains exactly N units.
-      for (let i = 0; i < cards.length; i++) widths[i] = layoutWidth(cards[i]);
-      pitch = widths.reduce((sum, w) => sum + w + gap, 0) / cards.length;
-      driftRate = focal * angularSpeed / pitch;
-      let edge = -widths[0] / 2;
-      for (let i = 0; i < cards.length; i++) {
-        centers[i] = (edge + widths[i] / 2) / pitch;
-        edge += widths[i] + gap;
-      }
-      render();
-      return;
-    }
+    focal = Math.min(perspective, cardWidth * 2.15, Math.max(cardWidth * 1.12, width * .54));
     // Keep the seven-photo rooms continuous even on shallow ultrawide screens.
     halfAngle = Math.atan(cardWidth / (2 * focal));
     // Place the next panel's near edge one CSS gap from the centered panel.
@@ -150,7 +112,7 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
   }
   function focusCard(index: number) {
     velocity = 0;
-    goal = position + distance(centers[index], position, cards.length);
+    goal = position + distance(index, position, cards.length);
     resetMotion();
   }
   function resetMotion() {
@@ -167,14 +129,6 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
     },
     end(coast) { interacting = false; velocity = coast && !motion.matches ? velocity * momentum : 0; refresh(); },
   });
-  function setPaused(value: boolean) {
-    paused = value;
-    if (paused) { velocity = 0; goal = null; }
-    keyboard = false; hovered = false;
-    onPause?.(paused);
-    refresh();
-  }
-  stage.addEventListener("pointerdown", e => { if (e.pointerType === "touch") setPaused(true); }, options);
   function hover(e: PointerEvent) {
     if (e.pointerType === "mouse") { hovered = e.type === "pointerenter"; refresh(); }
   }
@@ -184,8 +138,8 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
   stage.addEventListener("focusout", e => { if (!stage.contains(e.relatedTarget as Node | null)) { keyboard = false; refresh(); } }, options);
   stage.addEventListener("keydown", e => {
     const current = nearest(goal ?? position);
-    if (e.key === " ") { e.preventDefault(); setPaused(!paused); return; }
-    if (panorama && e.key === "Enter" && e.target === stage) { e.preventDefault(); cards[current].click(); return; }
+    if (e.key === " ") { e.preventDefault(); paused = !paused; keyboard = paused; hovered = false; refresh(); return; }
+    if (e.key === "Enter" && e.target === stage) { e.preventDefault(); cards[current].click(); return; }
     const targets: Record<string, number> = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 0, End: cards.length - 1 };
     if (!(e.key in targets)) return;
     e.preventDefault(); keyboard = true;
@@ -205,10 +159,9 @@ export function mountRibbon(stage: HTMLElement, variant: Variant, announcement: 
   const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; refresh(); });
   stage.dataset.enhanced = "true";
   measure(); resize.observe(stage); observer.observe(stage);
-  if (paceReference) resize.observe(paceReference);
   document.addEventListener("visibilitychange", refresh, options);
   motion.addEventListener("change", resetMotion, options);
-  return { focusCard, refresh, setPaused, destroy() {
+  return { focusCard, refresh, destroy() {
     listeners.abort(); resize.disconnect(); observer.disconnect(); cancelAnimationFrame(frame);
     delete stage.dataset.enhanced; delete stage.dataset.active;
     stage.classList.remove("is-dragging"); track.style.removeProperty("clip-path");

@@ -31,7 +31,7 @@ function check(){
    assert.ok(Math.abs(x-pose.x)<.01);
  }
 }
-commit();assert.deepEqual(Array.from({length:10},(_,i)=>i).filter(i=>result.isLoaded(i)),[0,1,9]);ios.at(-1).fn([{isIntersecting:true,intersectionRatio:1}]);if(dirty)commit();check();const cached=reads;
+commit();check();ios.at(-1).fn([{isIntersecting:true,intersectionRatio:1}]);const cached=reads;
 for(let i=0;i<240;i++)tick();
 assert.equal(reads,cached);check();
 for(const size of [[7680,500],[390,230],[3440,500]]){

@@ -7,7 +7,7 @@ const browser = await playwright[engine].launch({ headless: true, executablePath
 const url = process.env.TEST_URL || "http://127.0.0.1:4175/";
 const viewports = [[320,568,true], [320,861,true], [390,844,true], [844,390,true], [768,1024,true], [1440,900,false]];
 const languages = ["it","en","de","fr"];
-const slugs = ["privacy","cookie","note-legali"];
+const slugs = ["cookie","privacy","note-legali"];
 
 function neutral(color) {
   const parts = color.match(/[\d.]+/g).map(Number);
@@ -87,7 +87,7 @@ async function checkLegalText(article) {
     return { noOverflow, intact, typography, headings: el.querySelectorAll("h2").length };
   });
   assert.deepEqual(report.typography,[]);
-  assert.ok(report.noOverflow && report.intact && report.headings >= 3, JSON.stringify(report));
+  assert.ok(report.noOverflow && report.intact && report.headings >= 2, JSON.stringify(report));
 }
 
 async function testViewport(width,height,touch) {

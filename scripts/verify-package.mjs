@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_5.3_Vercel";
+const name = "ViaRoma_5.5_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -87,7 +87,9 @@ for (const required of [
   "public/assets/satin-specks.svg",
   "public/assets/menu/filetto.svg",
   "public/assets/ribbons/esterno-01.webp",
-  "public/assets/community/david-a1ea9444.webp",
+  "src/components/GuestPhotos.tsx",
+  "src/components/FeatureCard.tsx",
+  ...[480, 960, 1600].map(width => `public/assets/foto-ospiti/gallery-${width}.webp`),
   "public/fr/privacy.html",
   "public/de/note-legali.html",
   "public/en/cookie.html",
@@ -126,7 +128,7 @@ for (const required of [
   "licenses/Phosphor-MIT.txt",
 ])
   assert.ok(names.includes(required), `${required} missing`);
-assert.ok(!names.some(file => file.includes("gretabeta-b63bd6a1")), "Uncropped community photo is present");
+assert.ok(!names.some(file => file.startsWith("public/assets/community/")), "Guest photographs must stay on Google Maps");
 const excluded = new Set(["node_modules", "dist", ".ssr", "test-results", ".git", ".vercel", ".unlazy", "GATES.md"]);
 async function collect(dir = ".") {
   const files = [];

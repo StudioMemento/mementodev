@@ -90,19 +90,17 @@ export function useCarousel(count: number, language: string) {
       s.frame = requestAnimationFrame(tick);
     }
     const stop = () => { cancelAnimationFrame(s.frame); clearTimeout(timer); s.frame = 0; s.last = 0; };
-    let visiblePreload = 1;
     const resize = () => {
       const cardWidth = cards[0]?.offsetWidth || 300;
       const layout = carouselWindow(stage.getBoundingClientRect().width, cardWidth, count);
       s.step = layout.step; s.focusStep = layout.focusStep; s.radius = layout.radius;
-      visiblePreload = layout.preload;
-      if (s.visible) setPreload(visiblePreload);
+      setPreload(layout.preload);
       setRenderCount(layout.renderCount);
       render();
     };
     const visibility = () => { stop(); if (eligible()) start(); };
     const motion = () => { s.reduced = media.matches; if (s.reduced) { seek(m, Math.round(m.target?.to ?? m.position), true); render(); } visibility(); };
-    const io = new IntersectionObserver(entries => { s.visible = entries[0].isIntersecting && entries[0].intersectionRatio >= 0.3; if (s.visible) setPreload(visiblePreload); visibility(); }, { threshold: [0, 0.3] });
+    const io = new IntersectionObserver(entries => { s.visible = entries[0].isIntersecting && entries[0].intersectionRatio >= 0.3; visibility(); }, { threshold: [0, 0.3] });
     const ro = new ResizeObserver(resize);
     io.observe(stage); ro.observe(stage); if (cards[0]) ro.observe(cards[0]);
     media.addEventListener("change", motion);

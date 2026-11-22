@@ -1,9 +1,5 @@
-import { LinkArrow } from "./Icon";
 import { useI18n, type Language } from "../i18n";
-import { HoloCard } from "./intro/HoloCard";
-
-import { releaseCopy } from "../data/release-copy";
-import { phoneUrl } from "../data/venue-links";
+import { FeatureCard } from "./FeatureCard";
 
 const titles: Record<Language, [string, string, string]> = {
   it: ["Gusto Via Roma", "nel comfort di casa?", "Facciamo anche servizio da asporto!"],
@@ -15,22 +11,6 @@ const titles: Record<Language, [string, string, string]> = {
 export function Takeaway() {
   const { language } = useI18n();
   const [firstLine, secondLine, answer] = titles[language];
-  return (
-    <section className="takeaway" id="asporto" aria-labelledby="takeaway-title">
-      <HoloCard>
-        <img className="crust-photo" src="/assets/asporto/margherita-960.webp"
-          srcSet="/assets/asporto/margherita-480.webp 480w, /assets/asporto/margherita-960.webp 960w, /assets/asporto/margherita-1600.webp 1600w"
-          sizes="(min-width: 2400px) 40vw, (min-width: 1200px) 60vw, (min-width: 768px) 70vw, 80vw"
-          width="1600" height="900" loading="lazy" decoding="async" draggable={false} alt="" />
-        <div className="crust-card-shade" aria-hidden="true" />
-        <a className="takeaway-copy" href={phoneUrl}>
-          <h2 id="takeaway-title">{firstLine}<br />{secondLine}</h2>
-          <p>{answer}</p>
-          <span className="takeaway-call">{releaseCopy[language].phone} <LinkArrow /></span>
-        </a>
-      </HoloCard>
-      <p className="media-credit">{releaseCopy[language].ai}</p>
-      <p className="takeaway-allergens"><a href="#menu">{releaseCopy[language].beforeOrder}</a></p>
-    </section>
-  );
+  return <FeatureCard id="asporto" titleId="takeaway-title" imageBase="/assets/asporto/margherita"
+    heading={<>{firstLine}<br />{secondLine}</>} caption={answer} />;
 }

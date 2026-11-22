@@ -86,7 +86,7 @@ try {
         const entries = [
           ...document.querySelectorAll('#carta .item button.nome'),
         ];
-        if (entries.length !== 70) throw Error('Expected all 70 food entries');
+        if (entries.length !== 84) throw Error('Expected all 70 food and 14 drink entries');
         const modalSelector = 'dialog.modal-allergens[open]';
         function waitUntil(condition) {
           if (condition()) return Promise.resolve();

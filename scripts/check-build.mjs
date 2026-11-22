@@ -45,20 +45,20 @@ const initialJs = initialFiles.reduce((sum, file) => {
   assert.ok(jsSizes.has(file), `Missing initial JavaScript: ${file}`);
   return sum + jsSizes.get(file);
 }, 0);
-// Budget includes the four-language menu, offline dialog and accessible static fallback.
-assert.ok(initialJs < 108_000, `Initial JS budget exceeded: ${initialJs}`);
-assert.ok(js < 115_000, `JS budget exceeded: ${js}`);
-// Check the stylesheet needed by the first page including the offline dialog styles.
+// Budget includes the 40-slide catalogue and the responsive takeaway feature.
+assert.ok(initialJs < 102_000, `Initial JS budget exceeded: ${initialJs}`);
+assert.ok(js < 112_000, `JS budget exceeded: ${js}`);
+// Check the stylesheet needed by the first page separately from the on-demand dialog styles.
 const initialStyles = new Set([...initialKeys].flatMap(key => manifest[key].css || []));
 const initialCss = [...initialStyles].reduce((sum, file) => sum + cssSizes.get(file), 0);
-assert.ok(initialCss < 12_500, `Initial CSS budget exceeded: ${initialCss}`);
-assert.ok(css < 12_800, `Total CSS budget exceeded: ${css}`);
+assert.ok(initialCss < 10_450, `Initial CSS budget exceeded: ${initialCss}`);
+assert.ok(css < 12_100, `Total CSS budget exceeded: ${css}`);
 const edgeKey = "src/components/bento/effects.ts";
 assert.ok(manifest[edgeKey]?.isDynamicEntry && !initialKeys.has(edgeKey), "Finale field must load on approach");
 assert.ok(jsSizes.get(manifest[edgeKey].file) < 3000, "Combined edge and card particles exceed their deferred budget");
 const ribbonKey = "src/components/gallery/ribbon.ts";
 assert.ok(manifest[ribbonKey]?.isDynamicEntry && !initialKeys.has(ribbonKey), "Ribbon motion must load on approach");
-// Includes touch-axis handling and persistent touch pause of the venue albums.
+// Keep the interactive venue panoramas lightweight.
 assert.ok(jsSizes.get(manifest[ribbonKey].file) < 2_900, "Gallery controller exceeds budget");
 assert.ok(!Object.keys(manifest).some(key=>key.includes('dot-grid')), "Removed Dot Grid remains in the build");
 const sideKey = "src/components/menu/side-squares/controller.ts";

@@ -37,12 +37,10 @@ async function galleries(page, touch) {
   for (const [key, photos] of Object.entries(original.GALLERY_ALBUMS))
     assert.equal(await page.locator(`#album-${key} .ribbon-card`).count(), photos.length);
   assert.equal(await rooms.locator(".photo-controls,.photo-expand,[aria-live] + button").count(), 0);
-  assert.equal(await page.locator("#customer .photo-byline").count(), 47);
-  assert.deepEqual(await page.locator("#customer .photo-byline").allTextContents(), original.CUSTOMER.map(p => p.name));
-  assert.equal(await page.locator("#table-title").getAttribute("aria-label"), "Ricordi condivisi dalla community");
-
-  assert.ok(original.CUSTOMER.every(p=>!p.src.includes("carina-30dddd1c")));
-  assert.equal(await page.locator("#customer img[src*='carina-30dddd1c']").count(), 0);
+  assert.equal(await page.locator("#customer .ribbon-stage, #customer .photo-byline").count(), 0);
+  assert.equal(await page.locator("#customer .crust-photo").count(), 1);
+  const photoLink = page.getByRole("link", {name:/Le foto.*degli ospiti.*Google Maps/});
+  assert.equal(await photoLink.getAttribute("href"), "https://www.google.com/maps/place//data=!4m3!3m2!1s0x477983a3cc4c3b4f:0x641962f142805885!10e5");
   const stage = rooms.first().locator(".ribbon-stage");
   await center(stage); await page.waitForSelector("#album-esterno [data-enhanced]");
   await center(stage); await stage.focus(); await page.keyboard.press("Home");
@@ -87,83 +85,16 @@ async function galleries(page, touch) {
     await page.waitForFunction(prior=>scrollY>prior+15,priorY);
   }
 
-  const strip = page.locator("#customer .ribbon-stage");
-  await center(strip); await page.waitForSelector("#customer [data-enhanced]"); await center(strip); await strip.focus();
-  await page.keyboard.press("Home"); const card = strip.locator(".ribbon-card").first();
-  const geom = await card.evaluate(button => {
-    const img = button.querySelector("img").getBoundingClientRect();
-    const label = button.querySelector(".photo-byline").getBoundingClientRect();
-    return [img.width, img.height, img.left, label.left, getComputedStyle(button).textAlign];
+  const guestCard = page.locator("#customer .crust-card-shell");
+  await center(guestCard);
+  await guestCard.locator("img").evaluate(im => im.decode());
+  const geometry = await guestCard.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    const ref = document.querySelector("#asporto .crust-card-shell").getBoundingClientRect();
+    return {ratio:rect.width / rect.height, width:rect.width, referenceWidth:ref.width};
   });
-  assert.ok(Math.abs(geom[0] - geom[1]) < 1 && Math.abs(geom[2] - geom[3]) < 1); assert.equal(geom[4], "left");
-  const colored=await card.evaluate(async button=>{
-    const im=button.querySelector("img");await im.decode();
-    const canvas=document.createElement("canvas");canvas.width=canvas.height=32;
-    const ctx=canvas.getContext("2d");ctx.drawImage(im,0,0,32,32);
-    const data=ctx.getImageData(0,0,32,32).data;
-    let color=0;for(let i=0;i<data.length;i+=4)if(Math.max(data[i],data[i+1],data[i+2])-Math.min(data[i],data[i+1],data[i+2])>20)color++;
-    return color>180 && getComputedStyle(im).boxShadow==="none" && getComputedStyle(button.querySelector(".photo-byline")).color==="rgb(186, 186, 186)";
-  });
-  assert.ok(colored,"Community thumbnails must be in color with neutral credits");
-  const bounds = await card.boundingBox();
-  if (touch) {
-    const start = await page.evaluate(() => scrollY);
-    await touchSwipe(page, {x:bounds.x+bounds.width*.55,y:bounds.y+bounds.height*.7}, {x:bounds.x+bounds.width*.55+1,y:bounds.y+bounds.height*.7-130});
-    await page.waitForFunction(y => scrollY > y+12, start);
-    assert.equal(await page.locator("dialog[open]").count(), 0, "Vertical gestures must scroll the page");
-    await center(strip); await strip.focus(); await page.keyboard.press("Home");
-    const bb=await card.boundingBox(), sx=bb.x+bb.width*.65, sy=bb.y+bb.height*.5;
-    await touchSwipe(page,{x:sx,y:sy},{x:sx-95,y:sy+1});
-    assert.equal(await page.locator(".photo-focus,dialog[open]").count(), 0, "Horizontal swipes must not open the photo");
-  }
-  const blocked = ".photo-focus,dialog[open],#customer [aria-haspopup],#customer button";
-  await strip.focus(); await page.keyboard.press("Home"); await center(strip);
-  const startY = await page.evaluate(() => scrollY);
-  await page.keyboard.press("Enter");
-  if (touch) await card.tap(); else await card.click();
-  assert.equal(await page.locator(blocked).count(), 0, "Gallery photos only scroll");
-  assert.ok(Math.abs(await page.evaluate(() => scrollY) - startY) < 2);
-  await strip.focus();
-  await page.keyboard.press("Home");
-  assert.equal(await strip.evaluate(el=>getComputedStyle(el).outlineStyle),"none");
-  assert.equal(await strip.locator(".is-current .photo-byline").evaluate(el=>getComputedStyle(el).textDecorationLine),"underline");
-  const stripBounds = await strip.boundingBox();
-  const gap = await strip.locator(".ribbon-track").evaluate(el => parseFloat(getComputedStyle(el).columnGap));
-  assert.equal(gap, await stage.locator(".ribbon-track").evaluate(el => parseFloat(getComputedStyle(el).columnGap)));
-  const ratios = new Set();
-  for (let i = 0; i < original.CUSTOMER.length; i++) {
-    const photo = strip.locator("figure").nth(i);
-    assert.equal(await strip.getAttribute("data-active"), String(i));
-    const frame = await photo.evaluate(async el => {
-      const im = el.querySelector("img"); await im.decode();
-      const b = im.getBoundingClientRect();
-      return { origin: im.getAttribute("src"), ratio: Number(im.getAttribute("width")) / Number(im.getAttribute("height")), actual: b.width / b.height,
-        decodedWidth:im.naturalWidth, decodedHeight:im.naturalHeight,
-        center: b.left + b.width / 2, right: b.right, width: b.width, height: b.height,
-        leftCaption: el.querySelector("figcaption").getBoundingClientRect().left - b.left };
-    });
-    assert.equal(frame.origin, "/" + original.CUSTOMER[i].src);
-    // srcset density correction rounds natural dimensions to whole CSS pixels.
-    assert.ok(Math.abs(frame.decodedWidth - frame.ratio * frame.decodedHeight) <= 1 + frame.ratio);
-    assert.ok(Math.abs(frame.ratio - frame.actual) < .006 && Math.abs(frame.leftCaption) < 1);
-    assert.ok(Math.abs(frame.center - stripBounds.width / 2) < 1);
-    ratios.add(Math.round(frame.actual * 100));
-    const next = strip.locator("figure").nth((i+1) % original.CUSTOMER.length);
-    if (await next.isVisible()) {
-      const nr = await next.boundingBox(); assert.ok(Math.abs(nr.x - frame.right - gap) < 1.1, "Continuous spacing at every seam");
-    }
-    await page.keyboard.press("ArrowRight");
-  }
-  assert.ok(ratios.size >= 5); assert.equal(await strip.getAttribute("data-active"), "0");
-  await page.keyboard.press("ArrowLeft"); assert.equal(await strip.getAttribute("data-active"), String(original.CUSTOMER.length-1));
-  await page.keyboard.press("Home");
-  if (!touch) {
-    const b = await strip.boundingBox(), before = await position(strip);
-    await page.mouse.move(b.x+b.width*.5,b.y+b.height*.5);await page.mouse.down();
-    await page.mouse.move(b.x+b.width*.5-115,b.y+b.height*.5,{steps:7});await page.mouse.up();
-    assert.notEqual(await position(strip),before);
-  }
-  assert.equal(await page.locator(blocked).count(),0);
+  assert.ok(Math.abs(geometry.ratio-16/9)<.02 && Math.abs(geometry.width-geometry.referenceWidth)<1);
+
 }
 
 async function contactAndLegal(page, touch) {
@@ -253,11 +184,8 @@ async function contactAndLegal(page, touch) {
           return new DOMMatrix(getComputedStyle(fill).transform).m22 > .98;
         }, null, {timeout:3000});
       }
-      if (i===1 && lang==="it") {
-        await text.locator("a[data-legal='privacy']").click();
-        await page.waitForFunction(()=>document.querySelector("#modal-title")?.textContent==="Privacy" && document.querySelector(".legal-text h2")?.textContent==="Chi contattare");
-        assert.equal(await page.locator(".legal-scroll").evaluate(e=>e.scrollTop),0);
-      }
+      assert.equal(path.split("/").pop(), ["cookie.html","privacy.html","note-legali.html"][i]);
+      assert.equal(await text.locator("p br").count(), 0, "Sentences are separate paragraphs");
       if (i===2 && !touch) await page.mouse.click(3,3); else await page.keyboard.press("Escape");
       await dialog.waitFor({state:"detached"});assert.ok(await link.evaluate(e=>e===document.activeElement));
     }
@@ -268,7 +196,7 @@ async function contactAndLegal(page, touch) {
 async function contactTextFits(page) {
   const clipped=await page.locator(".bento-grid .bento-tile").evaluateAll(tiles=>tiles.flatMap(tile=>{
     const bounds=tile.getBoundingClientRect();
-    return [...tile.querySelectorAll("strong,small,.hours-note,.action-label,.social-tile .tile-bottom > span:first-child")].filter(label=>{
+    return [...tile.querySelectorAll("strong,small,.hours-note,.action-label,.contact-purpose,.social-tile .tile-bottom > span:first-child")].filter(label=>{
       const range=document.createRange();range.selectNodeContents(label);
       return [...range.getClientRects()].some(r=>r.left<bounds.left-1 || r.right>bounds.right+1 || r.top<bounds.top-1 || r.bottom>bounds.bottom+1);
     }).map(label=>label.textContent);
@@ -302,13 +230,12 @@ async function finalLayout(page) {
       const prev=rooms[i].querySelector(".photo-ribbon");
       return [titleGap(room),rect(room.querySelector("h2")).top-rect(prev).bottom];
     });
-    const lines=[...document.querySelectorAll("#table-title .spread-line")].map(el=>({text:el.textContent, top:rect(el).top,bottom:rect(el).bottom}));
     const tiles=document.querySelectorAll(".bento-grid a");
-    const outer=[...document.querySelectorAll(".bento-grid,.footer-row")];
+    const outer=[...document.querySelectorAll("#customer .crust-card-shell,.bento-grid,.footer-row")];
     const bento=[...document.querySelectorAll(".bento-grid")].map(grid=>[...grid.children].map(el=>{
       const r=rect(el);return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};
     }));
-    return {validTitles:titles.length===8 && titles.every(atGutters),lines, pairs, mobile:innerWidth<=700, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
+    return {validTitles:titles.length===7 && titles.every(atGutters),pairs, mobile:innerWidth<=700, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
@@ -322,8 +249,6 @@ async function finalLayout(page) {
   assert.ok(result.validTitles && result.validEdges && result.blockSizes && result.shortSides && !result.overflow, JSON.stringify(result));
   assert.equal(result.menuPad >= 36 && result.menuPad <= 84 && result.firstGap >= 122,true); assert.ok(result.rules,"The finale sections have no separators");
   assert.equal(result.footerRule,result.stackedFooter?"1px":"0px","Only the stacked footer separates the links from the signature");
-  assert.deepEqual(result.lines.map(l=>l.text),["Ricordi condivisi","dalla community"]);
-  assert.ok(result.lines[1].top >= result.lines[0].bottom-1);
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
   assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
   const [social,visit]=result.areas;

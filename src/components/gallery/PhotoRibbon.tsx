@@ -1,33 +1,29 @@
-import { useCallback, useId, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useId, useLayoutEffect, useRef } from "react";
 import { useOnApproach } from "../../hooks/useOnApproach";
 import { useI18n } from "../../i18n";
 import metadata from "../../data/images.json";
 import { closingCopy } from "../../data/closing-copy";
 import { useDialog } from "../DialogContext";
-import { releaseCopy } from "../../data/release-copy";
-import type { RibbonController, Variant } from "./ribbon";
+import type { RibbonController } from "./ribbon";
 
 type GalleryPhoto = { src: string; caption: string };
-type Props = { photos: GalleryPhoto[]; title: string; variant: Variant };
+type Props = { photos: GalleryPhoto[]; title: string };
 
-export function PhotoRibbon({ photos, title, variant }: Props) {
+export function PhotoRibbon({ photos, title }: Props) {
   const { language } = useI18n();
   const { modal } = useDialog();
   const engine = useRef<RibbonController | null>(null);
   const announcement = useRef<HTMLSpanElement>(null);
   const helpId = useId();
-  const [paused, setPaused] = useState(false);
-  const [ready, setReady] = useState(false);
 
   const loadRibbon = useCallback(async () => {
     const { mountRibbon } = await import("./ribbon");
     return (element: HTMLDivElement) => {
-      const controller = mountRibbon(element, variant, announcement.current!, null, setPaused);
-      setReady(true);
+      const controller = mountRibbon(element, announcement.current!);
       engine.current = controller;
       return () => { controller.destroy(); engine.current = null; };
     };
-  }, [variant]);
+  }, []);
   const stage = useOnApproach(loadRibbon, "550px 0px");
 
   useLayoutEffect(() => {
@@ -41,7 +37,7 @@ export function PhotoRibbon({ photos, title, variant }: Props) {
     const card = element?.querySelectorAll<HTMLElement>(".ribbon-card")[index];
     if (card && element) element.scrollLeft += card.getBoundingClientRect().left - element.getBoundingClientRect().left - (element.clientWidth - card.offsetWidth) / 2;
   }
-  return <div className={`photo-ribbon ${variant}`}>
+  return <div className="photo-ribbon panorama">
     <p className="sr-only" id={helpId}>{closingCopy[language].galleryKeys}</p>
     <div className="ribbon-stage" ref={stage} tabIndex={0} role="group" aria-label={title} aria-describedby={helpId}
       aria-keyshortcuts="ArrowLeft ArrowRight Home End Space Enter">
@@ -58,8 +54,5 @@ export function PhotoRibbon({ photos, title, variant }: Props) {
       </div>
       <span ref={announcement} className="sr-only ribbon-announcement" aria-live="polite" aria-atomic="true" />
     </div>
-    {ready && <button className="ribbon-pause" type="button" aria-label={(paused ? releaseCopy[language].play : releaseCopy[language].hold) + " · " + title} onClick={() => engine.current?.setPaused(!paused)}>
-      <span aria-hidden="true">{paused ? "▷" : "Ⅱ"}</span> {paused ? releaseCopy[language].play : releaseCopy[language].hold}
-    </button>}
   </div>;
 }

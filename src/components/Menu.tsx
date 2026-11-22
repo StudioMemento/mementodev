@@ -1,9 +1,6 @@
-import type { MouseEvent } from "react";
-import { AllergenSummary, AllergenLegend, DrinkAllergens } from "./AllergenDetails";
-import { releaseCopy } from "../data/release-copy";
 import data from "../data/menu.json";
 import { Copy, translateDescription, translateName, useI18n } from "../i18n";
-import { foodId, getAllergenInfo } from "../data/allergen-info";
+import { getAllergenInfo } from "../data/allergen-info";
 import { useDialog } from "./DialogContext";
 import { Icon } from "./Icon";
 import { Photo } from "./Photo";
@@ -11,22 +8,16 @@ import { MenuTitle } from "./menu/MenuTitle";
 import { categoryOrder, categoryLabels, useMenuNavigation } from "./menu/useMenuNavigation";
 export { categoryOrder } from "./menu/useMenuNavigation";
 
-function openPlainClick(event: MouseEvent<HTMLAnchorElement>, action: () => void) {
-  if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-  event.preventDefault();
-  action();
-}
-
-function ItemName({ name, description = "", codes = "", translate = true, interactive = true }: {
-  name: string; description?: string; codes?: string; translate?: boolean; interactive?: boolean;
+function ItemName({ name, description = "", codes = "", translate = true }: {
+  name: string; description?: string; codes?: string; translate?: boolean;
 }) {
   const { language, copy } = useI18n();
   const { open } = useDialog();
   const label = translate ? translateName(name, language) : name;
-  if (!interactive || name === "Coperto") return <span className="nome">{label}</span>;
-  return <a className="nome" href={`#allergeni-${foodId(name)}`} aria-haspopup="dialog"
+  if (name === "Coperto" || name === "Acqua") return <span className="nome">{label}</span>;
+  return <button type="button" className="nome" aria-haspopup="dialog"
     aria-label={`${label}: ${copy.allergens}`}
-    onClick={e => openPlainClick(e, () => open({ kind: "allergens", name, description, codes }, e.currentTarget))}>{label}</a>;
+    onClick={() => open({ kind: "allergens", name, description, codes })}>{label}</button>;
 }
 
 export function AllergenTrigger({
@@ -40,22 +31,23 @@ export function AllergenTrigger({
 }) {
   const { copy, language } = useI18n();
   const { open } = useDialog();
-  const info = getAllergenInfo(name, description, codes);
-  if (name === "Coperto" || (!info.codes.length && !info.frozen)) return null;
+  const info = getAllergenInfo(codes);
+  if (name === "Coperto" || name === "Acqua") return null;
+  const label = info.codes.length ? info.codes.join(" · ") : copy.checkAllergens;
   return (
-    <a
+    <button
       className="allergen-trigger"
-      href={`#allergeni-${foodId(name)}`}
+      type="button"
       aria-haspopup="dialog"
-      aria-label={`${copy.allergens}: ${translateName(name, language)}, ${info.codes.join(", ")}`}
-      onClick={e => openPlainClick(e, () => open({ kind: "allergens", name, description, codes }, e.currentTarget))}
+      aria-label={`${copy.allergens}: ${translateName(name, language)}, ${label}${info.frozen ? ", " + copy.frozenTitle : ""}`}
+      onClick={() => open({ kind: "allergens", name, description, codes })}
     >
-      {info.codes.join(" · ")}
+      {label}
       {info.frozen && <span className="frozen-mark">*</span>}
-    </a>
+    </button>
   );
 }
-function MenuItem({ row, inlineDescription = false, showAllergens = true }: { row: string[]; inlineDescription?: boolean; showAllergens?: boolean }) {
+function MenuItem({ row, inlineDescription = false, showCodes = true }: { row: string[]; inlineDescription?: boolean; showCodes?: boolean }) {
   const [name, description, price, codes = "", qualifier = ""] = row;
   const { language } = useI18n();
   const desc = translateDescription(description, language)
@@ -64,10 +56,10 @@ function MenuItem({ row, inlineDescription = false, showAllergens = true }: { ro
       part ? part.charAt(0).toUpperCase() + part.slice(1) : part,
     );
   return (
-    <div className="item" data-menu-item={name} id={`piatto-${foodId(name)}`}>
+    <div className="item" data-menu-item={name}>
       <div className="row">
         <span className="label">
-          <ItemName name={name} description={description} codes={codes} interactive={showAllergens} />
+          <ItemName name={name} description={description} codes={codes} />
           {qualifier && (
             <span className="qualifier">
               {translateDescription(qualifier, language)}
@@ -87,19 +79,15 @@ function MenuItem({ row, inlineDescription = false, showAllergens = true }: { ro
           ))}
         </p>
       )}
-      {showAllergens && <AllergenTrigger name={name} codes={codes} description={description} />}
-      {showAllergens && name !== "Coperto" && <section className="allergen-inline" id={`allergeni-${foodId(name)}`} tabIndex={-1}>
-        <h4>{translateName(name, language)}</h4><AllergenSummary name={name} description={description} codes={codes} />
-        <a href="#legenda-allergeni">{releaseCopy[language].legend}</a> · <a href={`#piatto-${foodId(name)}`}>{releaseCopy[language].back}</a>
-      </section>}
+      {showCodes && <AllergenTrigger name={name} codes={codes} description={description} />}
     </div>
   );
 }
-function Rows({ rows, inlineDescription = false, showAllergens = true }: { rows: string[][]; inlineDescription?: boolean; showAllergens?: boolean }) {
+function Rows({ rows, inlineDescription = false, showCodes = true }: { rows: string[][]; inlineDescription?: boolean; showCodes?: boolean }) {
   return (
     <>
       {rows.map((row, i) => (
-        <MenuItem key={`${row[0]}-${i}`} row={row} inlineDescription={inlineDescription} showAllergens={showAllergens} />
+        <MenuItem key={`${row[0]}-${i}`} row={row} inlineDescription={inlineDescription} showCodes={showCodes} />
       ))}
     </>
   );
@@ -113,7 +101,7 @@ function DrinkTable({
   title: string;
   id: string;
   sizes: string[];
-  rows: { name: string; qualifier?: string; prices: string[] }[];
+  rows: { name: string; qualifier?: string; prices: string[]; codes: string }[];
 }) {
   const { language } = useI18n();
   return (
@@ -124,12 +112,12 @@ function DrinkTable({
           {sizes.map((size) => <span key={size}>{size.replace(/(\d) l$/, "$1\u00a0l")}</span>)}
         </div>
       </div>
-      {rows.map(({ name, qualifier = "", prices }) => (
+      {rows.map(({ name, qualifier = "", prices, codes }) => (
         <div className="item multi drink-item drink-row" key={name} data-menu-item={name}>
           <div className="row">
             <div className="drink-product">
               <div className="drink-leader">
-                <span className="label"><ItemName name={name} description={qualifier} translate={false} interactive={false} /></span>
+                <span className="label"><ItemName name={name} description={qualifier} translate={false} codes={codes} /></span>
                 <span className="dots" aria-hidden="true" />
               </div>
               {qualifier && <span className="qualifier">{translateDescription(qualifier, language)}</span>}
@@ -137,7 +125,7 @@ function DrinkTable({
             <div className="pricegrid">
               {sizes.map((size, i) => (
                 <span className="drink-price-cell" key={size}>
-                  <span className="sr-only drink-size-label">{size}: </span>
+                  <span className="sr-only drink-size-label">{size}<span className="sr-only">: </span></span>
                   <b>{prices[i]}</b>
                 </span>
               ))}
@@ -149,32 +137,32 @@ function DrinkTable({
   );
 }
 function Drinks() {
-  const { t, language } = useI18n();
+  const { t, copy, language } = useI18n();
   const bottles = data.BOTTIGLIA as [string, string, string[][]][];
   return (
     <>
-      <DrinkAllergens />
-      <Rows rows={data.ACQUA_BIBITE} showAllergens={false} />
+      <p className="drink-allergen-note">{copy.drinkNotice}</p>
+      <Rows rows={data.ACQUA_BIBITE} showCodes={false} />
       <p className="groupline">{t.bottiglia}</p>
       {bottles.map(([name, desc, rows]) => (
         <div key={name} className="drink-bottle-group">
           <p className="groupsub">
             <strong>{name}</strong>{" · "}<span>{translateDescription(desc, language)}</span>
           </p>
-          <Rows rows={rows} inlineDescription showAllergens={false} />
+          <Rows rows={rows} inlineDescription showCodes={false} />
         </div>
       ))}
       <DrinkTable
         title={t.spina}
         id="drinks-draught"
         sizes={["0,3 l", "0,5 l", `${t.caraffa} 1,5 l`]}
-        rows={data.SPINA.map((b) => ({ name: b[0], qualifier: b[1], prices: b.slice(2, 5) }))}
+        rows={data.SPINA.map((b) => ({ name: b[0], qualifier: b[1], prices: b.slice(2, 5), codes: b[5] }))}
       />
       <DrinkTable
         title={t.vini}
         id="drinks-wines"
         sizes={[t.calice, `${t.caraffa} 0,5 l`, `${t.bott} 0,75 l`]}
-        rows={data.VINI.map((v) => ({ name: v[0], prices: v.slice(1, 4) }))}
+        rows={data.VINI.map((v) => ({ name: v[0], prices: v.slice(1, 4), codes: v[4] }))}
       />
     </>
   );
@@ -225,9 +213,7 @@ export default function Menu() {
         </div>
       </div>
       <div id="carta">
-        <details className="menu-disclosure"><summary>{releaseCopy[language].legend}</summary>
-          <div id="legenda-allergeni"><AllergenLegend /></div><p className="food-frozen">* {copy.frozenTitle} · {copy.frozen}</p>
-        </details>
+        <p className="menu-allergen-guide">{copy.ingredientNotice}<br />{copy.staffNotice}</p>
         {categoryOrder.map((id) => {
           const [title, tag] = t.cats[id];
           const kitchenBreak = id === "cucina" && language === "it" ? tag.indexOf("...") + 3 : 0;
@@ -257,7 +243,7 @@ export default function Menu() {
                     <Rows rows={data.CORNICE} />
                   </>
                 )}
-                {id === "dolci" && <><p className="dolci-note">{t.dolci_note}</p><p className="dessert-allergens">{releaseCopy[language].dessert}</p></>}
+                {id === "dolci" && <p className="dolci-note">{t.dolci_note}</p>}
                 {id === "bevande" && <Drinks />}
               </div>
             </section>

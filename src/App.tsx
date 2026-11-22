@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { LanguageProvider, useI18n } from "./i18n";
 import { DialogProvider, useDialog } from "./components/DialogContext";
 import { Header, Dock } from "./components/Navigation";
@@ -9,14 +9,17 @@ import Menu from "./components/Menu";
 import { Takeaway } from "./components/Takeaway";
 import Gallery from "./components/Gallery";
 import { FinaleAtmosphere } from "./components/FinaleAtmosphere";
-import Community from "./components/Community";
+import { GuestPhotos } from "./components/GuestPhotos";
 import Social from "./components/Social";
 import Contacts from "./components/Contacts";
-import DialogRoot from "./components/Dialogs";
-
+const DialogRoot = lazy(() => import("./components/Dialogs"));
 function DialogHost() {
   const { modal } = useDialog();
-  return modal ? <DialogRoot /> : null;
+  return modal ? (
+    <Suspense fallback={null}>
+      <DialogRoot />
+    </Suspense>
+  ) : null;
 }
 function Page() {
   const { copy } = useI18n();
@@ -41,7 +44,7 @@ function Page() {
         <div className="final-sections">
           <FinaleAtmosphere />
           <Gallery />
-          <Community />
+          <GuestPhotos />
           <Social />
           <Contacts />
         </div>

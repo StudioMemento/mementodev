@@ -34,7 +34,7 @@
       "m_eyebrow": "La carta",
       "m_title": "Il Menù",
       "sel_cta": "Scopri la selezione",
-      "dolci_note": "Chiedi al personale la disponibilità del giorno!",
+      "dolci_note": "Chiedi al personale quali dolci sono disponibili oggi e quali allergeni contengono.",
       "g_categories": {
         "bancone": "Bancone",
         "sala_sinistra": "Sala sinistra",
@@ -42,8 +42,6 @@
         "esterno": "Esterno",
         "via_roma": "Via Roma"
       },
-      "cu_eyebrow": "La community",
-      "cu_title": "Via Roma, dal vostro tavolo.",
       "so_title": "Social & Recensioni",
       "d_maps": "Apri in Google Maps",
       "d_orari": "Orari",
@@ -139,7 +137,7 @@
       "m_eyebrow": "The menu",
       "m_title": "The Menu",
       "sel_cta": "Discover the selection",
-      "dolci_note": "Ask our staff about today’s selection.",
+      "dolci_note": "Ask our staff which desserts are available today and which allergens they contain.",
       "g_categories": {
         "bancone": "Counter",
         "sala_sinistra": "Left room",
@@ -147,8 +145,6 @@
         "esterno": "Exterior",
         "via_roma": "Via Roma"
       },
-      "cu_eyebrow": "The community",
-      "cu_title": "Via Roma, from your table.",
       "so_title": "Social & Reviews",
       "d_maps": "Open in Google Maps",
       "d_orari": "Hours",
@@ -244,7 +240,7 @@
       "m_eyebrow": "Die Karte",
       "m_title": "Die Speisekarte",
       "sel_cta": "Zur Auswahl",
-      "dolci_note": "Fragen Sie unser Personal nach der Auswahl des Tages.",
+      "dolci_note": "Unser Personal informiert über die heutigen Desserts und ihre Allergene.",
       "g_categories": {
         "bancone": "Theke",
         "sala_sinistra": "Linker Saal",
@@ -252,8 +248,6 @@
         "esterno": "Außenbereich",
         "via_roma": "Via Roma"
       },
-      "cu_eyebrow": "Die Community",
-      "cu_title": "Via Roma, aus eurer Sicht.",
       "so_title": "Social & Bewertungen",
       "d_maps": "In Google Maps öffnen",
       "d_orari": "Öffnungszeiten",
@@ -349,7 +343,7 @@
       "m_eyebrow": "La carte",
       "m_title": "Le Menu",
       "sel_cta": "Découvrir la sélection",
-      "dolci_note": "Demandez au personnel la disponibilité du jour !",
+      "dolci_note": "Demandez au personnel quels desserts sont proposés aujourd’hui et quels allergènes ils contiennent.",
       "g_categories": {
         "bancone": "Comptoir",
         "sala_sinistra": "Salle gauche",
@@ -357,8 +351,6 @@
         "esterno": "Extérieur",
         "via_roma": "Via Roma"
       },
-      "cu_eyebrow": "La communauté",
-      "cu_title": "Via Roma, depuis votre table.",
       "so_title": "Réseaux & Avis",
       "d_maps": "Ouvrir dans Google Maps",
       "d_orari": "Horaires",

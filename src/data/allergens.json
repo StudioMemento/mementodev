@@ -2,7 +2,7 @@
   "it": [
     [
       "Cereali con glutine",
-      "Frumento (anche farro e khorasan), segale, orzo, avena, loro ibridi e derivati."
+      "Grano, segale, orzo, avena, farro e derivati."
     ],
     [
       "Crostacei",
@@ -46,7 +46,7 @@
     ],
     [
       "Solfiti",
-      "Oltre 10 mg/kg o 10 mg/L, espressi come SO₂ totale."
+      "Anidride solforosa e solfiti oltre 10 mg/kg o 10 mg/l."
     ],
     [
       "Lupini",
@@ -60,7 +60,7 @@
   "en": [
     [
       "Cereals with gluten",
-      "Wheat (including spelt and khorasan), rye, barley, oats, their hybrids and derivatives."
+      "Wheat, rye, barley, oats, spelt and derivatives."
     ],
     [
       "Crustaceans",
@@ -104,7 +104,7 @@
     ],
     [
       "Sulphites",
-      "Above 10 mg/kg or 10 mg/L, expressed as total SO₂."
+      "Sulphur dioxide and sulphites above 10 mg/kg or 10 mg/l."
     ],
     [
       "Lupin",
@@ -118,7 +118,7 @@
   "de": [
     [
       "Glutenhaltiges Getreide",
-      "Weizen (auch Dinkel und Khorasan), Roggen, Gerste, Hafer, ihre Kreuzungen und Erzeugnisse daraus."
+      "Weizen, Roggen, Gerste, Hafer, Dinkel und Erzeugnisse."
     ],
     [
       "Krebstiere",
@@ -162,7 +162,7 @@
     ],
     [
       "Sulfite",
-      "Über 10 mg/kg oder 10 mg/L, berechnet als Gesamt-SO₂."
+      "Schwefeldioxid und Sulfite über 10 mg/kg oder 10 mg/l."
     ],
     [
       "Lupinen",
@@ -176,7 +176,7 @@
   "fr": [
     [
       "Céréales avec gluten",
-      "Blé (dont épeautre et khorasan), seigle, orge, avoine, leurs hybrides et produits dérivés."
+      "Blé, seigle, orge, avoine, épeautre et dérivés."
     ],
     [
       "Crustacés",
@@ -220,7 +220,7 @@
     ],
     [
       "Sulfites",
-      "Plus de 10 mg/kg ou 10 mg/L, exprimés en SO₂ total."
+      "Anhydride sulfureux et sulfites au-delà de 10 mg/kg ou 10 mg/l."
     ],
     [
       "Lupins",

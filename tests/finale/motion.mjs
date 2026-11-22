@@ -35,14 +35,12 @@ export async function galleryPace(page) {
   for (const [width,height] of [[1440,900],[390,844]]) {
     await page.setViewportSize({width,height});
     const venue = await speedAtCenter(page,"#album-esterno .ribbon-stage");
-    const community = await speedAtCenter(page,"#customer .ribbon-stage");
     const expected = await page.locator(".panorama .ribbon-card").first().evaluate(el=>{
       const w=el.offsetWidth;
       return Math.min(1800,w*2.15,Math.max(w*1.12,el.closest(".ribbon-stage").clientWidth*.54))*3.2*Math.PI/180;
     });
-    for (const speed of [venue,community]) assert.ok(Math.abs(speed-expected)<expected*.07,JSON.stringify({width,venue,community,expected}));
-    assert.ok(Math.abs(venue-community)<expected*.06);
-    console.log(`PACE_OK ${width}px · panorama ${venue.toFixed(1)} px/s · community ${community.toFixed(1)} px/s`);
+    assert.ok(Math.abs(venue-expected)<expected*.07,JSON.stringify({width,venue,expected}));
+    console.log(`PACE_OK ${width}px · panorama ${venue.toFixed(1)} px/s`);
   }
 }
 

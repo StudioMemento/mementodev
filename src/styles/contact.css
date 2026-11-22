@@ -6,15 +6,15 @@
 .finale-field { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:clip; }
 .finale-field-view { position:sticky; top:0; width:100%; height:100vh; height:100lvh; display:flex; justify-content:space-between; gap:var(--vr-gutter); }
 .finale-field-view canvas { display:block; height:100%; width:calc(var(--vr-gutter) + clamp(15px,2.4vw,48px)); }
-.venue-gallery,.table-gallery,.closing-section { position:relative; z-index:1; }
+.venue-gallery,.closing-section { position:relative; z-index:1; }
 .visit-footer { background:var(--vr-carbon); }
-.venue-room,.table-gallery,.closing-section {
+.venue-room,.closing-section {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
 .venue-room,#gallery,#customer,#social,#dove { scroll-margin-top:0; }
 .venue-room { gap:clamp(8px,1.2svh,18px); padding-block:clamp(92px,20svh,286px) clamp(30px,6svh,88px); }
 .venue-room:first-child { padding-top:clamp(138px,24svh,350px); }
-.table-gallery,.closing-section { min-height:100svh; gap:clamp(24px,4.5svh,72px); padding-block:clamp(62px,9svh,142px); }
+.closing-section { min-height:100svh; gap:clamp(24px,4.5svh,72px); padding-block:clamp(62px,9svh,142px); }
 .spread-title {
   width:var(--vr-content); margin:0 auto; color:var(--vr-highlight); font-weight:200;
   font-size:min(8.5svh,calc(var(--vr-content) / var(--line-letters) * 1.43)); line-height:1.12; text-transform:uppercase;
@@ -45,11 +45,6 @@
 .ribbon-track { position:absolute; inset:0; display:flex; align-items:center; gap:4px; padding-inline:max(0px,calc((100% - var(--card)) / 2)); }
 .ribbon-card { flex:0 0 var(--card); width:var(--card); text-align:left; }
 .ribbon-image { width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; pointer-events:none; }
-@media (scripting:none) { .flat img[data-file] { display:none; } }
-.flat { --card:max(10vw,min(28vw,46svh)); --fade:4%; --stage-h:calc(var(--card) + clamp(44px,5svh,68px)); }
-.flat .ribbon-card { width:calc(var(--card) * var(--photo-ratio)); flex-basis:calc(var(--card) * var(--photo-ratio)); }
-.flat .ribbon-image { height:var(--card); aspect-ratio:auto; object-fit:contain; }
-.photo-byline { display:block; padding-top:.42em; color:#bababa; font-size:clamp(15px,1.3vw,23px); font-weight:400; line-height:1.35; }
 .bento-grid { --bento-gap:clamp(5px,.7vw,8px); --bento-surface:#101010; width:var(--vr-content); display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--bento-gap); margin-inline:auto; }
 .social-bento { grid-template-areas:"ig ig fb fb" "google trip guru sluurpy"; }
 .visit-bento {
@@ -80,7 +75,12 @@
   --relief:drop-shadow(0 2px 2px #000a); inset:10% auto auto 13%; width:74%; height:57%; object-fit:contain;
 }
 .platform-instagram .tile-art,.platform-facebook .tile-art { top:11%; height:58%; }
-.contact-tile .tile-art { top:9%; height:52%; }
+.contact-tile { display:grid; grid-template-rows:minmax(0,1fr) auto; }
+.contact-tile .tile-art {
+  position:relative; inset:auto; place-self:center; height:100%; max-height:52cqi; min-height:0;
+}
+.contact-tile .tile-bottom { font-size:clamp(12px,7cqi,23px); padding-top:2cqi; }
+.contact-purpose { display:block; font-size:clamp(11px,6.1cqi,18px); line-height:1.15; margin-block:.14em; }
 .tile-bottom {
   position:relative; z-index:2; width:100%; align-self:flex-end; display:flex; align-items:flex-end; justify-content:space-between;
   gap:clamp(2px,2cqi,12px); padding:clamp(3px,6cqi,30px); font-size:clamp(10px,8.5cqi,34px); font-weight:400; line-height:1.12;
@@ -150,7 +150,7 @@
   .closing-section {
     gap:clamp(22px,4svh,46px); padding-block:calc(clamp(98px,14svh,148px) + env(safe-area-inset-top)) clamp(62px,9svh,96px);
   }
-  .social-tile .tile-bottom,.contact-tile .tile-bottom { font-size:clamp(13px,8.5cqi,23px); }
+  .social-tile .tile-bottom { font-size:clamp(13px,8.5cqi,23px); }
   .contact-tile small { font-size:clamp(11px,7.5cqi,16px); }
   .venue-room { padding-block:clamp(88px,15svh,180px) clamp(28px,5svh,60px); }
   .venue-room:first-child { padding-top:clamp(124px,21svh,238px); }
@@ -160,7 +160,6 @@
 }
 @media(max-width:620px) and (orientation:portrait) {
   .panorama { --card:83vw; --stage-h:calc(var(--card) * .9); margin-top:0; }
-  .flat { --card:52vw; }
 }
 @media(max-width:490px) {
   .footer-row p { display:grid; gap:2px; }
@@ -168,29 +167,11 @@
 }
 @media(max-height:540px) and (orientation:landscape) {
   .venue-room { padding-block:clamp(82px,20svh,120px) 26px; }
-  .table-gallery,.closing-section { gap:20px; padding-block:52px; }
+  .closing-section { gap:20px; padding-block:52px; }
   .panorama { margin-top:0; }
 }
 @media(prefers-reduced-motion:reduce) {
   .bento-tile,.tile-art { transition:none; }
 }
 @media(forced-colors:active) { .spread-ink { background:none; color:CanvasText; } .bento-tile { border-color:CanvasText; } .photo-ribbon::after { forced-color-adjust:none; background:Highlight; } }
-.contact-tile .action-label { font-size:clamp(.875rem,6.5cqi,1.55rem); overflow-wrap:anywhere; }
-@media (max-width:420px) {
-  .contact-tile .tile-bottom { background:linear-gradient(transparent,#090909e8 28%); }
-}
 
-@media(max-width:319px) {
-  .visit-bento { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-areas:"map map" "hours hours" "wa wa" "phone phone"; grid-template-rows:auto; }
-  .visit-bento .contact-tile { aspect-ratio:3/2; }
-}
-
-@media(max-width:319px) {
-  .footer-row { grid-template-columns:minmax(0,1fr); grid-template-areas:"brand" "credit" "legal"; }
-  .footer-row p span { white-space:normal; overflow-wrap:anywhere; }
-  .footer-row nav { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:.3em .75em; }
-  .footer-row nav a,.studio-credit { max-width:100%; overflow-wrap:anywhere; }
-  .spread-title .spread-line { flex-wrap:wrap; }
-}
-.hours-note.spread-line { flex-wrap:wrap; }
-@media(max-width:319px) { .studio-credit { flex-wrap:wrap; justify-self:start; min-width:0; } }

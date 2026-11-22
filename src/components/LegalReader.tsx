@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useI18n } from "../i18n";
-import { releaseCopy } from "../data/release-copy";
 import { closingCopy } from "../data/closing-copy";
 import { legalPath, type LegalSlug } from "../data/legal-path";
 
@@ -12,13 +11,11 @@ export function LegalReader({ slug, navigate }: { slug: LegalSlug; navigate: (sl
   const path = legalPath(language, slug);
   const [html, setHtml] = useState(() => documents.get(path));
   const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
   const reader = useRef<HTMLDivElement>(null);
   const progress = useRef<HTMLDivElement>(null);
   const strings = closingCopy[language];
   useEffect(() => {
     if (documents.has(path)) return;
-    setFailed(false);
     const controller = new AbortController();
     async function load() {
       try {
@@ -34,13 +31,7 @@ export function LegalReader({ slug, navigate }: { slug: LegalSlug; navigate: (sl
     }
     void load();
     return () => controller.abort();
-  }, [path, attempt]);
-  useEffect(() => {
-    if (!failed) return;
-    const retry = () => setAttempt(n => n + 1);
-    window.addEventListener("online", retry);
-    return () => window.removeEventListener("online", retry);
-  }, [failed]);
+  }, [path]);
 
   useLayoutEffect(() => {
     const viewport = reader.current, rail = progress.current;
@@ -67,7 +58,7 @@ export function LegalReader({ slug, navigate }: { slug: LegalSlug; navigate: (sl
         const anchor = (event.target as Element).closest<HTMLAnchorElement>("a[data-legal]");
         const next = anchor?.dataset.legal;
         if (next === "privacy" || next === "cookie" || next === "note-legali") { event.preventDefault(); navigate(next); }
-      }} /> : failed ? <div className="legal-error"><p role="status">{releaseCopy[language].offline}</p><button type="button" onClick={() => setAttempt(n => n + 1)}>{releaseCopy[language].retry}</button> <a href={path}>{strings.openPage}</a></div> : <p role="status">{strings.loading}</p>}
+      }} /> : failed ? <a href={path}>{strings.openPage}</a> : <p role="status">{strings.loading}</p>}
     </div>
     <div ref={progress} className="vr-scroll-progress" hidden aria-hidden="true"><span /></div>
   </>;

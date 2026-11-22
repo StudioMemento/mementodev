@@ -2,11 +2,37 @@ import "../styles/dialogs.css";
 import { useLayoutEffect, useRef } from "react";
 import { useDialog } from "./DialogContext";
 import { useI18n, translateName } from "../i18n";
-import { AllergenLegend, AllergenSummary } from "./AllergenDetails";
-import { releaseCopy } from "../data/release-copy";
+import allergens from "../data/allergens.json";
+import { ingredientSource, recipeNote } from "../data/allergen-details";
 import { getAllergenInfo } from "../data/allergen-info";
 import { LegalReader } from "./LegalReader";
 import { Icon } from "./Icon";
+/** Choose the roomiest layout that fits the actual title, language and safe area. */
+function fitAllergens(dialog: HTMLDialogElement) {
+  const short = dialog.clientHeight <= 560;
+  const wide = dialog.clientWidth >= 460;
+  const columns = short ? (wide && dialog.clientHeight <= 340 ? [3, 2] : [2, 1]) : [1, 2];
+  let bestOverflow = Infinity, bestCount = columns[0], bestDensity = "minimum";
+  for (const count of columns) {
+    dialog.style.setProperty("--allergen-columns", String(count));
+    for (const density of ["roomy", "regular", "compact", "minimum"]) {
+      dialog.dataset.density = density;
+      const overflow = Math.max(0, dialog.scrollHeight - dialog.clientHeight, dialog.scrollWidth - dialog.clientWidth);
+      if (!overflow) return;
+      if (overflow < bestOverflow) { bestOverflow = overflow; bestCount = count; bestDensity = density; }
+    }
+  }
+  dialog.style.setProperty("--allergen-columns", String(bestCount));
+  dialog.dataset.density = bestDensity;
+}
+
+function AllergenDescription({ text, language }: { text: string; language: string }) {
+  const phrase = "noci del Brasile";
+  const index = language === "it" ? text.indexOf(phrase) : -1;
+  if (index < 0) return <>{text}</>;
+  return <>{text.slice(0, index)}<br /><span className="nut-phrase">{phrase}</span>{text.slice(index + phrase.length)}</>;
+}
+
 export default function Dialogs() {
   const { modal, close, update } = useDialog();
   const { copy, language, ui } = useI18n();
@@ -22,12 +48,23 @@ export default function Dialogs() {
       document.documentElement.style.overflow = previous;
     };
   }, []);
+  useLayoutEffect(() => {
+    const dialog = ref.current;
+    if (!dialog || modal?.kind !== "allergens") return;
+    let active = true;
+    const fit = () => { if (active) fitAllergens(dialog); };
+    fit();
+    const resize = new ResizeObserver(fit);
+    resize.observe(dialog);
+    void document.fonts.ready.then(fit);
+    return () => { active = false; resize.disconnect(); };
+  }, [modal, language]);
   if (!modal) return null;
   const title = modal.kind === "allergens" ? translateName(modal.name, language)
     : ({ privacy: copy.privacy, cookie: copy.cookies, "note-legali": ui.legal_notes })[modal.slug];
   const info =
     modal.kind === "allergens"
-      ? getAllergenInfo(modal.name, modal.description, modal.codes)
+      ? getAllergenInfo(modal.codes)
       : null;
   return (
     <dialog
@@ -39,7 +76,7 @@ export default function Dialogs() {
         close();
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) close();
+        if (modal.kind === "allergens" || e.target === e.currentTarget) close();
       }}
       onKeyDown={(e) => {
         if (modal.kind === "legal" && (e.target as HTMLElement).closest(".modal-header")) {
@@ -70,10 +107,34 @@ export default function Dialogs() {
         </header>
         {modal.kind === "allergens" && info && (
           <>
-            <AllergenSummary {...modal} />
-            <details className="menu-disclosure"><summary>{releaseCopy[language].legend}</summary><AllergenLegend selected={info.codes} />
-              <p className="food-frozen">* {copy.frozenTitle} · {copy.frozen}</p>
-            </details>
+            <ol className="allergen-list">
+              {allergens[language].map(([name, description], i) => (
+                <li
+                  key={i}
+                  className={info.codes.includes(i + 1) ? "contains" : ""}
+                >
+                  <b className="allergen-code">{i + 1}</b>
+                  <span className="allergen-text">
+                    <strong className="allergen-name">
+                      {name}
+                      {info.codes.includes(i + 1) && <span className="sr-only"> — {copy.allergenIncluded}</span>}
+                    </strong>
+                    <span className="allergen-description"><AllergenDescription text={(info.codes.includes(i + 1) && ingredientSource(modal.name, i + 1, language)) || description} language={language} /></span>
+                  </span>
+                </li>
+              ))}
+              <li className={info.frozen ? "contains" : ""}>
+                <b className="allergen-code">*</b>
+                <span className="allergen-text">
+                  <strong className="allergen-name">
+                    {copy.frozenTitle}
+                    {info.frozen && <span className="sr-only"> — {copy.allergenIncluded}</span>}
+                  </strong>
+                  <span className="allergen-description">{copy.frozen}</span>
+                </span>
+              </li>
+            </ol>
+            <p className="allergen-note">{recipeNote(modal.name, modal.description, info.codes.length > 0, language)}</p>
           </>
         )}
         {modal.kind === "legal" && (

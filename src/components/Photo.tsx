@@ -9,7 +9,6 @@ export function Photo({
   className = "",
   eager = false,
   enabled = true,
-  deferred = false,
   sizes = "(max-width: 700px) 90vw, 55vw",
 }: {
   src: string;
@@ -18,7 +17,6 @@ export function Photo({
   eager?: boolean;
   /** Non-menu carousels can defer a resource without replacing its image element. */
   enabled?: boolean;
-  deferred?: boolean;
   sizes?: string;
 }) {
   const meta = images[src];
@@ -30,10 +28,8 @@ export function Photo({
   return (
     <img
       sizes={small ? sizes : undefined}
-      src={enabled && !deferred && !(pizza && srcSet) ? assetUrl(src) : undefined}
-      srcSet={enabled && !deferred ? srcSet : undefined}
-      data-file={deferred ? assetUrl(src) : undefined}
-      data-sources={deferred ? srcSet : undefined}
+      src={enabled && !(pizza && srcSet) ? assetUrl(src) : undefined}
+      srcSet={enabled ? srcSet : undefined}
       alt={alt}
       width={meta?.width}
       height={meta?.height}

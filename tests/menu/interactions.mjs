@@ -57,42 +57,39 @@ cleanup();const oldReady=fontReady;ratio=8;title.useTitleFit('Die Speisekarte');
 width=0;const lastWrites=fitWrites;fontReady();assert.equal(fitWrites,lastWrites);
 cleanup();fontReady();oldReady();assert.equal(fitWrites,lastWrites);
 
-// Exercise the actual item handlers and check the same summary is used in static and modal views.
-const info=await source('src/data/allergen-info.ts',{__FOOD_PUBLIC__:{}});
-const getAllergenInfo=info.getAllergenInfo, foodId=info.foodId;
-assert.deepEqual(clone(getAllergenInfo('Example','tonno, burro e soia','').codes),[]);
-assert.deepEqual(clone(getAllergenInfo('Patatine Fritte','','1 - 4 - *').codes),[1,4]);
-assert.equal(getAllergenInfo('Patatine Fritte','','1 - 4 - *').frozen,true);
-const data=JSON.parse(await readFile('src/data/menu.json','utf8'));
-let opened,closed=0,modal;
-const copy={allergens:'Allergeni',close:'Chiudi',frozenTitle:'Prodotti surgelati',frozen:'Surgelato'};
-const shared={getAllergenInfo,foodId,releaseCopy:{it:{legend:'Legenda'}},useDialog:()=>({open:v=>{opened=v},modal,close:()=>{closed++},update:()=>{}}),useI18n:()=>({language:'it',copy,ui:{legal_notes:'Note legali'}}),translateName:n=>n,translateDescription:n=>n,data,AllergenSummary:()=>null,AllergenLegend:()=>null};
+// Execute item handlers and the real dialog render/cancel/click handlers.
+const allergen=await source('src/data/allergen-info.ts',{});const getAllergenInfo=vm.runInContext('getAllergenInfo',allergen);
+const data=JSON.parse(await readFile('src/data/menu.json','utf8')),allergens=JSON.parse(await readFile('src/data/allergens.json','utf8'));
+let currentLang='it',opened,closed=0,modal;
+const copy={allergens:'Allergeni',close:'Chiudi',allergenIncluded:'Presente in questo piatto',allergenNote:'Per ulteriori info, chiedi al personale.',frozenTitle:'Prodotti surgelati',frozen:'Surgelato all’origine o in assenza del fresco.'};
+const details=await source('src/data/allergen-details.ts',{});
+const shared={getAllergenInfo,ingredientSource:details.ingredientSource,recipeNote:details.recipeNote,useDialog:()=>({open:v=>{opened=v},modal,close:()=>{closed++},update:()=>{}}),useI18n:()=>({language:currentLang,copy,ui:{legal_notes:'Note legali'}}),translateName:n=>n,translateDescription:n=>n,data};
 const items=await source('src/components/Menu.tsx',shared);
-const row=['Deliziosa','Bordo ripieno di ricotta','13,00','1 · 7'];
-const view=items.MenuItem({row});
-const name=nodes(view,n=>n.type==='a'&&n.props.className==='nome')[0];
-const number=nodes(view,n=>n.props.className==='allergen-trigger')[0];
-assert.equal(name.props.href,number.props.href);
-const event={button:0,preventDefault(){}};
-name.props.onClick(event);const fromName=clone(opened);number.props.onClick(event);assert.deepEqual(clone(opened),fromName);
-opened=null;name.props.onClick({...event,ctrlKey:true});assert.equal(opened,null);
-for (const drink of [...data.ACQUA_BIBITE,...data.BOTTIGLIA.flatMap(group=>group[2])]) {
-  const view=items.MenuItem({row:drink,showAllergens:false});
-  assert.equal(nodes(view,n=>n.props['aria-haspopup']==='dialog').length,0);
+const row=['Deliziosa','Bordo ripieno di ricotta, pomodoro, mozzarella di Bufala in cottura','13,00','1 · 7'];
+let view=items.MenuItem({row});const name=nodes(view,n=>n.type==='button'&&n.props.className==='nome')[0];name.props.onClick();const fromName=clone(opened);nodes(view,n=>n.props.className==='allergen-trigger')[0].props.onClick();assert.deepEqual(clone(opened),fromName);assert.equal(opened.codes,'1 · 7');
+const noCodes=items.ItemName({name:'Acqua'});assert.equal(noCodes.type,'span');assert.equal(noCodes.props.onClick,undefined);assert.equal(items.ItemName({name:'Coperto'}).type,'span');
+for(const drinkRow of [...data.ACQUA_BIBITE,...data.BOTTIGLIA.flatMap(group=>group[2])]) {
+ const drink=items.MenuItem({row:drinkRow,showCodes:false});
+ assert.equal(nodes(drink,n=>n.type==='button').length,drinkRow[0]==='Acqua'?0:1,'Drink name opens its product information');
+ assert.equal(nodes(drink,n=>n.props.className==='allergen-trigger').length,0);
 }
-assert.equal(items.ItemName({name:'Coperto'}).type,'span');
-const effectsList=[],rootStyle={overflow:'auto'};
-let nativeOpen=false;
-const dialogRef={current:{showModal(){nativeOpen=true},close(){nativeOpen=false}}};
-const dialog=await source('src/components/Dialogs.tsx',{...shared,useRef:()=>dialogRef,useLayoutEffect:fn=>effectsList.push(fn),document:{documentElement:{style:rootStyle}},Icon:()=>null,LegalReader:()=>null});
-for (const state of [{kind:'allergens',name:row[0],description:row[1],codes:row[3]},{kind:'legal',slug:'privacy'}]) {
-  modal=state;const node=dialog.Dialogs();
-  const mounts=effectsList.splice(0).map(fn=>fn());
-  assert.equal(nativeOpen,true);assert.equal(rootStyle.overflow,'hidden');
-  let before=closed;node.props.onClick({target:{},currentTarget:{}});assert.equal(closed,before);
-  const outside={};node.props.onClick({target:outside,currentTarget:outside});assert.equal(closed,++before);
-  node.props.onCancel({preventDefault(){}});assert.equal(closed,++before);
-  nodes(node,n=>n.props.className==='modal-close')[0].props.onClick({stopPropagation(){}});assert.equal(closed,++before);
-  mounts.forEach(fn=>fn?.());assert.equal(nativeOpen,false);assert.equal(rootStyle.overflow,'auto');
+for(const rows of [data.SPINA.map(b=>({name:b[0],qualifier:b[1],prices:b.slice(2,5)})),data.VINI.map(v=>({name:v[0],prices:v.slice(1,4)}))]) {
+ const table=items.DrinkTable({title:'Drinks',id:'drinks',sizes:['Small','Medium','Large'],rows});
+ assert.equal(nodes(table,n=>n.type==='button').length,rows.length);
 }
-console.log('MENU_INTERACTIONS_OK — category rail, reduced motion, item and code links, explicit sources, modal contents and close/focus lifecycle.');
+const dialogEffects=[];
+let nativeOpen=false;const rootStyle={overflow:'auto'},dialogRef={current:{clientWidth:390,clientHeight:844,scrollHeight:844,scrollWidth:390,style:{setProperty(){}},dataset:{},showModal:()=>{nativeOpen=true},close:()=>{nativeOpen=false}}};
+const dialog=await source('src/components/Dialogs.tsx',{...shared,allergens,LegalReader:()=>null,useRef:()=>dialogRef,useLayoutEffect:fn=>dialogEffects.push(fn),ResizeObserver:class{observe(){} disconnect(){}},document:{documentElement:{style:rootStyle},fonts:{ready:Promise.resolve()}},useDrag:()=>({}),Icon:()=>null,Photo:()=>null,wrap:(v,n)=>(v%n+n)%n});
+for(const lang of ['it','en','de','fr']){
+ currentLang=lang;modal={kind:'allergens',name:row[0],description:row[1],codes:'1 · 7 *'};view=dialog.Dialogs();
+ const header=nodes(view,n=>n.props.className==='modal-header')[0];assert.equal(nodes(header,n=>n.type==='h2').length,1);assert.equal(nodes(header,n=>n.type==='p').length,0,'Redundant allergen eyebrow must be removed');
+ const rows=nodes(view,n=>n.type==='li');assert.equal(rows.length,15);
+ for(const row of rows){const children=row.props.children;assert.equal(children[0].props.className,'allergen-code');assert.equal(children[1].props.className,'allergen-text');assert.ok(nodes(children[1],n=>n.props.className==='allergen-name').length);assert.ok(nodes(children[1],n=>n.props.className==='allergen-description').length);}assert.equal(rows.filter(n=>n.props.className==='contains').length,3);
+ const mounts=dialogEffects.splice(0).map(fn=>fn());assert.equal(nativeOpen,true);assert.equal(rootStyle.overflow,'hidden');
+ for(const target of [{kind:'body'},{kind:'description'},{kind:'title'}]){const before=closed;view.props.onClick({target,currentTarget:{}});assert.equal(closed,before+1)}
+ let stopped=false;nodes(view,n=>n.props.className==='modal-close')[0].props.onClick({stopPropagation:()=>{stopped=true}});assert.ok(stopped);
+ let prevented=false;view.props.onCancel({preventDefault:()=>{prevented=true}});assert.ok(prevented);
+ mounts.reverse().forEach(fn=>fn?.());assert.equal(nativeOpen,false);assert.equal(rootStyle.overflow,'auto');
+}
+modal={kind:'legal',slug:'privacy'};view=dialog.Dialogs();const before=closed;view.props.onClick({target:{},currentTarget:{}});assert.equal(closed,before,'Legal content must not close on inside click');const outside={};view.props.onClick({target:outside,currentTarget:outside});assert.equal(closed,before+1);
+console.log('MENU_INTERACTIONS_OK — fitted title/font loading/resize/translations; 8-category scrollspy, exact unclipped rail endpoints, pill-only edge masks, cached layout and reduced motion; item and number triggers, 15 allergen rows in four languages, any-click/Escape/close handlers, scroll-lock cleanup and legal-dialog isolation.');

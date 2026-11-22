@@ -1,9 +1,8 @@
-// The same Maps feature ID opens the restaurant, its photos or its reviews.
+// Google Maps place identifier from the restaurant’s supplied link.
 export const mapUrl = "https://maps.google.com/?cid=7212905066552907909";
-export const photosUrl = "https://www.google.com/maps/place//data=!4m3!3m2!1s0x477983a3cc4c3b4f:0x641962f142805885!10e5";
-export const phoneUrl = "tel:+390427541232";
-export const whatsappUrl = "https://wa.me/393802453757";
-export const reviewsUrl = "https://www.google.com/maps/place//data=!4m4!3m3!1s0x477983a3cc4c3b4f:0x641962f142805885!9m1!1b1";
+const placeId = "0x477983a3cc4c3b4f:0x641962f142805885";
+export const photosUrl = `https://www.google.com/maps/place//data=!4m3!3m2!1s${placeId}!10e5`;
+export const reviewsUrl = `https://www.google.com/maps/place//data=!4m4!3m3!1s${placeId}!9m1!1b1`;
 
 export const socialProfiles = [
   { id: "instagram", artHeight: 640, name: "Instagram", href: "https://www.instagram.com/pizzeriaviaromamaniago/" },

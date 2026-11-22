@@ -17,7 +17,7 @@ export default function Gallery() {
         }));
         return <section className="venue-room" key={room} id={`album-${room}`} aria-labelledby={`title-${room}`}>
           <SpreadTitle id={`title-${room}`} text={title} />
-          <PhotoRibbon photos={photos} title={title} variant="panorama" />
+          <PhotoRibbon photos={photos} title={title} />
         </section>;
       })}
     </section>
