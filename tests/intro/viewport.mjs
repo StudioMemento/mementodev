@@ -28,8 +28,10 @@ function measureOven() {
   const card = box(takeaway.querySelector(".crust-card"));
   const caption = box(takeaway.querySelector(".takeaway-copy"));
   const x = caption.left - card.left, y = card.bottom - caption.bottom;
-  const textFits = getComputedStyle(takeawayTitle).fontSize === getComputedStyle(takeaway.querySelector("p")).fontSize && question.length === 1 && answer.length === 1 &&
-    question[0].top < answer[0].top && Math.abs(x - y) < 1 &&
+  const titleSize = parseFloat(getComputedStyle(takeawayTitle).fontSize);
+  const captionSize = parseFloat(getComputedStyle(takeaway.querySelector("p")).fontSize);
+  const textFits = titleSize >= captionSize * 2 && question.length <= 2 && answer.length <= 2 &&
+    question[0].top >= card.top && question.at(-1).top < answer[0].top && Math.abs(x - y) < 1 &&
     [...question, ...answer].every(r => Math.abs(r.left - caption.left) < 1 && r.right <= card.right - x + 1 && r.bottom <= card.bottom);
   const guest = document.querySelector("#customer");
   const guestCard = box(guest.querySelector(".crust-card")), guestCopy = box(guest.querySelector(".takeaway-copy"));
@@ -41,7 +43,7 @@ function measureOven() {
     !guest.querySelector(".takeaway-copy p") && photoLink.getAttribute("aria-label").includes("Google Maps") &&
     Math.abs(box(guestHeading.querySelector("svg")).right - guestCopy.right) < 1 &&
     Math.abs(box(guest.querySelector("img")).width - guestCard.width) <= 2 &&
-    guest.querySelector("img").getAttribute("src").includes("/polaroid-via-roma-");
+    guest.querySelector("img").getAttribute("src").includes("/polaroid-interni-");
   const head = box(document.querySelector(".site-top"));
   const oven = document.querySelector("#pizza-slider");
   const area = box(oven);

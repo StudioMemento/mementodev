@@ -1,4 +1,4 @@
-# Via Roma 5.8 · Confronto degli allergeni
+# Via Roma 5.9 · Confronto degli allergeni
 
 Il confronto usa le 16 pagine di `Menu_ViaRoma_DEF.pdf` fornite dal locale.
 La tabella registra i codici leggibili sulla carta, gli ingredienti espliciti e le integrazioni della versione web.
@@ -99,6 +99,14 @@ Tutte le schede pubbliche usano la stessa legenda. I riscontri in questa tabella
 | Friulano | 15 | — | — | Verificare l’etichetta del vino servito per solfiti e altri allergeni. |
 | Prosecco DOC Treviso | 15 | — | — | Verificare l’etichetta del vino servito per solfiti e altri allergeni. |
 | Dolci del giorno | 13 | — | — | Assortimento variabile. Verificare la ricetta del dolce disponibile quel giorno. |
+
+## Come leggere la legenda
+
+La legenda comprende i 14 gruppi dell’allegato II. La voce 1 comprende anche il grano khorasan e gli ibridi. La voce 8 comprende i prodotti derivati dalle otto specie elencate. La soglia della voce 12 è espressa come SO₂ totale nel prodotto pronto al consumo o ricostituito secondo le istruzioni. Le esclusioni per particolari derivati sono riportate nell’allegato. [Regolamento (UE) 1169/2011, allegato II](https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:02011R1169-20250401)
+
+Le descrizioni dei gruppi sono comuni a tutto il menù. Per sapere quale cereale o quale frutto a guscio si applica al singolo prodotto, occorrono la ricetta e le etichette delle forniture effettive. In particolare, restano aperti il tipo di frutta a guscio del pesto della Genovese, la composizione dei dolci del giorno e gli allergeni dei vini serviti. [Comunicazione della Commissione 2017/C 428/01](https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:52017XC1213%2801%29)
+
+Per il servizio, le informazioni sugli allergeni devono essere riconducibili a ciascun alimento prima che venga servito. Quando si usa il menù digitale, il locale deve rendere facilmente reperibile la relativa documentazione scritta per clienti e autorità. [D.Lgs. 231/2017, art. 19, comma 8](https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2017-12-15;231~art19)
 
 ## Riferimenti per le bevande e la legenda
 

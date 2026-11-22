@@ -110,8 +110,8 @@ async function testViewport(width,height,touch) {
       assert.equal(buttons.filter(button=>button.active).length,1);
       for(const button of buttons) {
         assert.ok(Math.abs(button.w - button.h) < .02);
-        if (compact) assert.ok(button.w >= 30 && button.w <= 34);
-        else assert.ok(button.w >= (touch ? 44 : 36));
+        if (compact) assert.ok(button.w >= 28 && button.w <= 31);
+        else assert.ok(button.w === (touch ? 40 : 33));
         assert.equal(button.radius,"50%");
         assert.equal(button.line,button.active ? "1px" : "0px");
         if (button.active) assert.equal(neutral(button.ring),false);

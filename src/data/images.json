@@ -539,12 +539,12 @@
     "sha256": "fa4cefaf35e584df37e7433fe978c82c0659af4adbbe4ae7a7b4ae54ea4fa5fd",
     "small": "assets/pizze/primavera-768.webp"
   },
-  "assets/pizze/brie-speck-e-ricotta.webp": {
+  "assets/pizze/brie-speck-e-ricotta-forno.webp": {
     "width": 1100,
     "height": 1100,
-    "bytes": 246808,
-    "sha256": "bbba76eb1b3ae2c3d6697ec192003e42bdb4218eae52e00ffb169e8eee219002",
-    "small": "assets/pizze/brie-speck-e-ricotta-768.webp"
+    "bytes": 199826,
+    "sha256": "04b5fa6c8f5fd5891b03ff5a5dc725b19ded249415ffa4fb0c66c392ea30ff63",
+    "small": "assets/pizze/brie-speck-e-ricotta-forno-768.webp"
   },
   "assets/pizze/raf.webp": {
     "width": 1100,

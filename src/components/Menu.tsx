@@ -141,14 +141,18 @@ function Drinks() {
     <>
       <Rows rows={data.ACQUA_BIBITE} showCodes={false} />
       <p className="groupline">{t.bottiglia}</p>
-      {bottles.map(([name, desc, rows]) => (
-        <div key={name} className="drink-bottle-group">
-          <p className="groupsub">
-            <strong>{name}</strong>{" · "}<span>{translateDescription(desc, language)}</span>
-          </p>
-          <Rows rows={rows} inlineDescription showCodes={false} />
-        </div>
-      ))}
+      {bottles.map(([name, desc, rows]) => {
+        const [origin, ...details] = translateDescription(desc, language).split(" - ");
+        return (
+          <div key={name} className="drink-bottle-group">
+            <p className="groupsub">
+              <strong>{name}</strong>{" · "}{origin}
+              {details.length > 0 && <><br className="mobile-break" /><span className="desktop-separator"> - </span>{details.join(" - ")}</>}
+            </p>
+            <Rows rows={rows} inlineDescription showCodes={false} />
+          </div>
+        );
+      })}
       <DrinkTable
         title={t.spina}
         id="drinks-draught"
@@ -219,7 +223,7 @@ export default function Menu() {
               <header className="mcat-head">
                 <h3><span>{title}</span></h3>
                 {tag && <p className="tag">{kitchenBreak > 2
-                  ? <>{tag.slice(0, kitchenBreak)}<br className="kitchen-mobile-break" /><span className="kitchen-desktop-space"> </span>{tag.slice(kitchenBreak).trimStart()}</>
+                  ? <>{tag.slice(0, kitchenBreak)}<br className="mobile-break" /><span className="desktop-separator"> </span>{tag.slice(kitchenBreak).trimStart()}</>
                   : tag}</p>}
               </header>
               <figure className={`menu-art menu-art-${id}`}>

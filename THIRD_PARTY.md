@@ -1,4 +1,4 @@
-# Risorse e licenze — Via Roma 5.8
+# Risorse e licenze — Via Roma 5.9
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.
@@ -20,7 +20,7 @@ Le otto immagini in `public/assets/social` sono visual generati e ottimizzati in
 
 Le 40 immagini dello slider provengono dal pacchetto ViaRoma_40_Pizze_Slider. La pizza Via Roma deriva dal campione fotografico fornito, le altre 39 sono ricostruzioni generate.
 
-La 5.8 include una nuova immagine generata della pizza da asporto. Per le Polaroid sono stati generati il piano scuro e la disposizione delle cornici, nelle quali sono state impaginate le fotografie del progetto `esterno-02.webp`, `sala-destra-03.webp` e `bancone-01.webp`.
+La 5.9 rigenera la foto della pizza Brie, Speck e Ricotta e la foto per la card asporto. Nella composizione delle Polaroid, il piano di posa e le cornici sono generati. Le immagini nelle finestre quadrate sono ritagli delle fotografie originali del progetto `bancone-01.webp`, `sala-sinistra-02.webp` e `sala-destra-03.webp`.
 Le tre risoluzioni WebP sono in `public/assets/asporto` e `public/assets/foto-ospiti`.
 Il link della seconda card apre le foto degli ospiti su Google Maps.
 Il wordmark nel footer conserva i tracciati Memento con una spaziatura ottica più compatta.

@@ -13,5 +13,5 @@ export function GuestPhotos() {
   const { language } = useI18n();
   const [heading, label] = copy[language];
   return <FeatureCard id="customer" titleId="guest-photos-title" heading={heading}
-    imageBase="/assets/foto-ospiti/polaroid-via-roma" link={{ href: photosUrl, label }} />;
+    imageBase="/assets/foto-ospiti/polaroid-interni" link={{ href: photosUrl, label }} />;
 }

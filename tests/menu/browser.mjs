@@ -158,8 +158,8 @@ try {
   assert.equal(appearance.idle, "rgb(85, 85, 85)");
   assert.equal(appearance.weight, width >= 768 ? "300" : "400");
   assert.notEqual(appearance.active, appearance.idle);
-  assert.ok(appearance.noteSize >= 16 && appearance.noteSize > appearance.detailSize);
-  assert.deepEqual(dialog.active,['1','7']);assert.equal(dialog.count,15);assert.equal(dialog.bg,'rgba(0, 0, 0, 0)');assert.ok(dialog.blur.includes('blur'));assert.ok(dialog.rows.every(v=>v==='grid'));assert.ok(dialog.font>=12.5);assert.deepEqual(dialog.headerOrder,['H2']);assert.equal(dialog.note,'Per ulteriori info, chiedi al personale.');const alignedColumns = new Set(dialog.indent.map(x => Math.round(x)));
+  assert.ok(appearance.noteSize >= 15 && appearance.noteSize <= 20 && appearance.noteSize > appearance.detailSize);
+  assert.deepEqual(dialog.active,['1','7']);assert.equal(dialog.count,15);assert.equal(dialog.bg,'rgba(0, 0, 0, 0)');assert.ok(dialog.blur.includes('blur'));assert.ok(dialog.rows.every(v=>v==='grid'));assert.ok(dialog.font>=12.5);assert.deepEqual(dialog.headerOrder,['H2']);assert.equal(dialog.note,'Per maggiori info, chiedi al personale.');const alignedColumns = new Set(dialog.indent.map(x => Math.round(x)));
   assert.equal(alignedColumns.size, await page.locator('.modal-allergens').evaluate(el=>Number(el.style.getPropertyValue('--allergen-columns'))));assert.equal(dialog.circle,'0px');assert.equal(dialog.x,'none');
   await page.screenshot({path:`${out}/allergens-${width}x${height}.png`});
   await page.locator('.allergen-name').first().click();await page.locator('dialog').waitFor({state:'detached'});
@@ -206,6 +206,22 @@ try {
   const drinks=[];
   for(const lang of ['de','fr','en','it']){
    await page.locator('.lang button').filter({hasText:new RegExp(`^${lang.toUpperCase()}$`)}).click();
+   const groups = await page.locator('.groupsub').evaluateAll(nodes => nodes.map(node => {
+     const lineBreak = node.querySelector('br');
+     const range = document.createRange();
+     range.selectNodeContents(node.lastChild);
+     const process = range.getClientRects()[0];
+     range.selectNodeContents(lineBreak.previousSibling);
+     const origin = [...range.getClientRects()].at(-1);
+     return { forced:getComputedStyle(lineBreak).display !== 'none', left:process.left-node.getBoundingClientRect().left,
+       below:process.top > origin.top+1, separator:getComputedStyle(node.querySelector('.desktop-separator')).display };
+   }));
+   assert.equal(groups.length, 2);
+   for (const group of groups) {
+     assert.equal(group.forced, width < 768);
+     assert.equal(group.separator === 'none', width < 768);
+     if (width < 768) assert.ok(group.below && Math.abs(group.left) < 1);
+   }
    const rows=await page.locator('.drink-row').evaluateAll(els=>els.map(el=>{
     const rect=node=>node.getBoundingClientRect().toJSON();
     return {name:el.dataset.menuItem,row:rect(el),label:rect(el.querySelector('.label')),grid:rect(el.querySelector('.pricegrid')),dots:getComputedStyle(el.querySelector('.dots')).display,

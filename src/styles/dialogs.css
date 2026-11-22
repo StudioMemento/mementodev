@@ -5,7 +5,7 @@
   border:0; color:var(--vr-ivory); background:transparent; overscroll-behavior:contain;
 }
 .vr-dialog::backdrop { background:rgb(9 9 9 / .8); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); }
-.modal-header { display:flex; justify-content:space-between; gap:16px; }
+.modal-header { display:flex; justify-content:space-between; gap:min(16px,3.75vmin); }
 .modal-close { display:grid; place-items:center; width:44px; height:44px; flex:none; color:var(--vr-gold); font-size:28px; }
 .modal-legal { overflow:hidden; }
 .modal-legal[open] { display:grid; grid-template-rows:minmax(0,1fr); place-items:center; }
@@ -30,7 +30,7 @@
 }
 .modal-allergens[data-density=regular] { --inset:clamp(16px,4.8vw,26px); --name:15px; --detail:13.25px; --title:clamp(29px,4.2dvh,37px); --section-gap:17px; --row-gap:4px; }
 .modal-allergens[data-density=compact] { --inset:clamp(13px,4vw,20px); --name:13.5px; --detail:12.25px; --title:28px; --section-gap:12px; --row-gap:2.5px; }
-.modal-allergens[data-density=minimum] { --inset:10px; --name:12.5px; --detail:11.75px; --title:24px; --section-gap:8px; --row-gap:1px; }
+.modal-allergens[data-density=minimum] { --inset:10px; --name:12.5px; --detail:11.75px; --title:clamp(20px,6.45vmin,24px); --section-gap:8px; --row-gap:1px; }
 .allergen-panel { width:min(100%,760px); min-height:100%; margin:auto; padding:0; display:grid; align-content:center; gap:var(--section-gap); }
 .allergen-panel .modal-header { align-items:flex-start; }
 .allergen-panel .modal-header > div { min-width:0; }
@@ -48,7 +48,7 @@
 .allergen-description { display:block; font-size:var(--detail); line-height:1.18; margin-top:1px; }
 .nut-phrase { white-space:nowrap; }
 .allergen-list .contains { color:var(--vr-highlight); }
-.allergen-note { font-size:clamp(16px,2.4dvh,23px); line-height:1.25; font-weight:400; }
+.allergen-note { font-size:clamp(15px,2.1dvh,20px); line-height:1.25; font-weight:400; }
 @media(max-height:560px) {
   .modal-allergens[data-density=minimum] { --inset:7px; --section-gap:3px; --row-gap:0px; }
   .modal-allergens[data-density=minimum] .allergen-list { column-gap:10px; }

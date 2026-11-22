@@ -38,7 +38,7 @@ async function galleries(page, touch) {
     assert.equal(await page.locator(`#album-${key} .ribbon-card`).count(), photos.length);
   assert.equal(await rooms.locator(".photo-controls,.photo-expand,[aria-live] + button").count(), 0);
   assert.equal(await page.locator("#customer .ribbon-stage, #customer .photo-byline").count(), 0);
-  assert.equal(await page.locator("#customer .crust-photo[src*='polaroid-via-roma']").count(), 1);
+  assert.equal(await page.locator("#customer .crust-photo[src*='polaroid-interni']").count(), 1);
   const photoLink = page.getByRole("link", {name:/Ricordi condivisi dalla community.*Google Maps/});
   assert.equal(await photoLink.getAttribute("href"), "https://www.google.com/maps/place//data=!4m3!3m2!1s0x477983a3cc4c3b4f:0x641962f142805885!10e5");
   const stage = rooms.first().locator(".ribbon-stage");
@@ -317,7 +317,10 @@ async function finalLayout(page) {
     const brandInk = ink(el.querySelector("p span:last-child"));
     const legalInk = ink(el.querySelector("nav a").firstChild);
     const aligned = innerWidth < 768 ? Math.abs(left.top-credit.top)<1 : Math.abs(brandInk.bottom-legalInk.bottom)<4 && Math.abs(brandInk.bottom-wordmark.bottom)<7;
-    return title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && Math.abs(text.right-wordmark.right)<1 && text.bottom<=wordmark.top && wordmark.width>=105 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && credit.left>=left.right-1 && aligned && el.querySelectorAll("nav > span[aria-hidden=true]").length===2 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
+    const creditLabel = getComputedStyle(title);
+    const balanced = Math.abs(brandInk.width / wordmark.width - 1) < .12;
+    return balanced && creditLabel.fontWeight === "300" && parseFloat(creditLabel.letterSpacing) >= .13 * parseFloat(creditLabel.fontSize) &&
+      title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && Math.abs(text.right-wordmark.right)<1 && text.bottom<=wordmark.top && wordmark.width>=105 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && credit.left>=left.right-1 && aligned && el.querySelectorAll("nav > span[aria-hidden=true]").length===2 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
       Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
       links.every(a=>{ const r=a.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
   });

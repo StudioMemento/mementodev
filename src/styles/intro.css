@@ -113,9 +113,9 @@
 .takeaway .crust-card-shell { aspect-ratio:16/9; }
 .takeaway-copy { --pad:clamp(12px,4.4cqi,64px); position:absolute; inset:auto var(--pad) var(--pad); z-index:2; text-align:left; pointer-events:none; }
 .takeaway-copy h2 { color:var(--vr-highlight); font-size:clamp(14px,4.7cqi,54px); line-height:1.12; letter-spacing:-.018em; }
-#asporto .takeaway-copy { font-size:clamp(13px,3cqi,31px); line-height:1.22; }
-#asporto .takeaway-copy h2,#asporto .takeaway-copy p { font-size:inherit; line-height:inherit; }
-#asporto .takeaway-copy p { margin-top:.15em; }
+.takeaway .crust-card-shade { inset:34% 0 0; --shade-mid:#09090936; }
+#asporto h2 { font-size:clamp(28px,7.6cqi,86px); line-height:1.02; }
+.takeaway-copy p { font-size:clamp(13px,3cqi,31px); line-height:1.22; margin-top:.26em; }
 @media(prefers-reduced-motion:reduce) { .crust-card { transform:none; transition:none; } }
 
 .feature-card-link { position:absolute; inset:0; z-index:3; }

@@ -36,7 +36,7 @@
 .mcat-head { text-align:center; }
 .mcat h3 { font-size:clamp(33px,4.6vw,68px); line-height:1.12; letter-spacing:.12em; font-weight:200; text-transform:uppercase; color:var(--vr-highlight); overflow-wrap:anywhere; }
 .mcat .tag { margin:12px auto 0; max-width:48ch; color:var(--vr-muted); letter-spacing:.015em; font-size:clamp(19px,1.5vw,23px); line-height:1.4; text-wrap:pretty; }
-.kitchen-mobile-break { display:none; }
+.mobile-break { display:none; }
 .menu-art { width:100%; margin:28px 0; background:var(--vr-carbon); }
 :root { --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); }
 .menu-art::before,.menu-art::after {
@@ -99,8 +99,8 @@
   .mcat { padding:58px 0 18px; scroll-margin-top:120px; }
   .mcat h3 { font-size:clamp(29px,7.8vw,43px); letter-spacing:.08em; }
   .mcat .tag { font-size:18px; line-height:1.4; letter-spacing:.005em; margin-top:10px; }
-  .kitchen-mobile-break { display:block; }
-  .kitchen-desktop-space { display:none; }
+  .mobile-break { display:block; }
+  .desktop-separator { display:none; }
   .menu-art { margin:22px 0; }
   .item { padding:9px 0; }
   .item .row { gap:8px; }

@@ -61,7 +61,7 @@ cleanup();fontReady();oldReady();assert.equal(fitWrites,lastWrites);
 const allergen=await source('src/data/allergen-info.ts',{});const getAllergenInfo=vm.runInContext('getAllergenInfo',allergen);
 const data=JSON.parse(await readFile('src/data/menu.json','utf8')),allergens=JSON.parse(await readFile('src/data/allergens.json','utf8'));
 let currentLang='it',opened,closed=0,modal;
-const copy={allergens:'Allergeni',close:'Chiudi',allergenIncluded:'Presente in questo piatto',allergenNote:'Per ulteriori info, chiedi al personale.',frozenTitle:'Prodotti surgelati',frozen:'Surgelato all’origine o in assenza del fresco.'};
+const copy={allergens:'Allergeni',close:'Chiudi',allergenIncluded:'Presente in questo piatto',allergenNote:'Per maggiori info, chiedi al personale.',frozenTitle:'Prodotti surgelati',frozen:'Surgelato all’origine o in assenza del fresco.'};
 const shared={getAllergenInfo,useDialog:()=>({open:v=>{opened=v},modal,close:()=>{closed++},update:()=>{}}),useI18n:()=>({language:currentLang,copy,ui:{legal_notes:'Note legali'}}),translateName:n=>n,translateDescription:n=>n,data};
 const items=await source('src/components/Menu.tsx',shared);
 const row=['Deliziosa','Bordo ripieno di ricotta, pomodoro, mozzarella di Bufala in cottura','13,00','1 · 7'];

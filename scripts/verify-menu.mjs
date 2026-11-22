@@ -42,7 +42,7 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_5.8 — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_5.9 — preview'));assert.ok(html.includes('noindex,nofollow'));
 const crustStart = html.lastIndexOf('<section',html.indexOf('id="cornicione"'));
 const takeawayStart = html.lastIndexOf('<section',html.indexOf('id="asporto"'));
 assert.equal((balanced(html,crustStart,'section').match(/class="crust-card"/g)||[]).length,3);
@@ -67,7 +67,7 @@ assert.match(html,/<h2 id="guest-photos-title">Ricordi condivisi dalla community
 assert.doesNotMatch(html,/I numeri indicano gli allergeni|Tocca il nome della bevanda/);
 assert.doesNotMatch(html,/menu-allergen-guide|Per allergie o intolleranze|Verifica allergeni/);
 const kitchen=balanced(html,html.indexOf('<section class="mcat fx on has-art" id="cat-cucina"'),'section');
-assert.match(kitchen,/Anche se incredibile\.\.\.<br class="kitchen-mobile-break"\/><span class="kitchen-desktop-space"> <\/span>non si ha sempre voglia di pizza\?/);
+assert.match(kitchen,/Anche se incredibile\.\.\.<br class="mobile-break"\/><span class="desktop-separator"> <\/span>non si ha sempre voglia di pizza\?/);
 assert.ok(!css.includes('.menu-art:hover'),'Obsolete artwork hover layers remain');
 assert.match(css,/\.menu-art::before,\.menu-art::after \{[^}]*filetto\.svg/);
 const filetto = await readFile('public/assets/menu/filetto.svg','utf8');
@@ -101,7 +101,7 @@ assert.equal((guestCard.match(/<img /g) || []).length, 1);
 const foodRows = [...Object.values(data.MENU).flat(), ...data.VARIANTI, ...data.CORNICE];
 const markers = new Map(foodRows.map(([name, , , codes]) => [name, codes]));
 // Compare every production code with the published, page-by-page reconciliation.
-const audit = await readFile('docs/Allergeni_5.8.md', 'utf8');
+const audit = await readFile('docs/Allergeni_5.9.md', 'utf8');
 const expectedCodes = new Map(audit.split('\n').filter(line => /^\| [^|]+ \| \d+ \|/.test(line)).map(line => {
   const [, name, , , codes] = line.split('|').map(s => s.trim());
   return [name, codes === '—' ? '' : codes.replaceAll(' · ', ' - ').replace('✱', '*')];
