@@ -200,8 +200,8 @@ async function testViewport(width,height,touch) {
       return {divider:getComputedStyle(nav).borderTopWidth, width:el.getBoundingClientRect().width, wordmark:mark.getBoundingClientRect().height,
         stacked:credit.getBoundingClientRect().bottom<=nav.getBoundingClientRect().top};
     });
-    assert.equal(footer.divider,footer.stacked ? "1px" : "0px");
-    assert.equal(footer.stacked, footer.width<=740);
+    assert.equal(footer.divider,"0px");
+    assert.equal(footer.stacked, width<768);
     assert.ok(footer.wordmark>=8.5);
     if(width===390) {
       for(const language of languages) {

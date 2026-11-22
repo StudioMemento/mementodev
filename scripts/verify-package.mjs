@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_5.7_Vercel";
+const name = "ViaRoma_5.8_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -61,14 +61,14 @@ for (const required of [
   ".nvmrc",
   "README.md",
   "THIRD_PARTY.md",
-  "docs/Allergeni_5.7.md",
+  "docs/Allergeni_5.8.md",
   "src/main.tsx",
   "src/components/gallery/ribbon.ts",
   "src/hooks/horizontalDrag.ts",
   "src/components/gallery/PhotoRibbon.tsx",
   "src/components/LegalReader.tsx",
   "src/components/Takeaway.tsx",
-  ...[480, 960, 1600].map(width => `public/assets/asporto/pizzata-${width}.webp`),
+  ...[480, 960, 1600].map(width => `public/assets/asporto/pizzata-a-casa-${width}.webp`),
   "src/components/SpreadTitle.tsx",
   "src/components/bento/particles.ts",
   "src/components/bento/edge-field.ts",
@@ -90,7 +90,7 @@ for (const required of [
   "public/assets/ribbons/esterno-01.webp",
   "src/components/GuestPhotos.tsx",
   "src/components/FeatureCard.tsx",
-  ...[240, 480, 750].map(width => `public/assets/foto-ospiti/maps-pin-${width}.webp`),
+  ...[480, 960, 1600].map(width => `public/assets/foto-ospiti/polaroid-via-roma-${width}.webp`),
   "public/fr/privacy.html",
   "public/de/note-legali.html",
   "public/en/cookie.html",

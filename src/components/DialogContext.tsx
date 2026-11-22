@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 export type ModalState =
-  | { kind: "allergens"; name: string; description: string; codes: string }
+  | { kind: "allergens"; name: string; codes: string }
   | { kind: "legal"; slug: "privacy" | "cookie" | "note-legali" };
 const DialogContext = createContext<{
   modal: ModalState | null;

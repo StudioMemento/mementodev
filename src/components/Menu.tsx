@@ -8,8 +8,8 @@ import { MenuTitle } from "./menu/MenuTitle";
 import { categoryOrder, categoryLabels, useMenuNavigation } from "./menu/useMenuNavigation";
 export { categoryOrder } from "./menu/useMenuNavigation";
 
-function ItemName({ name, description = "", codes = "", translate = true }: {
-  name: string; description?: string; codes?: string; translate?: boolean;
+function ItemName({ name, codes = "", translate = true }: {
+  name: string; codes?: string; translate?: boolean;
 }) {
   const { language, copy } = useI18n();
   const { open } = useDialog();
@@ -17,17 +17,15 @@ function ItemName({ name, description = "", codes = "", translate = true }: {
   if (name === "Coperto") return <span className="nome">{label}</span>;
   return <button type="button" className="nome" aria-haspopup="dialog"
     aria-label={`${label}: ${copy.allergens}`}
-    onClick={() => open({ kind: "allergens", name, description, codes })}>{label}</button>;
+    onClick={() => open({ kind: "allergens", name, codes })}>{label}</button>;
 }
 
 export function AllergenTrigger({
   name,
   codes = "",
-  description = "",
 }: {
   name: string;
   codes?: string;
-  description?: string;
 }) {
   const { copy, language } = useI18n();
   const { open } = useDialog();
@@ -40,7 +38,7 @@ export function AllergenTrigger({
       type="button"
       aria-haspopup="dialog"
       aria-label={[`${copy.allergens}: ${translateName(name, language)}`, label, info.frozen && copy.frozenTitle].filter(Boolean).join(", ")}
-      onClick={() => open({ kind: "allergens", name, description, codes })}
+      onClick={() => open({ kind: "allergens", name, codes })}
     >
       {label && <span>{label}</span>}
       {info.frozen && <span className="frozen-mark" aria-hidden="true">*</span>}
@@ -59,7 +57,7 @@ function MenuItem({ row, inlineDescription = false, showCodes = true }: { row: s
     <div className="item" data-menu-item={name}>
       <div className="row">
         <span className="label">
-          <ItemName name={name} description={description} codes={codes} />
+          <ItemName name={name} codes={codes} />
           {qualifier && (
             <span className="qualifier">
               {translateDescription(qualifier, language)}
@@ -79,7 +77,7 @@ function MenuItem({ row, inlineDescription = false, showCodes = true }: { row: s
           ))}
         </p>
       )}
-      {showCodes && <AllergenTrigger name={name} codes={codes} description={description} />}
+      {showCodes && <AllergenTrigger name={name} codes={codes} />}
     </div>
   );
 }
@@ -117,7 +115,7 @@ function DrinkTable({
           <div className="row">
             <div className="drink-product">
               <div className="drink-leader">
-                <span className="label"><ItemName name={name} description={qualifier} translate={false} codes={codes} /></span>
+                <span className="label"><ItemName name={name} translate={false} codes={codes} /></span>
                 <span className="dots" aria-hidden="true" />
               </div>
               {qualifier && <span className="qualifier">{translateDescription(qualifier, language)}</span>}

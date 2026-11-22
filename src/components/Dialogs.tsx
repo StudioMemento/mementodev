@@ -3,7 +3,6 @@ import { useLayoutEffect, useRef } from "react";
 import { useDialog } from "./DialogContext";
 import { useI18n, translateName } from "../i18n";
 import allergens from "../data/allergens.json";
-import { ingredientSource, recipeNote } from "../data/allergen-details";
 import { getAllergenInfo } from "../data/allergen-info";
 import { LegalReader } from "./LegalReader";
 import { Icon } from "./Icon";
@@ -66,8 +65,6 @@ export default function Dialogs() {
     modal.kind === "allergens"
       ? getAllergenInfo(modal.codes)
       : null;
-  const detail = modal.kind === "allergens" && info
-    ? recipeNote(modal.name, modal.description, info.codes.length > 0, language) : undefined;
   return (
     <dialog
       ref={ref}
@@ -77,9 +74,7 @@ export default function Dialogs() {
         e.preventDefault();
         close();
       }}
-      onClick={(e) => {
-        if (modal.kind === "allergens" || e.target === e.currentTarget || window.matchMedia("(max-width:767px), (pointer:coarse) and (max-width:1000px)").matches) close();
-      }}
+      onClick={close}
       onKeyDown={(e) => {
         if (modal.kind === "legal" && (e.target as HTMLElement).closest(".modal-header")) {
           const reader = ref.current?.querySelector<HTMLElement>(".legal-scroll");
@@ -96,7 +91,6 @@ export default function Dialogs() {
         <header className="modal-header">
           <div>
             <h2 id="modal-title">{title}</h2>
-            {detail && <p className="recipe-detail">{detail}</p>}
           </div>
           <button
             className="modal-close"
@@ -122,7 +116,7 @@ export default function Dialogs() {
                       {name}
                       {info.codes.includes(i + 1) && <span className="sr-only"> — {copy.allergenIncluded}</span>}
                     </strong>
-                    <span className="allergen-description"><AllergenDescription text={(info.codes.includes(i + 1) && ingredientSource(modal.name, i + 1, language)) || description} language={language} /></span>
+                    <span className="allergen-description"><AllergenDescription text={description} language={language} /></span>
                   </span>
                 </li>
               ))}

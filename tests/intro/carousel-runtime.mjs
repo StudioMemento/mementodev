@@ -31,7 +31,7 @@ function check(){
    assert.ok(Math.abs(x-pose.x)<.01);
  }
 }
-commit();check();ios.at(-1).fn([{isIntersecting:true,intersectionRatio:1}]);const cached=reads;
+commit();check();ios.at(-1).fn([root,stage].map(target => ({target,isIntersecting:true,intersectionRatio:1})));const cached=reads;
 for(let i=0;i<240;i++)tick();
 assert.equal(reads,cached);check();
 for(const size of [[7680,500],[390,230],[3440,500]]){

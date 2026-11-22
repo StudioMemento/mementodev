@@ -62,17 +62,17 @@ export default function Contacts() {
         </div>
         <a className="bento-tile contact-tile wa-tile" href="https://wa.me/393802453757" target="_blank" rel="noopener noreferrer">
           <img className="tile-art" src="/assets/social/whatsapp.webp?v=46" width="512" height="512" loading="lazy" decoding="async" alt="" />
-          <span className="tile-bottom"><span>
+          <span className="tile-bottom">
             <span className="contact-heading"><span className="action-label">WhatsApp</span>{" "}<small>380 2453 757</small></span>
-            <span className="contact-purpose">{closingCopy[language].whatsappPurpose}</span>
-          </span><TileArrow /></span>
+            <TileArrow />
+          </span>
         </a>
         <a className="bento-tile contact-tile phone-tile" href="tel:+390427541232">
           <img className="tile-art" src="/assets/social/telefono.webp" width="512" height="512" loading="lazy" decoding="async" alt="" />
-          <span className="tile-bottom"><span>
+          <span className="tile-bottom">
             <span className="contact-heading"><span className="action-label">{ui.call}</span>{" "}<small>0427 541232</small></span>
-            <span className="contact-purpose">{closingCopy[language].phonePurpose}</span>
-          </span><TileArrow /></span>
+            <TileArrow />
+          </span>
         </a>
       </BentoGrid>
     </section>

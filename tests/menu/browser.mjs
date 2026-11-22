@@ -32,6 +32,10 @@ async function checkSectionPolish(page, touch) {
     const leaders = [...oven.querySelectorAll('.pizza-arrow')];
     return {
       strokes: [getComputedStyle(oven).borderTop, getComputedStyle(oven).borderBottom, getComputedStyle(atmosphere).borderBottom],
+      sectionRules: [oven, atmosphere].map(el => {
+        const rule = getComputedStyle(el, '::after');
+        return [rule.height, rule.width, rule.backgroundImage, rule.bottom, rule.pointerEvents];
+      }),
       overlays: edges.flatMap(el => ['::before', '::after'].map(p => getComputedStyle(el, p).backgroundImage)),
       headings: sections.slice(-3).map(el => el.querySelector('h3').textContent),
       categoryGaps: sections.slice(1).map((el, i) => gap(sections[i].querySelector('.mcat-body'), el.querySelector('.mcat-head'))),
@@ -41,9 +45,10 @@ async function checkSectionPolish(page, touch) {
     };
   });
   assert.ok(layout.strokes.slice(0,2).every(edge => edge.startsWith('0px none')));
-  assert.match(layout.strokes[2], /^1px solid rgb/);
+  assert.ok(layout.strokes[2].startsWith('0px none'));
+  assert.deepEqual(layout.sectionRules[1], layout.sectionRules[0]);
   assert.ok(layout.overlays.slice(0,2).every(background => background.includes('linear-gradient')));
-  assert.ok(layout.overlays.slice(2).every(background => background === 'none'));
+  assert.ok([2,4,5].every(i => layout.overlays[i] === 'none'));
   assert.deepEqual(layout.headings, ['Le stuzzicherie', 'I dolci', 'Le bevande']);
   assert.ok(layout.categoryGaps.every(gap => gap >= 115));
   assert.ok(layout.groupGaps.every(gap => gap >= 55) && layout.breweryGap >= 37);

@@ -10,7 +10,7 @@ type Gesture = {
 };
 
 /** A single contact owns one axis until release. Touch scrolling and zoom stay native. */
-export function bindHorizontalDrag(stage: HTMLElement, signal: AbortSignal, handlers: Handlers) {
+export function bindHorizontalDrag(stage: HTMLElement, signal: AbortSignal, handlers: Handlers, edgeInset = 16) {
   const passive = { signal, passive: true };
   let gesture: Gesture | undefined;
   let skipClick = false;
@@ -52,7 +52,7 @@ export function bindHorizontalDrag(stage: HTMLElement, signal: AbortSignal, hand
   stage.addEventListener("touchstart", e => {
     if (e.touches.length !== 1) { finish(); return; }
     const finger = e.touches[0];
-    if (finger.clientX < 16 || finger.clientX > window.innerWidth - 16) return;
+    if (finger.clientX < edgeInset || finger.clientX > window.innerWidth - edgeInset) return;
     begin(finger.identifier, finger.clientX, finger.clientY, e.timeStamp, true);
   }, passive);
   stage.addEventListener("touchmove", e => {

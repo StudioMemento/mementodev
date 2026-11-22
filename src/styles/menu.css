@@ -1,5 +1,5 @@
 /* ViaRoma_4.0_MENU — original artwork/data, scoped menu and dialog presentation. */
-.menu-atmosphere { position:relative; background:#090909; border-bottom:var(--section-rule); }
+.menu-atmosphere { position:relative; background:#090909; }
 #cornicione { position:relative; }
 #menu { position:relative; padding-top:clamp(80px,12svh,160px); padding-bottom:clamp(36px,6svh,84px); }
 .menu-head,.mcat,.chipbar-inner { width:var(--vr-content); margin-inline:auto; }
@@ -38,7 +38,7 @@
 .mcat .tag { margin:12px auto 0; max-width:48ch; color:var(--vr-muted); letter-spacing:.015em; font-size:clamp(19px,1.5vw,23px); line-height:1.4; text-wrap:pretty; }
 .kitchen-mobile-break { display:none; }
 .menu-art { width:100%; margin:28px 0; background:var(--vr-carbon); }
-:root { --section-rule:1px solid #766644; --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); }
+:root { --price-dots:repeating-linear-gradient(90deg,#252524 0 1px,transparent 1px 8px); }
 .menu-art::before,.menu-art::after {
   content:""; display:block; height:3px;
   background:var(--vr-carbon) url("/assets/menu/filetto.svg?v=51") center / 100% 100% no-repeat;

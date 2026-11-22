@@ -31,7 +31,7 @@ export function useCarousel(count: number, language: string) {
     const cards = Array.from(stage.querySelectorAll<HTMLElement>("[data-carousel-card]"));
     const captions = Array.from(root.querySelectorAll<HTMLElement>(".pizza-caption"));
     let previousBase = -1;
-    let contact = false, dragging = false, speed = 0;
+    let contact = false, dragging = false, speed = 0, stageVisible = false;
     const inputs = new AbortController();
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false, timer = 0;
@@ -66,7 +66,7 @@ export function useCarousel(count: number, language: string) {
       if (next !== s.index) { s.index = next; setIndex(next); }
     };
     const eligible = () => s.visible && !document.hidden && !s.modal;
-    const autoplay = () => !s.reduced && !s.hovered && !s.focused && !contact;
+    const autoplay = () => stageVisible && !s.reduced && !s.hovered && !s.focused && !contact;
     const tick = (now: number) => {
       s.frame = 0;
       if (!eligible()) return;
@@ -100,15 +100,21 @@ export function useCarousel(count: number, language: string) {
     };
     const visibility = () => { stop(); if (eligible()) start(); };
     const motion = () => { s.reduced = media.matches; if (s.reduced) { seek(m, Math.round(m.target?.to ?? m.position), true); render(); } visibility(); };
-    const io = new IntersectionObserver(entries => { s.visible = entries[0].isIntersecting && entries[0].intersectionRatio >= 0.3; visibility(); }, { threshold: [0, 0.3] });
+    const io = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.target === root) s.visible = entry.isIntersecting;
+        if (entry.target === stage) stageVisible = entry.isIntersecting && entry.intersectionRatio >= 0.3;
+      }
+      visibility();
+    }, { threshold: [0, 0.3] });
     const ro = new ResizeObserver(resize);
-    io.observe(stage); ro.observe(stage); if (cards[0]) ro.observe(cards[0]);
+    io.observe(root); io.observe(stage); ro.observe(stage); if (cards[0]) ro.observe(cards[0]);
     media.addEventListener("change", motion);
     document.addEventListener("visibilitychange", visibility);
     s.reduced = media.matches;
     paint.current = render;
     wake.current = () => { if (!eligible()) stop(); else start(); };
-    bindHorizontalDrag(stage.parentElement!, inputs.signal, {
+    bindHorizontalDrag(root, inputs.signal, {
       begin() { contact = true; speed = 0; start(); },
       move(pixels, seconds) {
         const change = pixels / s.focusStep;
@@ -128,7 +134,7 @@ export function useCarousel(count: number, language: string) {
         contact = dragging = false;
         start();
       },
-    });
+    }, 0);
     resize();
     return () => {
       disposed = true; inputs.abort(); stop(); io.disconnect(); ro.disconnect();

@@ -57,7 +57,7 @@ export function LegalReader({ slug, navigate }: { slug: LegalSlug; navigate: (sl
         if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
         const anchor = (event.target as Element).closest<HTMLAnchorElement>("a[data-legal]");
         const next = anchor?.dataset.legal;
-        if (next === "privacy" || next === "cookie" || next === "note-legali") { event.preventDefault(); navigate(next); }
+        if (next === "privacy" || next === "cookie" || next === "note-legali") { event.preventDefault(); event.stopPropagation(); navigate(next); }
       }} /> : failed ? <a href={path}>{strings.openPage}</a> : <p role="status">{strings.loading}</p>}
     </div>
     <div ref={progress} className="vr-scroll-progress" hidden aria-hidden="true"><span /></div>

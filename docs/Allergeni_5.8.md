@@ -1,4 +1,4 @@
-# Via Roma 5.7 · Confronto degli allergeni
+# Via Roma 5.8 · Confronto degli allergeni
 
 Il confronto usa le 16 pagine di `Menu_ViaRoma_DEF.pdf` fornite dal locale.
 La tabella registra i codici leggibili sulla carta, gli ingredienti espliciti e le integrazioni della versione web.
@@ -7,13 +7,13 @@ Le pagine fanno riferimento alla numerazione del PDF, copertina inclusa.
 Il trattino indica che il documento o la scheda non forniscono un codice.
 L’asterisco identifica i prodotti surgelati.
 Per un ingrediente composto o una preparazione variabile, il riscontro conclusivo richiede la ricetta utilizzata e la scheda del fornitore.
-In particolare, il menù stampato segnala il latte sulle due marinare e le arachidi su Valtellina, Greca, Saporita, Sarah e Golosa.
-Nel popup, i codici riportati sulla carta ma non spiegati dalla descrizione portano una nota di conferma.
+Il locale conferma la presenza di latte nell’impasto di Marinara Classica e Marinara d’Oro. La carta segnala le arachidi su Valtellina, Greca, Saporita, Sarah e Golosa.
+Tutte le schede pubbliche usano la stessa legenda. I riscontri in questa tabella documentano le fonti per il gestore.
 
 | Voce | Pag. PDF | Codici nel PDF | Codici sul sito | Riscontro |
 | --- | ---: | --- | --- | --- |
-| Marinara Classica | 2 | 1 · 7 | 1 · 7 | Il 7 figura sulla carta, ma la descrizione elenca solo pomodoro, aglio, olio e origano. Chiarire l’impasto o la preparazione. |
-| Marinara d'Oro | 2 | 1 · 7 | 1 · 7 | Il 7 figura sulla carta, ma gli ingredienti elencati non ne spiegano la presenza. Chiarire l’impasto o la preparazione. |
+| Marinara Classica | 2 | 1 · 7 | 1 · 7 | Latte nell’impasto, confermato dal locale. |
+| Marinara d'Oro | 2 | 1 · 7 | 1 · 7 | Latte nell’impasto, confermato dal locale. |
 | Margherita Classica | 2 | 1 · 7 | 1 · 7 |  |
 | Margherita Affumicata | 2 | 1 · 7 | 1 · 7 |  |
 | Bufalina | 2 | 1 · 7 | 1 · 7 |  |

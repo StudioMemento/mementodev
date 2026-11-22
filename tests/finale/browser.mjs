@@ -38,7 +38,7 @@ async function galleries(page, touch) {
     assert.equal(await page.locator(`#album-${key} .ribbon-card`).count(), photos.length);
   assert.equal(await rooms.locator(".photo-controls,.photo-expand,[aria-live] + button").count(), 0);
   assert.equal(await page.locator("#customer .ribbon-stage, #customer .photo-byline").count(), 0);
-  assert.equal(await page.locator("#customer .community-pin").count(), 1);
+  assert.equal(await page.locator("#customer .crust-photo[src*='polaroid-via-roma']").count(), 1);
   const photoLink = page.getByRole("link", {name:/Ricordi condivisi dalla community.*Google Maps/});
   assert.equal(await photoLink.getAttribute("href"), "https://www.google.com/maps/place//data=!4m3!3m2!1s0x477983a3cc4c3b4f:0x641962f142805885!10e5");
   const stage = rooms.first().locator(".ribbon-stage");
@@ -196,10 +196,12 @@ async function contactAndLegal(page, touch) {
         const paragraph = text.locator("p").first();
         await paragraph.scrollIntoViewIfNeeded();
         await paragraph.tap({position:{x:2,y:4}});
-      } else {
+      } else if (i===0) {
         await text.locator("h2").first().click();
-        assert.equal(await dialog.count(), 1);
-        if (i===2) await page.mouse.click(3,3); else await page.keyboard.press("Escape");
+      } else if (i===1) {
+        await page.keyboard.press("Escape");
+      } else {
+        await page.mouse.click(3,3);
       }
       await dialog.waitFor({state:"detached"});assert.ok(await link.evaluate(e=>e===document.activeElement));
     }
@@ -210,7 +212,7 @@ async function contactAndLegal(page, touch) {
 async function contactTextFits(page) {
   const clipped=await page.locator(".bento-grid .bento-tile").evaluateAll(tiles=>tiles.flatMap(tile=>{
     const bounds=tile.getBoundingClientRect();
-    return [...tile.querySelectorAll("strong,small,.hours-note,.action-label,.contact-purpose,.social-tile .tile-bottom > span:first-child")].filter(label=>{
+    return [...tile.querySelectorAll("strong,small,.hours-note,.action-label,.social-tile .tile-bottom > span:first-child")].filter(label=>{
       const range=document.createRange();range.selectNodeContents(label);
       return [...range.getClientRects()].some(r=>r.left<bounds.left-1 || r.right>bounds.right+1 || r.top<bounds.top-1 || r.bottom>bounds.bottom+1);
     }).map(label=>label.textContent);
@@ -226,11 +228,11 @@ async function contactTextFits(page) {
   const orderFits = await page.locator(".contact-tile").evaluateAll(tiles => tiles.every(tile => {
     const ink = e => { const r = document.createRange(); r.selectNodeContents(e); return [...r.getClientRects()]; };
     const [label] = ink(tile.querySelector(".action-label")), [phone] = ink(tile.querySelector("small"));
-    const purpose = ink(tile.querySelector(".contact-purpose").firstChild);
-    return Math.abs(label.top-phone.top)<1 && label.right<=phone.left && purpose[0].top>label.top &&
-      (document.documentElement.lang!=="it" || purpose.length===1);
+    const [arrow] = tile.querySelector(".tile-arrow").getClientRects();
+    return phone.top > label.top && Math.abs(phone.left-label.left) < 1 &&
+      phone.right <= arrow.left && !tile.querySelector(".contact-purpose");
   }));
-  assert.ok(orderFits,"Contact name and number share the first line above the purpose");
+  assert.ok(orderFits,"The phone number fits on its own line below the action");
 }
 
 async function finalLayout(page) {
@@ -261,7 +263,6 @@ async function finalLayout(page) {
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
-      stackedFooter:rect(document.querySelector(".footer-row")).width<=740,
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
       blockSizes:[...document.querySelectorAll("#social,#dove")].every(el=>rect(el).height+1>=innerHeight),
       validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
@@ -270,7 +271,7 @@ async function finalLayout(page) {
   });
   assert.ok(result.validTitles && result.validEdges && result.blockSizes && result.shortSides && !result.overflow, JSON.stringify(result));
   assert.equal(result.menuPad >= 36 && result.menuPad <= 84 && result.firstGap >= 122,true); assert.ok(result.rules,"The finale sections have no separators");
-  assert.equal(result.footerRule,result.stackedFooter?"1px":"0px","Only the stacked footer separates the links from the signature");
+  assert.equal(result.footerRule,"0px","Footer links have no dividing rule");
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
   assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
   const [social,visit]=result.areas;
@@ -312,7 +313,11 @@ async function finalLayout(page) {
     const row=el.querySelector(".footer-row").getBoundingClientRect(), left=el.querySelector("p").getBoundingClientRect(), nav=el.querySelector("nav").getBoundingClientRect(), credit=el.querySelector(".studio-credit").getBoundingClientRect();
     const title=el.querySelector(".studio-credit span"), wordmark=el.querySelector(".studio-credit img").getBoundingClientRect();
     const text=title.getBoundingClientRect();
-    return title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && Math.abs(text.right-wordmark.right)<1 && text.bottom<=wordmark.top && wordmark.width>=105 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && credit.left>=left.right-1 && Math.abs(left.top-credit.top)<1 && el.querySelectorAll("nav > span[aria-hidden=true]").length===2 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
+    const ink = node => { const r=document.createRange(); r.selectNodeContents(node); return r.getBoundingClientRect(); };
+    const brandInk = ink(el.querySelector("p span:last-child"));
+    const legalInk = ink(el.querySelector("nav a").firstChild);
+    const aligned = innerWidth < 768 ? Math.abs(left.top-credit.top)<1 : Math.abs(brandInk.bottom-legalInk.bottom)<4 && Math.abs(brandInk.bottom-wordmark.bottom)<7;
+    return title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && Math.abs(text.right-wordmark.right)<1 && text.bottom<=wordmark.top && wordmark.width>=105 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && credit.left>=left.right-1 && aligned && el.querySelectorAll("nav > span[aria-hidden=true]").length===2 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
       Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
       links.every(a=>{ const r=a.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
   });

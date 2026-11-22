@@ -31,8 +31,8 @@ const inputHost = name => ({addEventListener(type, fn, options) {
  options.signal.addEventListener('abort',()=>inputs.delete(key),{once:true});
 }});
 const stage=Object.assign(new Element(),inputHost('stage'),{querySelectorAll:()=>cards});
-stage.parentElement=stage;
-const root={querySelectorAll:()=>captions,contains:e=>e===stage};
+const root=Object.assign(new Element(),inputHost('root'),{querySelectorAll:()=>captions,contains:e=>e===stage});
+stage.parentElement=root;
 const media={matches:false,addEventListener(_,fn){this.fn=fn},removeEventListener(){this.fn=null}};
 const document={hidden:false,addEventListener(t,fn){listeners.set(t,fn)},removeEventListener(t){listeners.delete(t)}};
 const context={...hooks,AbortController,useLayoutEffect:hooks.useEffect,document,matchMedia:()=>media,performance:{now:()=>clock},wrap:(i,n)=>(i%n+n)%n,
@@ -45,23 +45,23 @@ const hook=runInNewContext(code+';useCarousel',context);
 function commit(){let n=0;do{assert.ok(++n<8);dirty=false;cursor=0;result=hook(10,'it');result.rootRef.current=root;result.stageRef.current=stage;for(const {n,fn}of effects.splice(0)){slots[n].cleanup?.();slots[n].cleanup=fn();}}while(dirty)}
 function frame(dt=16){clock+=dt;for(const[n,t]of[...timers])if(t.at<=clock){timers.delete(n);t.fn()}const f=[...raf.values()];raf.clear();f.forEach(fn=>fn(clock));if(dirty)commit();}
 function settle(){for(let i=0;i<300&&raf.size;i++)frame();assert.equal(raf.size,0,'Idle or paused slider must stop RAF');}
-function visible(v){ios.at(-1).fn([{isIntersecting:v,intersectionRatio:v ? 1 : 0}]);}
-function event(x,y){return{timeStamp:clock,button:0,isPrimary:true,pointerId:1,clientX:x,clientY:y,currentTarget:stage,target:stage,pointerType:'mouse',preventDefault(){}};}
+function visible(v){ios.at(-1).fn([root,stage].map(target => ({target,isIntersecting:v,intersectionRatio:v ? 1 : 0})));}
+function event(x,y){return{timeStamp:clock,button:0,isPrimary:true,pointerId:1,clientX:x,clientY:y,currentTarget:root,target:stage,pointerType:'mouse',preventDefault(){}};}
 commit();assert.equal(raf.size,0);assert.equal(timers.size,0);
 visible(true);const reads=layoutReads;for(let i=0;i<120;i++)frame();assert.equal(layoutReads,reads,'No layout reads in animation loop');assert.equal(raf.size,0);assert.equal(timers.size,1,'Centered slide waits without RAF');
 frame(5200);assert.equal(raf.size,1,'The timer advances to the next pizza');settle();assert.equal(result.index,1);
 result.rootBind.onPointerEnter({pointerType:'mouse'});settle();assert.equal(timers.size,0);
 const before=cards[0].style.transform;
-inputs.get('stage:pointerdown')(event(250,50));clock+=20;inputs.get('stage:pointermove')(event(190,50));frame();assert.notEqual(cards[0].style.transform,before);
+inputs.get('root:pointerdown')(event(250,50));clock+=20;inputs.get('root:pointermove')(event(190,50));frame();assert.notEqual(cards[0].style.transform,before);
 clock+=200;inputs.get('window:pointerup')({...event(190,50),type:'pointerup'});frame();const released=cards[0].style.transform;settle();assert.notEqual(cards[0].style.transform,released,'A released plate settles back into the focus position');
 assert.equal(cards[0].style.transform,before);
-inputs.get('stage:pointerdown')(event(250,50));inputs.get('stage:pointermove')(event(249,90));assert.equal(stage.capture.size,0,'Vertical scroll must not be captured');inputs.get('window:pointerup')({...event(249,90),type:'pointerup'});settle();
+inputs.get('root:pointerdown')(event(250,50));inputs.get('root:pointermove')(event(249,90));assert.equal(root.capture.size,0,'Vertical scroll must not be captured');inputs.get('window:pointerup')({...event(249,90),type:'pointerup'});settle();
 // Use the same native touch listeners as the gallery. A vertical or multi-finger
 // contact must not cancel the page gesture or select another pizza.
 function touch(type, points, changed = points) {
  const event = {type, timeStamp:clock, touches:points, changedTouches:changed, cancelable:true,
    defaultPrevented:false, preventDefault(){this.defaultPrevented=true}};
- inputs.get('stage:'+type)(event);
+ inputs.get('root:'+type)(event);
  return event.defaultPrevented;
 }
 const finger=(x,y,id=7)=>({clientX:x,clientY:y,identifier:id});

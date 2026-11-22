@@ -48,7 +48,6 @@
 .allergen-description { display:block; font-size:var(--detail); line-height:1.18; margin-top:1px; }
 .nut-phrase { white-space:nowrap; }
 .allergen-list .contains { color:var(--vr-highlight); }
-.recipe-detail { margin-top:.3em; font-size:var(--detail); line-height:1.2; color:var(--vr-muted); }
 .allergen-note { font-size:clamp(16px,2.4dvh,23px); line-height:1.25; font-weight:400; }
 @media(max-height:560px) {
   .modal-allergens[data-density=minimum] { --inset:7px; --section-gap:3px; --row-gap:0px; }

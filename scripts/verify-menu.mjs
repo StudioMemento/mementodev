@@ -30,6 +30,9 @@ const data=JSON.parse(await readFile('src/data/menu.json','utf8'));
 const bottled=new Set(data.BOTTIGLIA.flatMap(group=>group[2].map(row=>row[0])));
 const beverageNames=new Set([...data.ACQUA_BIBITE,...data.BOTTIGLIA.flatMap(group=>group[2]),...data.SPINA,...data.VINI].map(row=>row[0]));
 const before=entries(old).map(row=>row.map((field,i)=>i===4&&bottled.has(row[0])?field.replaceAll('\n',' '):field));
+const flag = before.find(row => row[0] === 'Flag');
+assert.match(flag[4], /Keller Pils - Senza glutine/i);
+flag[4] = flag[4].replace(/Keller Pils - Senza glutine/i, 'Keller Pils');
 const after=entries(html);assert.ok(before.length>80);assert.equal(after.length,before.length);before.forEach((row,i)=>assert.deepEqual(after[i],row,`Menu item information changed: ${row[0]}`));
 assert.equal(bottled.size,7);
 for(const name of bottled){const item=html.match(new RegExp(`<div class="item" data-menu-item="${name}"`));assert.ok(item);const markup=balanced(html,item.index,'div');const description=markup.match(/<p class="desc">(.*?)<\/p>/)[1];assert.ok(!description.includes('<br'),'Bottle description still has a forced line break');}
@@ -39,7 +42,7 @@ assert.match(html,/<p class="dolci-note">Chiedi al personale la disponibilità d
 const modified=html.replace(/(<span class="prezzo">)[^<]+/,'$1INVALID');assert.notDeepEqual(entries(modified),before);
 const start=html.indexOf('<section id="home"');assert.ok(start>=0);
 assert.equal(balanced(html,start,'section'),await readFile('tests/intro/hero-approved.html','utf8'));
-assert.ok(html.includes('ViaRoma_5.7 — preview'));assert.ok(html.includes('noindex,nofollow'));
+assert.ok(html.includes('ViaRoma_5.8 — preview'));assert.ok(html.includes('noindex,nofollow'));
 const crustStart = html.lastIndexOf('<section',html.indexOf('id="cornicione"'));
 const takeawayStart = html.lastIndexOf('<section',html.indexOf('id="asporto"'));
 assert.equal((balanced(html,crustStart,'section').match(/class="crust-card"/g)||[]).length,3);
@@ -58,7 +61,7 @@ assert.match(await readFile('src/styles/intro.css','utf8'),/#pizza-slider \{[^}]
 assert.ok(!(await readFile('src/styles/contact.css','utf8')).includes('background: #000;'));
 assert.ok((await readFile('public/legal.css','utf8')).includes('background:#090909;'));
 assert.equal((html.match(/class="finale-field-view"/g)||[]).length,2);
-assert.match(html,/<h2 id="takeaway-title">Pizzata nel comfort di casa\?<\/h2>/);
+assert.match(html,/<h2 id="takeaway-title">Pizzata a casa\?<\/h2>/);
 assert.match(html,/<p>Facciamo anche servizio da asporto!<\/p>/);
 assert.match(html,/<h2 id="guest-photos-title">Ricordi condivisi dalla community!</);
 assert.doesNotMatch(html,/I numeri indicano gli allergeni|Tocca il nome della bevanda/);
@@ -98,7 +101,7 @@ assert.equal((guestCard.match(/<img /g) || []).length, 1);
 const foodRows = [...Object.values(data.MENU).flat(), ...data.VARIANTI, ...data.CORNICE];
 const markers = new Map(foodRows.map(([name, , , codes]) => [name, codes]));
 // Compare every production code with the published, page-by-page reconciliation.
-const audit = await readFile('docs/Allergeni_5.7.md', 'utf8');
+const audit = await readFile('docs/Allergeni_5.8.md', 'utf8');
 const expectedCodes = new Map(audit.split('\n').filter(line => /^\| [^|]+ \| \d+ \|/.test(line)).map(line => {
   const [, name, , , codes] = line.split('|').map(s => s.trim());
   return [name, codes === '—' ? '' : codes.replaceAll(' · ', ' - ').replace('✱', '*')];
@@ -150,4 +153,4 @@ for(const m of items){
  }
 }
 assert.deepEqual(Object.keys(JSON.parse(await readFile('package.json','utf8')).dependencies).sort(),['react','react-dom']);
-console.log(`MENU_SCOPE_OK — ${Object.keys(baseline).length} protected files match the approved baseline; ${before.length} entries retain names, descriptions, prices and qualifiers; reviewed ingredient codes and frozen marks checked; beverage names and price columns verified; all 18 draught/wine format-price pairs verified; global background and kitchen break checked.`);
+console.log(`MENU_SCOPE_OK — ${Object.keys(baseline).length} protected files match the approved baseline; ${before.length} entries checked against the printed menu and the Flag description update; reviewed ingredient codes and frozen marks checked; beverage names and price columns verified; all 18 draught/wine format-price pairs verified; global background and kitchen break checked.`);

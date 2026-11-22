@@ -7,6 +7,58 @@ const path = process.env.BROWSER_PATH || (engine === "chromium" ? process.env.CH
 const browser = await playwright[engine].launch({ headless: true, executablePath: path });
 const { FORNO: pizzas } = JSON.parse(await readFile("src/data/menu.json", "utf8"));
 
+async function checkSectionGestures(page, oven, stage, mobile) {
+  const size = page.viewportSize();
+  const cdp = mobile && engine === "chromium" ? await page.context().newCDPSession(page) : null;
+  const active = oven.locator('.pizza-caption[aria-hidden="false"] h3');
+  async function drag(from, to) {
+    if (!cdp) {
+      await page.mouse.move(from.x, from.y);
+      await page.mouse.down();
+      await page.mouse.move(to.x, to.y, {steps: 12});
+      await page.mouse.up();
+      return;
+    }
+    await cdp.send("Input.dispatchTouchEvent", { type:"touchStart", touchPoints:[from] });
+    for (let step = 1; step <= 8; step++) {
+      const t = step / 8;
+      await cdp.send("Input.dispatchTouchEvent", {type:"touchMove", touchPoints:[{
+        x:from.x + (to.x-from.x)*t, y:from.y + (to.y-from.y)*t,
+      }]});
+    }
+    await cdp.send("Input.dispatchTouchEvent", {type:"touchEnd", touchPoints:[]});
+  }
+  try {
+    const points = [];
+    for (const selector of [".oven-header", ".pizza-copy", "#forno"]) {
+      const rect = await oven.locator(selector).boundingBox();
+      points.push({x:rect.x + rect.width*.58, y:rect.y + Math.min(rect.height*.5,24)});
+    }
+    // Hit the empty side margin, including the first few pixels on a touch screen.
+    points.push({x:4, y:size.height*.18}, {x:size.width-4, y:size.height*.84});
+    const y = await page.evaluate(() => scrollY);
+    for (const from of points) {
+      const before = await active.textContent();
+      const endX = from.x > size.width*.48 ? size.width*.035 : size.width*.965;
+      await drag(from, {x:endX, y:from.y});
+      await page.waitForFunction(old => document.querySelector('.pizza-caption[aria-hidden="false"] h3').textContent !== old, before);
+      await page.waitForFunction(() => {
+        const stage = document.querySelector("#forno").getBoundingClientRect();
+        const card = document.querySelector(".vr-pizza-card[data-active=true]").getBoundingClientRect();
+        return Math.abs(card.left + card.right - stage.left - stage.right) < 1;
+      });
+      assert.ok(Math.abs((await page.evaluate(() => scrollY))-y)<2, "A horizontal gesture scrolled the page");
+    }
+    if (cdp) {
+      const before = await active.textContent();
+      await drag({x:size.width*.25,y:size.height*.7}, {x:size.width*.25,y:size.height*.3});
+      await page.waitForFunction(y => scrollY > y+30, y);
+      assert.equal(await active.textContent(),before,"A vertical swipe switched pizza");
+    }
+    await stage.focus({preventScroll:true}); await page.keyboard.press("Home");
+  } finally { if (cdp) await cdp.detach(); }
+}
+
 try {
   for (const [width, height] of [[390,844], [1440,900]]) {
     const page = await browser.newPage({ viewport:{width,height}, hasTouch:width < 500, isMobile:width < 500, reducedMotion:"reduce" });
@@ -67,6 +119,8 @@ try {
     await oven.locator(".next").click();
     await waitForIndex(0);
 
+    await checkSectionGestures(page, oven, stage, width < 500);
+
     const card = page.locator("#asporto .crust-card");
     await card.scrollIntoViewIfNeeded();
     await page.waitForFunction(() => {
@@ -85,7 +139,7 @@ try {
         gap:document.querySelector("#gallery").getBoundingClientRect().top-card.bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
     assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
-    assert.match(dimensions.file,/pizzata-(480|960|1600)\.webp$/);
+    assert.match(dimensions.file,/pizzata-a-casa-(480|960|1600)\.webp$/);
     assert.ok(dimensions.gap >= Math.min(280, Math.max(120, height * .23)) - 1);
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
@@ -117,6 +171,6 @@ try {
     }
     assert.deepEqual(errors,[]);
     await page.close();
-    console.log(engine,width+"×"+height,"40 responsive images, four translations, keyboard loop, fixed vertical position, takeaway layout and category artwork OK");
+    console.log(engine,width+"×"+height,"40 responsive images, four translations, keyboard loop, full-section drag and native vertical scrolling, takeaway layout and category artwork OK");
   }
 } finally { await browser.close(); }
