@@ -8,7 +8,7 @@ const listeners=new Map(),raf=new Map();let frameId=0,resize,hidden=false,reads=
 const target=name=>({addEventListener:(event,fn)=>listeners.set(name+':'+event,fn),removeEventListener:event=>listeners.delete(name+':'+event)});
 const win={...target('window'),scrollY:0,innerHeight:800};
 const root={scrollHeight:4800};
-const tops={menu:1600,gallery:3000,dove:4200};
+const tops={menu:1600,gallery:3000,info:4200};
 const doc={...target('document'),documentElement:root,body:{},fonts:{ready:Promise.resolve()},get hidden(){return hidden},getElementById:id=>({getBoundingClientRect:()=>{reads++;return {top:tops[id]-win.scrollY}}})};
 const scope={window:win,document:doc,Set,Math,requestAnimationFrame:fn=>{raf.set(++frameId,fn);return frameId},cancelAnimationFrame:id=>raf.delete(id),ResizeObserver:class{constructor(fn){resize=fn}observe(){}disconnect(){}}};
 vm.createContext(scope);

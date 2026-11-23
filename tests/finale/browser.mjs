@@ -105,7 +105,7 @@ async function contactAndLegal(page, touch) {
     const glass=getComputedStyle(label,"::before");
     return {text:label.textContent, ink:style.color, softLabel:(glass.backdropFilter||glass.webkitBackdropFilter).includes("blur"),
       tipAnchored:parseFloat(stem.width) === 1 && parseFloat(stem.bottom) === 0 && dot.content === "none",
-      aligned:Math.abs(rect.top - parseFloat(stem.height) - box.bottom) < 1 && box.left < rect.left && box.right >= rect.left,
+      aligned:Math.abs(rect.top - parseFloat(stem.height) - box.bottom) < 1 && Math.abs((box.left + box.right) / 2 - rect.left) < 1,
       fits:box.left>=map.left && box.top>=map.top && box.right<=map.right && box.bottom<=map.bottom,
       x:(rect.left-map.left)/map.width, y:(rect.top-map.top)/map.height};
   }));
@@ -124,7 +124,8 @@ async function contactAndLegal(page, touch) {
   assert.equal(await page.locator(".map-tile").getAttribute("href"),"https://maps.google.com/?cid=7212905066552907909");
   assert.equal(await page.locator(".phone-tile").getAttribute("href"),"tel:+390427541232");
   assert.equal(await page.locator(".visit-bento a").count(),2);
-  assert.equal(await page.locator(".phone-tile").innerText(),"0427 541 232");
+  assert.equal(await page.locator(".phone-number").innerText(),"0427 541 232");
+  assert.equal(await page.locator(".phone-note").textContent(),"PER ORDINI & PRENOTAZIONI");
   assert.equal(await page.locator(".phone-tile img,.phone-tile svg,.phone-tile i").count(),0);
   assert.match(await page.locator(".footer-vat").innerText(),/01956350936/);
   assert.equal(await page.locator(".studio-credit").getAttribute("href"),"https://mementostudio.it");
@@ -245,7 +246,8 @@ async function contactTextFits(page) {
       Math.abs(ink.left + ink.right - bounds.left - bounds.right) < 2 &&
       style.fontSize === hours.fontSize && style.fontWeight === hours.fontWeight &&
       style.letterSpacing === hours.letterSpacing &&
-      style.paddingInlineStart === getComputedStyle(document.querySelector(".hours-copy")).paddingInlineStart;
+      getComputedStyle(number.parentElement).paddingInlineStart === getComputedStyle(document.querySelector(".hours-copy")).paddingInlineStart &&
+      getComputedStyle(tile.querySelector(".phone-note")).fontWeight === getComputedStyle(document.querySelector(".hours-tile .hours-note")).fontWeight;
   });
   assert.ok(phoneFits,"The centered phone number shares the hours typography and side padding");
 }
@@ -276,10 +278,10 @@ async function finalLayout(page) {
     }));
     return {validTitles:titles.length===7 && titles.every(atGutters),pairs, mobile:innerWidth<=700, tablet:innerWidth>700 && innerWidth<1000, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
-      rules:[...document.querySelectorAll("#customer,#social,#dove,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
+      rules:[...document.querySelectorAll("#customer,#social,#info,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
-      blockSizes:[...document.querySelectorAll("#social,#dove")].every(el=>rect(el).height+1>=innerHeight),
+      blockSizes:[...document.querySelectorAll("#social,#info")].every(el=>rect(el).height+1>=innerHeight),
       validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
       shortSides:[...tiles].every(el=>{const r=rect(el);return Math.min(r.width,r.height)>=44;}),
       overflow:document.documentElement.scrollWidth>innerWidth};
@@ -311,7 +313,7 @@ async function finalLayout(page) {
     assert.ok(close(map.t,hours.t) && hours.l>map.r && close(map.b,phone.b));
   }
   assert.equal(await page.locator(".opening-time").innerText(),"18:00 - 23:00");
-  assert.equal(await page.locator(".hours-note").textContent(),"CHIUSO IL LUNEDÌ");
+  assert.equal(await page.locator(".hours-tile .hours-note").textContent(),"CHIUSO IL LUNEDÌ");
   assert.equal(await page.locator(".hours-copy p .sr-only").textContent(),"Chiuso il lunedì");
   assert.ok(await page.locator(".hours-tile").evaluate(el=>{
     const style=getComputedStyle(el), phone=getComputedStyle(document.querySelector(".phone-tile"));
@@ -328,13 +330,16 @@ async function finalLayout(page) {
     const title=el.querySelector(".studio-credit span"), wordmark=el.querySelector(".studio-credit img").getBoundingClientRect();
     const text=title.getBoundingClientRect();
     const ink = node => { const r=document.createRange(); r.selectNodeContents(node); return r.getBoundingClientRect(); };
-    const brandInk = ink(el.querySelector("p span:last-child"));
-    const legalInk = ink(el.querySelector("nav a").firstChild);
-    const aligned = innerWidth < 768 ? Math.abs(left.top-credit.top)<1 : Math.abs(brandInk.bottom-legalInk.bottom)<4 && Math.abs(brandInk.bottom-wordmark.bottom)<7;
+    const brand = el.querySelector(".footer-brand"), name = brand.querySelector("p"), vat = brand.querySelector("small");
+    const brandInk = ink(name), group = brand.getBoundingClientRect();
+    const range = document.createRange(); range.selectNodeContents(name);
+    const twoLines = name.textContent === "© 2026 PIZZERIA VIA ROMA" && range.getClientRects().length === 1 &&
+      vat.getBoundingClientRect().top >= name.getBoundingClientRect().bottom && brandInk.right <= credit.left;
+    const aligned = Math.abs(group.top + group.bottom - credit.top - credit.bottom) < 2;
     const creditLabel = getComputedStyle(title);
-    const balanced = Math.abs(brandInk.width / wordmark.width - 1) < .12;
-    return balanced && creditLabel.fontWeight === "300" && parseFloat(creditLabel.letterSpacing) >= .13 * parseFloat(creditLabel.fontSize) &&
-      title.textContent==="Powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && Math.abs(text.right-wordmark.right)<1 && text.bottom<=wordmark.top && wordmark.width>=105 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && credit.left>=left.right-1 && aligned && el.querySelectorAll("nav > span[aria-hidden=true]").length===2 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
+    return twoLines && creditLabel.fontWeight === "300" && parseFloat(creditLabel.fontSize) < parseFloat(getComputedStyle(name).fontSize) &&
+      parseFloat(creditLabel.letterSpacing) >= .2 * parseFloat(creditLabel.fontSize) &&
+      title.textContent==="powered by" && el.querySelector(".studio-credit img").alt==="MEMENTO" && Math.abs(text.right-wordmark.right)<1 && text.bottom<=wordmark.top && wordmark.width>=95 && Math.abs(row.left-left.left)<1 && Math.abs(row.right-credit.right)<1 && aligned && el.querySelectorAll("nav > span[aria-hidden=true]").length===2 && Math.abs((nav.left+nav.right)/2-innerWidth/2)<1.5 &&
       Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(blur).zIndex) &&
       links.every(a=>{ const r=a.getBoundingClientRect();return r.bottom<=dock.getBoundingClientRect().top && a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)); });
   });

@@ -18,10 +18,12 @@ function Footer() {
   const { open } = useDialog();
   return <footer className="visit-footer" role="contentinfo">
     <div className="footer-row">
-      <p><span>© 2026</span><span>PIZZERIA VIA ROMA</span></p>
-      <small className="footer-vat">{closingCopy[language].vat} 01956350936</small>
+      <div className="footer-brand">
+        <p>© 2026 PIZZERIA VIA ROMA</p>
+        <small className="footer-vat">{closingCopy[language].vat} 01956350936</small>
+      </div>
       <a className="studio-credit" href="https://mementostudio.it" target="_blank" rel="noopener noreferrer">
-        <span lang="en">Powered by</span>
+        <span lang="en">powered by</span>
         <img src="/assets/memento-wordmark.svg?v=56" width="824" height="64" loading="lazy" alt="MEMENTO" />
       </a>
       <nav aria-label={ui.legal_notes}>
@@ -42,7 +44,7 @@ function Footer() {
 export default function Contacts() {
   const { t, ui, language } = useI18n();
   return <>
-    <section id="dove" className="closing-section visit-section" aria-labelledby="visit-title">
+    <section id="info" className="closing-section visit-section" aria-labelledby="visit-title">
       <SpreadTitle id="visit-title" text={closingCopy[language].visit} />
       <BentoGrid className="visit-bento">
         <a className="bento-tile map-tile" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.d_maps} · Pizzeria Via Roma, Via Roma 47, 33085 Maniago (PN) · Piazza Italia`}>
@@ -56,13 +58,16 @@ export default function Contacts() {
         </a>
         <div className="bento-tile hours-tile" role="group" aria-label={t.d_orari}>
           <span className="sign-mark"><img src="/assets/logo.png" width="851" height="851" alt="Pizzeria Via Roma" loading="lazy" decoding="async" /></span>
-          <div className="hours-copy">
+          <div className="hours-copy visit-copy">
             <strong className="opening-time visit-digits">18:00 - 23:00</strong>
-            <p><span className="sr-only">{ui.closed_day}</span><span className="hours-note spread-line" aria-hidden="true"><SpreadLetters text={ui.closed_day.toLocaleUpperCase(language)} /></span></p>
+            <p className="visit-note"><span className="sr-only">{ui.closed_day}</span><span className="hours-note spread-line" aria-hidden="true"><SpreadLetters text={ui.closed_day.toLocaleUpperCase(language)} /></span></p>
           </div>
         </div>
-        <a className="bento-tile phone-tile" href={phoneHref}>
-          <span className="phone-number visit-digits">{phoneNumber}</span>
+        <a className="bento-tile phone-tile" href={phoneHref} aria-label={`${closingCopy[language].orders} · ${phoneNumber}`}>
+          <span className="visit-copy" aria-hidden="true">
+            <span className="phone-number visit-digits">{phoneNumber}</span>
+            <span className="visit-note"><span className="hours-note phone-note spread-line"><SpreadLetters text={closingCopy[language].orders.toLocaleUpperCase(language)} /></span></span>
+          </span>
         </a>
       </BentoGrid>
     </section>

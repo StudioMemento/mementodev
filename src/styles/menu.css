@@ -64,13 +64,13 @@
 .groupsub strong { font-weight:400; }
 .variant-callout { margin:28px 0 10px; padding-top:12px; font-size:20px; letter-spacing:.015em; }
 .dolci-note { max-width:46ch; margin:28px auto 0; text-align:center; font-size:clamp(22px,1.8vw,28px); line-height:1.45; letter-spacing:.02em; color:var(--vr-highlight); text-wrap:balance; }
-#cat-bevande { --drink-intro:#b59a62; --drink-detail:#a19d96; --drink-group-gap:clamp(56px,8svh,112px); }
-#cat-bevande .mcat-body > .groupline { margin-block:var(--drink-group-gap) clamp(14px,2svh,22px); }
+#bevande { --drink-intro:#b59a62; --drink-detail:#a19d96; --drink-group-gap:clamp(56px,8svh,112px); }
+#bevande .mcat-body > .groupline { margin-block:var(--drink-group-gap) clamp(14px,2svh,22px); }
 .drink-bottle-group + .drink-bottle-group { margin-block-start:clamp(38px,5.8svh,80px); }
-#cat-bevande .groupline { font-size:clamp(16px,1.3vw,21px); font-weight:400; letter-spacing:.09em; color:var(--drink-intro); }
+#bevande .groupline { font-size:clamp(16px,1.3vw,21px); font-weight:400; letter-spacing:.09em; color:var(--drink-intro); }
 .drink-bottle-group .groupsub { margin-block:0 8px; color:var(--drink-detail); font-size:clamp(16px,1.3vw,20px); line-height:1.4; }
 .groupsub strong { color:var(--drink-intro); font-weight:500; }
-#cat-bevande .desc,.drink-product .qualifier { color:var(--drink-detail); }
+#bevande .desc,.drink-product .qualifier { color:var(--drink-detail); }
 .drink-bottle-group .item .desc { max-width:none; }
 .drink-table { width:100%; margin:var(--drink-group-gap) 0 0; }
 .drink-table-head,.drink-row>.row { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,40%); align-items:baseline; column-gap:0; }
@@ -110,7 +110,7 @@
   .item .qualifier { font-size:12px; }
   .allergen-trigger { min-height:28px; font-size:11px; }
   .drink-table-head,.drink-row>.row { grid-template-columns:minmax(0,1fr) minmax(0,58%); gap:6px; }
-  #cat-bevande .drink-table-head .groupline { font-size:clamp(14px,3.7vw,17px); line-height:1.25; letter-spacing:.045em; }
+  #bevande .drink-table-head .groupline { font-size:clamp(14px,3.7vw,17px); line-height:1.25; letter-spacing:.045em; }
   .drink-size-head,.drink-row .pricegrid { grid-template-columns:minmax(0,.92fr) minmax(0,.96fr) minmax(0,1.12fr); column-gap:3px; }
   .drink-size-head { font-size:clamp(12.5px,3.45vw,15px); }
   .drink-leader .dots,.drink-price-cell:first-child::before { display:none; }

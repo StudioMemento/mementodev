@@ -50,6 +50,9 @@
   color:var(--vr-highlight); text-transform:uppercase; font-weight:400;
   font-size:min(24px,6cqi); line-height:1.18; letter-spacing:.04em; white-space:nowrap;
 }
+.pizza-caption h3 button { text-transform:inherit; letter-spacing:inherit; text-align:left; }
+.pizza-caption[aria-hidden=false] button { pointer-events:auto; }
+.pizza-caption button:is(:hover,:focus-visible) { text-decoration:underline; text-underline-offset:.18em; }
 .pizza-caption ul {
   list-style:none; color:#d5cfc4; margin-top:.6em;
   font-size:clamp(14px,1.15vw,19px); line-height:1.34;
@@ -115,6 +118,11 @@
 .takeaway-copy h2 { color:var(--vr-highlight); font-size:clamp(14px,4.7cqi,54px); line-height:1.12; letter-spacing:-.018em; }
 .takeaway .crust-card-shade { inset:34% 0 0; --shade-mid:#09090936; }
 #asporto h2 { font-size:clamp(28px,7.6cqi,86px); line-height:1.02; }
+@font-face {
+  font-family:"Open Sans Question"; font-weight:300; font-display:swap;
+  src:url("/assets/fonts/open-sans-light-question.woff") format("woff"); unicode-range:U+003F;
+}
+.takeaway-question { font:300 .88em/1 "Open Sans Question",sans-serif; margin-inline-start:.015em; }
 .takeaway-copy p { font-size:clamp(13px,3cqi,31px); line-height:1.22; margin-top:.26em; }
 @media(prefers-reduced-motion:reduce) { .crust-card { transform:none; transition:none; } }
 

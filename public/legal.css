@@ -16,3 +16,7 @@ a:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
 nav { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0 clamp(4px,2vw,16px); margin-top:26px; }
 nav > span { color:var(--gold); }
 nav [aria-current] { text-decoration:none; }
+
+@media (hover:hover) and (pointer:fine) and (forced-colors:none) {
+  *,dialog::backdrop { cursor:url("/assets/cursor-oro.svg") 8 8, auto !important; }
+}

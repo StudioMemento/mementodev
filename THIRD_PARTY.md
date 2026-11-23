@@ -1,7 +1,8 @@
-# Risorse e licenze — Via Roma 6.0
+# Risorse e licenze — Via Roma 6.1
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.
+- Open Sans Light fornisce il punto interrogativo nel titolo asporto. Il file WOFF locale contiene il solo glifo U+003F. La licenza e l’attribuzione sono in `licenses/Open-Sans-Apache-2.0.txt`.
 - Phosphor Icons: font thin, ridotto ai 13 glifi disponibili nel CSS locale conservandone le forme. Licenza MIT inclusa in `licenses/Phosphor-MIT.txt`.
 - Logo, fotografie del locale, artwork del menù e mappa: materiali già forniti/serviti dal progetto Via Roma. Le 40 fotografie della gallery sono soltanto ridimensionate e ricodificate WebP, senza ritocco del contenuto.
 - Tre immagini dei cornicioni: visual generati su richiesta nelle precedenti iterazioni, riutilizzati con ritaglio CSS. Testi e prezzi sono HTML.
@@ -24,3 +25,5 @@ La 5.9 rigenera la foto della pizza Brie, Speck e Ricotta e la foto per la card 
 Le tre risoluzioni WebP sono in `public/assets/asporto` e `public/assets/foto-ospiti`.
 Il link della seconda card apre le foto degli ospiti su Google Maps.
 Il wordmark nel footer conserva i tracciati Memento con una spaziatura ottica più compatta.
+
+Nella 6.1 la fotografia illustrativa dell’asporto riprende la pizza Via Roma del catalogo, in una base di cartone. Il banner è disponibile in tre risoluzioni WebP.

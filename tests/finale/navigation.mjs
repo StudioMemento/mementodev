@@ -14,6 +14,42 @@ function neutral(color) {
   return parts[0] === parts[1] && parts[1] === parts[2];
 }
 
+async function checkAnchorsAndCursor(page,touch) {
+  const jump = async (label,id) => {
+    await label.click();
+    await page.waitForFunction(id=>location.hash==="#"+id,id);
+    await page.waitForFunction(id=>{
+      const top=document.getElementById(id).getBoundingClientRect().top;
+      return top>=-1 && top<=200;
+    },id);
+  };
+  await jump(page.locator('.vr-dock [href="#classiche"]'),"classiche");
+  await jump(page.locator('.chips [data-go="audaci"]'),"audaci");
+  await jump(page.locator('.vr-dock [href="#info"]'),"info");
+  await page.goBack();
+  await page.waitForFunction(()=>location.hash==="#audaci" && document.querySelector('.chips .on').dataset.go==="audaci");
+  await page.goForward();
+  await page.waitForFunction(()=>location.hash==="#info");
+  for (const [old,id] of [["cat-classiche","classiche"],["cat-bevande","bevande"],["dove","info"]]) {
+    await page.goto(new URL("/#"+old,url).href);
+    await page.waitForFunction(id=>location.hash==="#"+id,id);
+    await page.reload();
+    await page.waitForFunction(id=>Math.abs(document.getElementById(id).getBoundingClientRect().top)<200,id);
+  }
+  const pointer = page.locator(".phone-tile");
+  const usesGoldDot = el=>getComputedStyle(el).cursor.includes("cursor-oro.svg");
+  assert.equal(await pointer.evaluate(usesGoldDot),!touch);
+  await page.locator('.footer-row a[href="/privacy.html"]').click();
+  const close=page.locator("dialog[open] .modal-close");
+  assert.equal(await close.evaluate(usesGoldDot),!touch);
+  await close.click();
+  if (!touch) {
+    await page.emulateMedia({forcedColors:"active"});
+    assert.equal(await pointer.evaluate(usesGoldDot),false);
+    await page.emulateMedia({forcedColors:"none"});
+  }
+}
+
 async function checkParticles(page, touch) {
   await page.emulateMedia({reducedMotion:"no-preference"});
   const specks = control => control.evaluate(el=>getComputedStyle(el).backgroundImage.includes("satin-specks.svg"));
@@ -167,8 +203,11 @@ async function testViewport(width,height,touch) {
     });
     assert.ok(!neutral(await brandInk()));
     await flame.blur();
-    if (width===390 || width===1440) await checkParticles(page,touch);
-    for (const [id,ratio] of [["home",0],["menu",null],["gallery",null],["dove",1]]) {
+    if (width===390 || width===1440) {
+      await checkAnchorsAndCursor(page,touch);
+      await checkParticles(page,touch);
+    }
+    for (const [id,ratio] of [["home",0],["classiche",null],["gallery",null],["info",1]]) {
       await page.evaluate(({id,ratio})=>{
         const y=ratio===null ? document.getElementById(id).getBoundingClientRect().top+scrollY : (document.documentElement.scrollHeight-innerHeight)*ratio;
         scrollTo({top:y,behavior:"instant"});

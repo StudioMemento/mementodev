@@ -33,7 +33,7 @@ function subscribePagePosition(listener: PositionListener) {
       if (dirty) {
         viewportHeight = Math.max(1, window.innerHeight);
         scrollRange = Math.max(0, document.documentElement.scrollHeight - viewportHeight);
-        landmarks = ["menu", "gallery", "dove"].flatMap((id) => {
+        landmarks = ["menu", "gallery", "info"].flatMap((id) => {
           const element = document.getElementById(id);
           return element ? [{ id, top: element.getBoundingClientRect().top + y }] : [];
         });
@@ -57,7 +57,7 @@ function subscribePagePosition(listener: PositionListener) {
     };
     const observer = new ResizeObserver(measure);
     observer.observe(document.body);
-    for (const id of ["menu", "gallery", "dove"]) {
+    for (const id of ["menu", "gallery", "info"]) {
       const element = document.getElementById(id);
       if (element) observer.observe(element);
     }
@@ -148,15 +148,15 @@ export function Dock() {
       <nav className="vr-dock" aria-label={copy.navigation}>
         {[
           { id: "home", icon: "house", label: "Home" },
-          { id: "menu", icon: "fork-knife", label: t.tab_menu },
+          { id: "menu", target: "classiche", icon: "fork-knife", label: t.tab_menu },
           { id: "gallery", icon: "gallery", label: copy.gallery },
-          { id: "dove", icon: "brand-flame", label: `Pizzeria Via Roma · ${t.tab_dove}` },
+          { id: "info", icon: "brand-flame", label: `Pizzeria Via Roma · ${t.tab_dove}` },
           { id: "call", icon: "phone", label: t.tab_chiama },
         ].map((x) => (
           <a
             key={x.id}
             aria-label={x.label}
-            href={x.id === "call" ? phoneHref : `#${x.id}`}
+            href={x.id === "call" ? phoneHref : `#${x.target ?? x.id}`}
             aria-current={active === x.id ? "location" : undefined}
           >
             <span className="dock-tile">

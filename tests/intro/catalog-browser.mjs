@@ -5,7 +5,7 @@ const engine = process.env.BROWSER_ENGINE || "chromium";
 const playwright = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const path = process.env.BROWSER_PATH || (engine === "chromium" ? process.env.CHROMIUM_PATH : undefined);
 const browser = await playwright[engine].launch({ headless: true, executablePath: path });
-const { FORNO: pizzas } = JSON.parse(await readFile("src/data/menu.json", "utf8"));
+const { FORNO: pizzas, MENU: menuRows } = JSON.parse(await readFile("src/data/menu.json", "utf8"));
 
 async function checkSectionGestures(page, oven, stage, mobile) {
   const size = page.viewportSize();
@@ -30,7 +30,7 @@ async function checkSectionGestures(page, oven, stage, mobile) {
   }
   try {
     const points = [];
-    for (const selector of [".oven-header", ".pizza-copy", "#forno"]) {
+    for (const selector of [".oven-header", ".pizza-copy", '.pizza-caption[aria-hidden="false"] button', "#forno"]) {
       const rect = await oven.locator(selector).boundingBox();
       points.push({x:rect.x + rect.width*.58, y:rect.y + Math.min(rect.height*.5,24)});
     }
@@ -47,6 +47,7 @@ async function checkSectionGestures(page, oven, stage, mobile) {
         const card = document.querySelector(".vr-pizza-card[data-active=true]").getBoundingClientRect();
         return Math.abs(card.left + card.right - stage.left - stage.right) < 1;
       });
+      assert.equal(await page.locator("dialog[open]").count(), 0, "A swipe on the pizza name must not open allergens");
       assert.ok(Math.abs((await page.evaluate(() => scrollY))-y)<2, "A horizontal gesture scrolled the page");
     }
     if (cdp) {
@@ -83,7 +84,7 @@ try {
       await page.waitForFunction(lang => document.documentElement.lang === lang, language);
       const cards = await page.locator(".pizza-caption").evaluateAll(all => all.map(el =>
         [el.querySelector("h3").textContent, [...el.querySelectorAll("li")].map(li=>li.textContent).join(", ").toLowerCase()]));
-      const menu = await page.locator("#cat-classiche [data-menu-item], #cat-audaci [data-menu-item], #cat-bianche [data-menu-item]").evaluateAll(all => all.map(el =>
+      const menu = await page.locator("#classiche [data-menu-item], #audaci [data-menu-item], #bianche [data-menu-item]").evaluateAll(all => all.map(el =>
         [el.querySelector(".nome").textContent, el.querySelector(".desc").textContent.toLowerCase()]));
       assert.deepEqual(cards, menu);
       assert.ok(await page.locator("#asporto h2").textContent());
@@ -99,6 +100,16 @@ try {
     await stage.focus({preventScroll:true});
     const waitForIndex = i => page.waitForFunction(index =>
       document.querySelectorAll(".pizza-caption")[index].getAttribute("aria-hidden") === "false",i);
+    const at = async locator => {
+      const area = await locator.boundingBox();
+      const x = area.x + area.width / 2, y = area.y + area.height / 2;
+      if (width < 500) await page.touchscreen.tap(x,y);
+      else await page.mouse.click(x,y);
+    };
+    await at(stage.locator('[data-active="true"] img'));
+    await at(oven.locator('.pizza-caption[aria-hidden="false"] li').first());
+    assert.equal(await page.locator("dialog[open]").count(),0,"Photos and ingredients are swipe-only");
+    await stage.focus({preventScroll:true});
     await shift("End");
     await waitForIndex(pizzas.length-1);
     await shift("ArrowRight");
@@ -109,6 +120,21 @@ try {
       const resource=await img.evaluate(async im => { await im.decode(); return {url:new URL(im.currentSrc).pathname, width:im.naturalWidth, height:im.naturalHeight}; });
       assert.ok(["/"+file, "/"+file.replace(/\.webp$/,"-768.webp")].includes(resource.url));
       assert.ok(resource.width > 0 && resource.width === resource.height);
+      const trigger = oven.locator('.pizza-caption[aria-hidden="false"] h3 button');
+      assert.equal(await oven.getByRole("button", {name,exact:true}).count(),1);
+      if (index === 0) { await trigger.focus(); await page.keyboard.press("Enter"); }
+      else if (width < 500) await trigger.tap();
+      else await trigger.click();
+      const dialog=page.locator("dialog[open]");
+      await dialog.waitFor();
+      assert.equal(await dialog.locator("h2").textContent(),name);
+      const row = [...menuRows.classiche, ...menuRows.audaci, ...menuRows.bianche].find(([title])=>title===name);
+      assert.deepEqual(await dialog.locator("li.contains .allergen-code").allTextContents(),row[3].match(/\d+|\*/g) || []);
+      if (index === 0) await page.keyboard.press("Escape");
+      else await dialog.locator(".modal-close").click();
+      await dialog.waitFor({state:"detached"});
+      assert.ok(await trigger.evaluate(el=>document.activeElement===el), "Return focus to the active pizza");
+      await stage.focus({preventScroll:true});
       if (index < pizzas.length-1) await shift("ArrowRight");
     }
     assert.ok(await oven.locator(".vr-pizza-card img:is([src],[srcset])").count() < pizzas.length / 2, "Previously visited photos should leave the image window");
@@ -139,7 +165,7 @@ try {
         gap:document.querySelector("#gallery").getBoundingClientRect().top-card.bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
     assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
-    assert.match(dimensions.file,/asporto-serale-(480|960|1600)\.webp$/);
+    assert.match(dimensions.file,/via-roma-in-cartone-(480|960|1600)\.webp$/);
     assert.ok(dimensions.gap >= Math.min(280, Math.max(120, height * .23)) - 1);
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
@@ -171,6 +197,6 @@ try {
     }
     assert.deepEqual(errors,[]);
     await page.close();
-    console.log(engine,width+"×"+height,"40 responsive images, four translations, keyboard loop, full-section drag and native vertical scrolling, takeaway layout and category artwork OK");
+    console.log(engine,width+"×"+height,"40 responsive photos and name-only allergen dialogs, four translations, keyboard loop, full-section drag and native vertical scrolling, takeaway layout and category artwork OK");
   }
 } finally { await browser.close(); }
