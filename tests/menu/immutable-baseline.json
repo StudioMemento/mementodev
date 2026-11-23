@@ -17,7 +17,7 @@
   "src/components/intro/useHoloTilt.ts": "8c513f4160bae3c67ed5a3b21e1a4a0534d57c0f25c05dbe4a35d4244abc132d",
   "src/components/intro/useIntroVisibility.ts": "caf0f04b63ae1d28af9f5c94fb73a1c708f3059400830d624005abf9ee4acad1",
   "src/data/allergen-info.ts": "dc4ab8a3f74bef6ba38fe5fb85eae3e05b033af2c718d42e732122e4e5cd2e12",
-  "src/data/allergens.json": "bfe2fb7d5cf43f25be90531837d7adfbc66f29dea25dd2cbe4686aee111ff0ff",
+  "src/data/allergens.json": "0f0219a3147031673fe13cba85bd669eb90b7ea597f1372829b90b0b8877047f",
   "src/data/images.json": "0fa7b4c1dc3f71c5d788fab1885dc1ac29c3570d0cb3c8bb2c93294bbccf97cd",
   "src/data/menu.json": "b4b24731df9f28bdf0d551687cecd0d5a4fd5589db8bddad49bac47ba2233bf9",
   "src/data/photos.json": "fb8bd9744691bc16b6cec835afa0c6903e566d4ffed6321db557f3f8ac80d9c8",

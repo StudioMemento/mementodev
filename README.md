@@ -1,6 +1,6 @@
-# Via Roma 6.7
+# Via Roma V7.0
 
-La 6.7 parte dalla 6.6. Il checkpoint di riferimento per il ripristino è la 5.3.
+La V7.0 parte dalla 6.7. I link della Privacy sono senza sottolineatura. Nelle Note legali il CAP apre la seconda riga della sede legale. Nella scheda Solfiti la seconda parte della descrizione inizia con «di SO₂ totale». L’impaginazione segue lo stesso criterio nelle quattro lingue. Il checkpoint di riferimento per il ripristino è la 5.3.
 
 Build di sviluppo per Pizzeria Via Roma a Maniago. La Diavola mostra fette larghe di spianata tonda, Tonno e Cipolla e Frico usano cipolla rossa, Raf e Greca hanno più rucola. Sulle due Marinare l’aglio è presente nell’olio e non compare a fette. Le sette foto hanno due risoluzioni WebP. I prezzi, gli ingredienti in carta e le schede allergeni seguono la 5.9.
 
@@ -65,4 +65,4 @@ node tests/menu/browser.mjs
 node tests/menu/dialog-viewport.mjs
 ```
 
-`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_6.7_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.
+`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/V7.0.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.

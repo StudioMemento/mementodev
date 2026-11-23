@@ -185,8 +185,12 @@ async function contactAndLegal(page, touch) {
         assert.ok((await text.innerText()).includes("NIGRO SARAH PIZZERIA"));
         assert.equal(await text.locator('a[href="mailto:NIGROSARAH2@GMAIL.COM"]').count(),1);
       }
+      if (i === 1) {
+        assert.ok(await text.locator("a").evaluateAll(links => links.every(link => getComputedStyle(link).textDecorationLine === "none")));
+      }
       if (i === 2) {
         assert.equal(await text.locator("section").count(), 1);
+        assert.match(await text.locator(".legal-facts dd").nth(1).innerText(), /^Via Roma 47,\n33085 Maniago \(PN\)/);
         for (const value of ["33085 Maniago (PN)", "01956350936", "33170 Pordenone", "PN 371993"]) {
           assert.ok((await text.innerText()).includes(value));
         }

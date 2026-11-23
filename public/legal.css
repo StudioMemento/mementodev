@@ -16,3 +16,4 @@ a { color:var(--gold); text-underline-offset:3px; }
 nav { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0 clamp(4px,2vw,16px); margin-top:26px; }
 nav > span { color:var(--gold); }
 nav [aria-current] { text-decoration:none; }
+body:has(.legal-text[data-document="privacy"]) :is(.legal-top,nav) a { text-decoration:none; }

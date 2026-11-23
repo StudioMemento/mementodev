@@ -5,6 +5,7 @@
 .legal-text h2 { text-wrap:balance; }
 .legal-text:lang(de) { -webkit-hyphens:auto; hyphens:auto; }
 .legal-text a { --focus-bottom:-.42em; }
+.legal-text[data-document="privacy"] a { text-decoration:none; }
 .legal-text a[href^="tel:"] { white-space:nowrap; }
 .legal-text :is(a,.legal-unit) { hyphens:none; }
 .controller-address { display:grid; grid-template-columns:minmax(0,1fr); font-style:normal; line-height:1.42; margin-bottom:.45em; }

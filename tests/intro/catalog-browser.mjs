@@ -137,7 +137,7 @@ try {
       assert.equal(await dialog.locator("h2").textContent(),name);
       if (index === 0) {
         const sulfites = dialog.locator(".allergen-description").nth(11);
-        assert.equal(await sulfites.innerText(), "Anidride solforosa e solfiti oltre 10 mg/kg o 10 mg/l di SO₂\ntotale nel prodotto pronto al consumo.");
+        assert.equal(await sulfites.innerText(), "Anidride solforosa e solfiti oltre 10 mg/kg o 10 mg/l\ndi SO₂ totale nel prodotto pronto al consumo.");
         assert.ok(await sulfites.evaluate(el => {
           const text = el.firstChild, split = text.textContent.indexOf("\n");
           const y = index => {
