@@ -183,12 +183,12 @@ try {
       return {ratio:card.width/card.height, sameFinish, fullBleed:["top","right","bottom","left"].every(k=>Math.abs(picture[k]-card[k])<2),
         contained:copy.left>=picture.left && copy.right<=picture.right+1 && copy.top>=picture.top && copy.bottom<=picture.bottom+1,
         file:new URL(image.currentSrc).pathname, shape:getComputedStyle(el).transform,
-        frame:el.closest("section").getBoundingClientRect().height,
+        padding:el.closest("section").getBoundingClientRect().height-card.height,
         next:document.querySelector("#gallery").getBoundingClientRect().top-el.closest("section").getBoundingClientRect().bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
     assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
-    assert.match(dimensions.file,/via-roma-coperchio-(480|960|1600)\.webp$/);
-    assert.ok(Math.abs(dimensions.frame-height)<2 && Math.abs(dimensions.next)<2, "The takeaway owns its viewport before the first gallery");
+    assert.match(dimensions.file,/via-roma-cartone-(480|960|1600)\.webp$/);
+    assert.ok(dimensions.padding>=47 && dimensions.padding<=97 && Math.abs(dimensions.next)<2, "The takeaway follows the 16:9 card with bounded spacing before the gallery");
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
     assert.ok(await page.locator(".menu-art-window").evaluateAll(all =>

@@ -1,6 +1,6 @@
 /* The same native pointer is used on text, links, drags and open dialogs. */
 @media (any-hover:hover) and (any-pointer:fine) {
-  :where(*),dialog::backdrop { cursor:url("/assets/cursore-bianco.svg") 3 2, auto; }
+  :where(*),dialog::backdrop { cursor:url("/assets/cursore-bianco.svg?v=64") 1 1, auto; }
 }
 
 :root { -webkit-tap-highlight-color:transparent; }

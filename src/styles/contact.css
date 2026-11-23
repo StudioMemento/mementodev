@@ -7,24 +7,20 @@
 .finale-field-view { position:sticky; top:0; width:100%; height:100vh; height:100lvh; display:flex; justify-content:space-between; gap:var(--vr-gutter); }
 .finale-field-view canvas { display:block; height:100%; width:calc(var(--vr-gutter) + clamp(15px,2.4vw,48px)); }
 .venue-gallery,.closing-section { position:relative; z-index:1; }
-/* Each photographic sequence starts at a viewport boundary. Short screens keep room for the fixed navigation. */
+/* Adjacent sections share the space between them. The fixed header is accounted for only when following an anchor. */
+.venue-gallery,.screen-section { scroll-margin-block-start:calc(68px + env(safe-area-inset-top)); }
 .screen-section {
-  --inset:clamp(64px,8svh,108px);
-  --top:calc(var(--inset) + env(safe-area-inset-top)); --bottom:calc(var(--inset) + env(safe-area-inset-bottom));
-  --room:calc(100dvh - var(--top) - var(--bottom));
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  min-height:100vh; min-height:100dvh; padding-block:var(--top) var(--bottom);
+  display:flex; flex-direction:column; align-items:center;
+  padding-block:clamp(24px,3vw,48px);
 }
-.venue-room { gap:clamp(8px,1.2svh,18px); }
+.venue-room { gap:clamp(8px,1vw,14px); }
 .closing-section {
-  --bento-gap:clamp(5px,.7vw,8px); --gap:clamp(12px,3.8svh,48px);
-  --measure:min(var(--vr-content),calc((var(--room) - 9.52svh - var(--gap) - var(--row-gaps,0px)) * var(--ratio,2)));
-  gap:var(--gap);
+  --bento-gap:clamp(5px,.7vw,8px);
+  gap:clamp(16px,2.4vw,36px);
 }
-.visit-section { --ratio:calc(5 / 3); }
 .spread-title {
-  width:var(--measure,var(--vr-content)); color:var(--vr-highlight); font-weight:200;
-  font-size:min(8.5svh,calc(var(--measure,var(--vr-content)) / var(--line-letters) * 1.43)); line-height:1.12; text-transform:uppercase;
+  width:var(--vr-content); color:var(--vr-highlight); font-weight:200;
+  font-size:min(5rem,calc(var(--vr-content) / var(--line-letters) * 1.43)); line-height:1.12; text-transform:uppercase;
 }
 .spread-ink { display:flex; flex-direction:column; width:100%; gap:.14em; }
 .spread-line { display:flex; align-items:baseline; justify-content:space-between; width:100%; }
@@ -33,7 +29,7 @@
   .spread-ink { background:linear-gradient(110deg,#c6ab70,#dac18b 26%,#f4e6bd 43%,#c6ab70 57%,#e4cfa0 76%,#c6ab70); background-clip:text; color:transparent; }
 }
 .photo-ribbon {
-  --card:max(10vw,min(40vw,60svh)); --stage-h:calc(var(--card) * 1.04);
+  --card:clamp(10vw,40vw,640px); --stage-h:calc(var(--card) * 1.04);
   width:100%; position:relative; overflow-anchor:none;
 }
 .panorama { margin-top:calc(var(--card) * -.035); }
@@ -51,9 +47,9 @@
 .ribbon-track { position:absolute; inset:0; display:flex; align-items:center; gap:4px; padding-inline:max(0px,calc((100% - var(--card)) / 2)); }
 .ribbon-card { flex:0 0 var(--card); width:var(--card); text-align:left; }
 .ribbon-image { width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; pointer-events:none; }
-.bento-grid { width:var(--measure); display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--bento-gap); }
+.bento-grid { width:var(--vr-content); display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--bento-gap); }
 .visit-bento {
-  --visit-side:calc((var(--measure) - 2 * var(--bento-gap)) / 2.5);
+  --visit-side:calc((var(--vr-content) - 2 * var(--bento-gap)) / 2.5);
   grid-template-columns:minmax(0,1fr) var(--visit-side);
   grid-template-rows:var(--visit-side) calc(var(--visit-side) / 2);
   grid-template-areas:"map hours" "map phone";
@@ -122,7 +118,7 @@
 }
 .footer-row {
   display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center;
-  gap:4px clamp(8px,2cqi,26px); padding-block:clamp(25px,4svh,48px); color:var(--vr-ivory);
+  gap:4px clamp(8px,2cqi,26px); padding-block:clamp(25px,3vw,48px); color:var(--vr-ivory);
 }
 .footer-brand,.studio-credit {
   grid-row:1 / span 2; display:grid; grid-template-rows:auto auto; grid-template-rows:subgrid;
@@ -144,17 +140,14 @@
   .footer-row nav { grid-area:3/1/4/-1; margin-top:.4em; }
 }
 @media(min-width:701px) and (max-width:999px),(max-width:700px) and (orientation:landscape) {
-  .visit-section { --ratio:2; }
   .visit-bento {
-    --visit-side:calc((var(--measure) - var(--bento-gap)) / 2);
+    --visit-side:calc((var(--vr-content) - var(--bento-gap)) / 2);
     grid-template-rows:calc(var(--visit-side) / 2 - var(--bento-gap)) calc(var(--visit-side) / 2);
   }
   .hours-tile { gap:clamp(4px,.7vw,7px); }
   .hours-tile .sign-mark { width:23cqi; }
 }
 @media(max-width:700px) and (orientation:portrait) {
-  #social { --ratio:calc(2 / 3); --row-gaps:var(--bento-gap); }
-  .visit-section { --ratio:calc(1 / (1.5 + 1 / 1.15)); --row-gaps:calc(2 * var(--bento-gap)); }
   .social-bento,.visit-bento { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:auto; }
   .visit-bento { grid-template-areas:"map map" "hours hours" "phone phone"; }
   .visit-bento .hours-tile { aspect-ratio:1.15; }
@@ -163,7 +156,6 @@
 }
 /* On short portrait displays the map and hours share a row. The phone retains its full 2:1 card. */
 @media(max-width:700px) and (orientation:portrait) and (max-height:740px) {
-  .visit-section { --ratio:1; --row-gaps:var(--bento-gap); }
   .visit-bento { grid-template-areas:"map hours" "phone phone"; }
   .visit-bento .hours-tile { aspect-ratio:1; }
 }
@@ -177,11 +169,7 @@
 @media(max-width:620px) and (orientation:portrait) {
   .panorama { --card:83vw; --stage-h:calc(var(--card) * .9); margin-top:0; }
 }
-@media(max-height:540px) and (orientation:landscape) {
-  .panorama { --card:min(40vw,calc((var(--room) - 10svh - 8px) / 1.04)); margin-top:0; }
-}
 @media(max-height:320px) and (orientation:landscape) {
-  .screen-section { --inset:56px; }
   .hours-tile,.hours-copy { gap:3px; }
   .hours-tile .sign-mark { width:15cqi; }
 }

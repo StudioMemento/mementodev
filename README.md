@@ -1,14 +1,14 @@
-# Via Roma 6.3
+# Via Roma 6.4
 
-La 6.3 parte dalla 6.2. Il checkpoint di riferimento per il ripristino è la 5.3.
+La 6.4 parte dalla 6.3. Il checkpoint di riferimento per il ripristino è la 5.3.
 
 Build di sviluppo per Pizzeria Via Roma a Maniago. La Diavola mostra fette larghe di spianata tonda, Tonno e Cipolla e Frico usano cipolla rossa, Raf e Greca hanno più rucola. Sulle due Marinare l’aglio è presente nell’olio e non compare a fette. Le sette foto hanno due risoluzioni WebP. I prezzi, gli ingredienti in carta e le schede allergeni seguono la 5.9.
 
-Sui telefoni il selettore conserva le quattro lingue a vista e un’area di tocco alta 44 px. Il marchio orizzontale in testata usa i tracciati originali ingranditi. Le cinque icone della navbar condividono la stessa griglia e lo stesso spessore di tratto. La lingua e la categoria attive conservano il bordo e il glow dorato. Le particelle appaiono soltanto sul controllo sotto il puntatore. Un piccolo indicatore dorato segnala il focus da tastiera. Con il mouse la freccia bianca mantiene la sagoma del riferimento anche su link, slider e finestre aperte.
+Sui telefoni il selettore conserva le quattro lingue a vista e un’area di tocco alta 44 px. Il marchio orizzontale in testata usa i tracciati originali ingranditi. Le cinque icone della navbar condividono la stessa griglia e lo stesso spessore di tratto. La lingua e la categoria attive conservano il bordo e il glow dorato. Le particelle appaiono soltanto sul controllo sotto il puntatore. Un piccolo indicatore dorato segnala il focus da tastiera. Con il mouse la freccia bianca misura 16 × 18 px e mantiene la sagoma del riferimento anche su link, slider e finestre aperte.
 
 La sezione «Dal nostro forno» usa due filetti oro e lo sfondo animato delle gallerie. La sua altezza utilizza il viewport stabile durante lo scroll su telefono. La pizza selezionata resta al centro della fila per cinque secondi prima di passare alla successiva. Le due frecce occupano lo spazio tra il piatto centrale e quelli laterali. Il titolo si estende tra i margini della sua riga. Nome e ingredienti partono dal bordo sinistro della seconda icona della navbar inferiore. Uno swipe veloce può superare più pizze e rallenta fino al nuovo centro. Lo scroll verticale e il pinch sono gestiti dal browser. Il trascinamento orizzontale funziona su tutta la sezione, compresi titolo, ingredienti e spazi vuoti. Il nome della pizza apre la relativa scheda allergeni. Le frecce e la tastiera permettono di sfogliare le 40 pizze. Con movimento ridotto la selezione è manuale e immediata.
 
-Le otto immagini di categoria hanno un filetto dorato di tre pixel, più sottile alle estremità. Ogni filetto occupa una fascia propria. Dopo le bevande, un riquadro 16:9 accosta «Pizzata a casa? Facciamo anche servizio da asporto!» alla pizza Via Roma sulla destra, nel cartone con il coperchio aperto dietro al cornicione. La fotografia riempie la card e il browser sceglie tra tre risoluzioni WebP. Il titolo domina la didascalia. Il piano di posa scuro lascia spazio al titolo in basso a sinistra. Il coperchio è visibile soltanto nell’angolo in alto a destra della foto originale.
+Le otto immagini di categoria hanno un filetto dorato di tre pixel, più sottile alle estremità. Ogni filetto occupa una fascia propria. Dopo le bevande, un riquadro 16:9 accosta «Pizzata a casa? Facciamo anche servizio da asporto!» alla pizza Via Roma sulla destra, nel cartone con il coperchio aperto dietro al cornicione. La fotografia riempie la card e il browser sceglie tra tre risoluzioni WebP. Il titolo domina la didascalia. Il piano di posa scuro lascia spazio al titolo in basso a sinistra. Il cartone è stato ritoccato lungo le pieghe e il bordo anteriore.
 
 ## Avvio e deploy
 
@@ -23,7 +23,7 @@ npm run dev
 
 ## Sezioni finali
 
-L’asporto, ciascuno dei cinque ambienti, la community, i social e i contatti occupano una schermata ciascuno. I contenuti sono centrati tra i controlli fissi. Lo scorrimento verticale e le ancore usano il comportamento nativo del browser.
+Dall’asporto ai contatti, ogni sezione segue l’altezza del contenuto. Fra due sezioni ci sono da 48 a 96 px di margine complessivo, in base alla larghezza dello schermo. Le ancore lasciano spazio alla testata fissa e lo scorrimento resta nativo.
 
 - **Il locale.** I cinque titoli restano vicini ai rispettivi panorami, con una pausa più ampia tra gli ambienti. Il trascinamento orizzontale sullo slider lascia libero lo scorrimento verticale della pagina. Le 40 foto arrivano ai bordi dello schermo. Trascinamento, frecce e click per centrare una foto funzionano anche con il movimento automatico in pausa.
 - **Ricordi condivisi dalla community.** Una card 16:9 usa lo stesso componente, i margini, il riflesso e il tilt dell’asporto. La card mostra tre Polaroid con i ritagli quadrati delle fotografie originali del bancone, della sala sinistra e della sala destra su fondo scuro, con il titolo in basso a sinistra e la freccia al margine destro. Il link apre la raccolta Foto della scheda di Pizzeria Via Roma Maniago su Google Maps.
@@ -65,4 +65,4 @@ node tests/menu/browser.mjs
 node tests/menu/dialog-viewport.mjs
 ```
 
-`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_6.3_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.
+`TEST_URL`, `PLAYWRIGHT_MODULE` e `CHROMIUM_PATH` permettono di indicare URL di anteprima, modulo Playwright e browser. Il controllo del pacchetto si avvia con `DEPLOY_ZIP=/percorso/ViaRoma_6.4_Vercel.zip node scripts/verify-package.mjs`. I documenti in `docs` descrivono i checkpoint precedenti.

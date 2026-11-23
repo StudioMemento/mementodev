@@ -279,12 +279,13 @@ async function finalLayout(page) {
       const previousInkEdge=rect(prev).top+(rect(prev).height + prev.querySelector(".ribbon-card").offsetWidth*.75)/2;
       return [titleGap(room),rect(room.querySelector("h2")).top-previousInkEdge];
     });
-    const screens=[...document.querySelectorAll(".screen-section")];
-    const framed=screens.length===9 && screens.every((el,i) => {
-      const area=rect(el);
-      const content=[...el.querySelectorAll(":scope > h2,:scope > .photo-ribbon,:scope > .bento-grid,:scope > .crust-card-shell")];
-      return ok(area.height,innerHeight) && (!i || ok(rect(screens[i-1]).bottom, area.top)) &&
-        rect(content[0]).top>=area.top+38 && rect(content.at(-1)).bottom<=area.bottom-38;
+    const sections=[...document.querySelectorAll(".screen-section")];
+    const naturalFlow=sections.length===9 && sections.every((section,i) => {
+      const box=rect(section);
+      const first=rect(section.firstElementChild), last=rect(section.lastElementChild);
+      const before=first.top-box.top, after=box.bottom-last.bottom;
+      return before>=23.5 && before<=48.5 && ok(before,after)
+        && (!i || ok(rect(sections[i-1]).bottom,box.top));
     });
     const centered=el=>{const r=rect(el); return r.width<=content.width+2 && ok(r.left+r.right,innerWidth);};
     const portrait=matchMedia("(max-width:700px) and (orientation:portrait)").matches;
@@ -294,7 +295,7 @@ async function finalLayout(page) {
       const r=rect(el);return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};
     }));
     return {validTitles:titles.length===7 && titles.every(centered),pairs, mobile:portrait,
-      shortPortrait:portrait && innerHeight<=740, tablet:!portrait && innerWidth<1000, squareSocial:portrait, framed,
+      shortPortrait:portrait && innerHeight<=740, tablet:!portrait && innerWidth<1000, squareSocial:portrait, naturalFlow,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:[...document.querySelectorAll("#customer,#social,#info,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
@@ -305,7 +306,7 @@ async function finalLayout(page) {
   });
   assert.ok(result.validTitles && result.validEdges && result.shortSides && !result.overflow, JSON.stringify(result));
   assert.ok(result.menuPad>=36 && result.menuPad<=84 && result.rules);
-  assert.ok(result.framed, "Each of the nine sections has a full, unclipped viewport");
+  assert.ok(result.naturalFlow, "The nine closing sections follow their content with bounded space between them");
   assert.equal(result.footerRule,"0px","Footer links have no dividing rule");
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
   assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
@@ -432,7 +433,7 @@ try {
   for(const layout of [[1440,900,false,true],[390,844,true,true],[320,568,true,false],[844,390,true,false],[768,1024,true,false],[3440,1440,false,true]]) await run(layout);
   const compact=await browser.newPage({reducedMotion:"reduce"});
   await compact.goto(url);await compact.evaluate(()=>document.fonts.ready);
-  for (const [width,height] of [[320,480],[480,320],[568,280],[1199,600],[2560,1080],[3440,640],[5120,1440]]) {
+  for (const [width,height] of [[320,480],[501,844],[501,1358],[480,320],[568,280],[1199,600],[2560,1080],[3440,640],[5120,1440]]) {
     await compact.setViewportSize({width,height}); await finalLayout(compact);
     if(height<=320) for(const lang of ["fr","de","en","it"]) {
       await compact.locator(`[data-lang="${lang}"]`).click();await contactTextFits(compact);

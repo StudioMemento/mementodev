@@ -1,7 +1,7 @@
 /* ViaRoma_4.0_MENU — original artwork/data, scoped menu and dialog presentation. */
 .menu-atmosphere { position:relative; background:#090909; }
 #cornicione { position:relative; }
-#menu { position:relative; padding-top:clamp(80px,12svh,160px); padding-bottom:clamp(36px,6svh,84px); }
+#menu { position:relative; padding-top:clamp(80px,12svh,160px); padding-bottom:clamp(36px,3vw,48px); }
 .menu-head,.mcat,.chipbar-inner { width:var(--vr-content); margin-inline:auto; }
 .menu-head { text-align:center; margin-bottom:clamp(32px,6vw,72px); }
 .menu-head h2 { font-size:calc(var(--vr-content) * var(--menu-title-scale,.25)); font-weight:200; line-height:1.12; letter-spacing:.26em; text-transform:uppercase; color:var(--vr-highlight); }

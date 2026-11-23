@@ -42,6 +42,16 @@ async function checkAnchorsAndCursor(page,touch) {
   for(const selector of ["#info h2","#forno",".phone-number",".lang button.on span"]) {
     assert.equal(white(await cursor(page.locator(selector).first())),!touch,selector);
   }
+  if (!touch) {
+    const size = await pointer.evaluate(async el => {
+      const url = getComputedStyle(el).cursor.match(/url\("([^"]+)"\)/)[1];
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      return [image.naturalWidth,image.naturalHeight];
+    });
+    assert.deepEqual(size,[16,18], "Desktop cursor dimensions");
+  }
   const link=page.locator('.footer-row a[href="/privacy.html"]');
   await link.click();
   const close=page.locator("dialog[open] .modal-close");

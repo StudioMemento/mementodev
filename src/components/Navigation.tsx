@@ -40,7 +40,9 @@ function subscribePagePosition(listener: PositionListener) {
         dirty = false;
       }
       let active = "home";
-      const marker = y + viewportHeight * 0.45;
+      // Short closing sections can remain below the usual marker at the end of the page.
+      const atPageEnd = scrollRange > 0 && y >= scrollRange - 1;
+      const marker = y + viewportHeight * (atPageEnd ? 1 : 0.45);
       for (const landmark of landmarks) if (landmark.top <= marker) active = landmark.id;
       const position = { active, progress: scrollRange > 0 ? Math.max(0, Math.min(1, y / scrollRange)) : 0 };
       latestPosition = position;
