@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_6.2_Vercel";
+const name = "ViaRoma_6.3_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -68,7 +68,7 @@ for (const required of [
   "src/components/gallery/PhotoRibbon.tsx",
   "src/components/LegalReader.tsx",
   "src/components/Takeaway.tsx",
-  ...[480, 960, 1600].map(width => `public/assets/asporto/via-roma-cartone-aperto-${width}.webp`),
+  ...[480, 960, 1600].map(width => `public/assets/asporto/via-roma-coperchio-${width}.webp`),
   "src/components/SpreadTitle.tsx",
   "src/components/bento/particles.ts",
   "src/components/bento/edge-field.ts",
@@ -83,7 +83,7 @@ for (const required of [
   "src/hooks/useOnApproach.ts",
   "src/styles/bento-motion.css",
   "public/interaction.css",
-  ...["punta","scorri","azione"].map(state => `public/assets/cursore-${state}.svg`),
+  "public/assets/cursore-bianco.svg",
   "public/assets/fonts/open-sans-question.woff",
   "licenses/Open-Sans-Apache-2.0.txt",
   "public/assets/memento-wordmark.svg",

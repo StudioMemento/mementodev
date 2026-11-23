@@ -44,7 +44,7 @@ function Footer() {
 export default function Contacts() {
   const { t, ui, language } = useI18n();
   return <>
-    <section id="info" className="closing-section visit-section" aria-labelledby="visit-title">
+    <section id="info" className="screen-section closing-section visit-section" aria-labelledby="visit-title">
       <SpreadTitle id="visit-title" text={closingCopy[language].visit} />
       <BentoGrid className="visit-bento">
         <a className="bento-tile map-tile" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.d_maps} · Pizzeria Via Roma, Via Roma 47, 33085 Maniago (PN) · Piazza Italia`}>

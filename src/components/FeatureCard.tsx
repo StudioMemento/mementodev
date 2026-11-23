@@ -12,7 +12,7 @@ type FeatureCardProps = {
 
 export function FeatureCard({ id, titleId, heading, caption, imageBase, link }: FeatureCardProps) {
   return (
-    <section className="takeaway" id={id} aria-labelledby={titleId}>
+    <section className="screen-section takeaway" id={id} aria-labelledby={titleId}>
       <HoloCard>
         <img className="crust-photo" src={`${imageBase}-960.webp`}
           srcSet={`${imageBase}-480.webp 480w, ${imageBase}-960.webp 960w, ${imageBase}-1600.webp 1600w`}

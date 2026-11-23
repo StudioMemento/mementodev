@@ -38,14 +38,14 @@ async function checkAnchorsAndCursor(page,touch) {
   }
   const pointer = page.locator(".phone-tile");
   const cursor = locator=>locator.evaluate(el=>getComputedStyle(el).cursor);
-  for(const [selector,kind] of [["#info h2","punta"],["#forno","scorri"],[".phone-number","azione"],[".lang button.on span","azione"]]) {
-    const style=await cursor(page.locator(selector).first());
-    assert.equal(style.includes("cursore-"+kind+".svg"),!touch,selector+" "+style);
+  const white=style=>style.includes("cursore-bianco.svg");
+  for(const selector of ["#info h2","#forno",".phone-number",".lang button.on span"]) {
+    assert.equal(white(await cursor(page.locator(selector).first())),!touch,selector);
   }
   const link=page.locator('.footer-row a[href="/privacy.html"]');
   await link.click();
   const close=page.locator("dialog[open] .modal-close");
-  assert.equal((await cursor(close)).includes("cursore-azione.svg"),!touch);
+  assert.equal(white(await cursor(close)),!touch);
   await close.click();
   assert.equal(await link.evaluate(el=>getComputedStyle(el).outlineStyle),"none");
   if (!touch) {
@@ -54,7 +54,7 @@ async function checkAnchorsAndCursor(page,touch) {
     assert.ok(await page.locator(".footer-row nav a:focus-visible").evaluate(el=>
       getComputedStyle(el).outlineStyle==="none" && getComputedStyle(el,"::after").width==="6px"));
     await page.emulateMedia({forcedColors:"active"});
-    assert.equal((await cursor(pointer)).includes("cursore-"),false);
+    assert.equal(white(await cursor(pointer)),true);
     await page.emulateMedia({forcedColors:"none"});
   }
 }

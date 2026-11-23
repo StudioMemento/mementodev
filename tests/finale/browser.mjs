@@ -103,9 +103,10 @@ async function contactAndLegal(page, touch) {
     const label=pin.querySelector("span"), box=label.getBoundingClientRect(), style=getComputedStyle(label);
     const stem=getComputedStyle(pin,"::before"), dot=getComputedStyle(pin,"::after");
     const glass=getComputedStyle(label,"::before");
+    const anchor=pin.classList.contains("venue-pin") && map.width<=180 ? .65 : .5;
     return {text:label.textContent, ink:style.color, softLabel:(glass.backdropFilter||glass.webkitBackdropFilter).includes("blur"),
       tipAnchored:parseFloat(stem.width) === 1 && parseFloat(stem.bottom) === 0 && dot.content === "none",
-      aligned:Math.abs(rect.top - parseFloat(stem.height) - box.bottom) < 1 && Math.abs((box.left + box.right) / 2 - rect.left) < 1,
+      aligned:Math.abs(rect.top - parseFloat(stem.height) - box.bottom) < 1 && Math.abs(box.left + box.width * anchor - rect.left) < 1,
       fits:box.left>=map.left && box.top>=map.top && box.right<=map.right && box.bottom<=map.bottom,
       x:(rect.left-map.left)/map.width, y:(rect.top-map.top)/map.height};
   }));
@@ -203,7 +204,9 @@ async function contactAndLegal(page, touch) {
         }, null, {timeout:3000});
       }
       assert.equal(path.split("/").pop(), ["cookie.html","privacy.html","note-legali.html"][i]);
-      assert.equal(await text.locator("p br").count(), 0, "Sentences are separate paragraphs");
+      const breaks=await text.locator("p br").count();
+      if (i===1) assert.ok(breaks>=3, "The Privacy reader preserves the authored clause breaks");
+      else assert.equal(breaks,0);
       if (touch) {
         const paragraph = text.locator("p").first();
         await paragraph.scrollIntoViewIfNeeded();
@@ -241,12 +244,16 @@ async function contactTextFits(page) {
     const number = tile.querySelector(".phone-number"), bounds = tile.getBoundingClientRect();
     const range = document.createRange(); range.selectNodeContents(number);
     const ink = range.getBoundingClientRect();
-    const style = getComputedStyle(number), hours = getComputedStyle(document.querySelector(".opening-time"));
+    const time = document.querySelector(".opening-time");
+    const style = getComputedStyle(number), hours = getComputedStyle(time);
+    const compactPortrait = matchMedia("(max-width:700px) and (orientation:portrait) and (max-height:740px)").matches;
+    const size = parseFloat(style.fontSize), timeSize = parseFloat(hours.fontSize);
+    const sideInset = label => parseFloat(getComputedStyle(label.parentElement).paddingInlineStart) / label.closest(".bento-tile").clientWidth;
     return range.getClientRects().length === 1 && ink.left > bounds.left + bounds.width * .07 &&
       Math.abs(ink.left + ink.right - bounds.left - bounds.right) < 2 &&
-      style.fontSize === hours.fontSize && style.fontWeight === hours.fontWeight &&
-      style.letterSpacing === hours.letterSpacing &&
-      getComputedStyle(number.parentElement).paddingInlineStart === getComputedStyle(document.querySelector(".hours-copy")).paddingInlineStart &&
+      (compactPortrait ? size >= timeSize : size === timeSize) && style.fontWeight === hours.fontWeight && style.fontFamily === hours.fontFamily &&
+      Math.abs(parseFloat(style.letterSpacing) / size - parseFloat(hours.letterSpacing) / timeSize) < .001 &&
+      Math.abs(sideInset(number) - sideInset(time)) < .001 &&
       getComputedStyle(tile.querySelector(".phone-note")).fontWeight === getComputedStyle(document.querySelector(".hours-tile .hours-note")).fontWeight;
   });
   assert.ok(phoneFits,"The centered phone number shares the hours typography and side padding");
@@ -272,29 +279,33 @@ async function finalLayout(page) {
       const previousInkEdge=rect(prev).top+(rect(prev).height + prev.querySelector(".ribbon-card").offsetWidth*.75)/2;
       return [titleGap(room),rect(room.querySelector("h2")).top-previousInkEdge];
     });
-    const sectionGaps = [
-      ["#gallery .venue-room:last-child .photo-ribbon", "#customer .crust-card-shell"],
-      ["#customer .crust-card-shell", "#social-title"],
-      [".social-bento", "#visit-title"],
-    ].map(([before,after])=>rect(document.querySelector(after)).top-rect(document.querySelector(before)).bottom);
+    const screens=[...document.querySelectorAll(".screen-section")];
+    const framed=screens.length===9 && screens.every((el,i) => {
+      const area=rect(el);
+      const content=[...el.querySelectorAll(":scope > h2,:scope > .photo-ribbon,:scope > .bento-grid,:scope > .crust-card-shell")];
+      return ok(area.height,innerHeight) && (!i || ok(rect(screens[i-1]).bottom, area.top)) &&
+        rect(content[0]).top>=area.top+38 && rect(content.at(-1)).bottom<=area.bottom-38;
+    });
+    const centered=el=>{const r=rect(el); return r.width<=content.width+2 && ok(r.left+r.right,innerWidth);};
+    const portrait=matchMedia("(max-width:700px) and (orientation:portrait)").matches;
     const tiles=document.querySelectorAll(".bento-grid a");
     const outer=[...document.querySelectorAll("#customer .crust-card-shell,.bento-grid,.footer-row")];
     const bento=[...document.querySelectorAll(".bento-grid")].map(grid=>[...grid.children].map(el=>{
       const r=rect(el);return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};
     }));
-    return {validTitles:titles.length===7 && titles.every(atGutters),pairs, mobile:innerWidth<=700, tablet:innerWidth>700 && innerWidth<1000, squareSocial:matchMedia("(max-width:700px),(pointer:coarse) and (max-width:1000px) and (max-height:540px)").matches, firstGap:rect(rooms[0].querySelector("h2")).top-rect(rooms[0]).top,
+    return {validTitles:titles.length===7 && titles.every(centered),pairs, mobile:portrait,
+      shortPortrait:portrait && innerHeight<=740, tablet:!portrait && innerWidth<1000, squareSocial:portrait, framed,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:[...document.querySelectorAll("#customer,#social,#info,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
-      sectionGaps, expectedSpacing:Math.max(56,Math.min(100,innerHeight*.08)),
-      validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
+      validEdges:outer.every(centered) && rooms.every(room=>atGutters(room.querySelector("h2"))) && atGutters(document.querySelector(".footer-row")) &&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
       shortSides:[...tiles].every(el=>{const r=rect(el);return Math.min(r.width,r.height)>=44;}),
       overflow:document.documentElement.scrollWidth>innerWidth};
   });
   assert.ok(result.validTitles && result.validEdges && result.shortSides && !result.overflow, JSON.stringify(result));
-  assert.equal(result.menuPad >= 36 && result.menuPad <= 84 && Math.abs(result.firstGap - result.expectedSpacing) < 2,true); assert.ok(result.rules,"The finale sections have no separators");
-  assert.ok(result.sectionGaps.every(gap=>Math.abs(gap-result.expectedSpacing)<2), JSON.stringify(result.sectionGaps));
+  assert.ok(result.menuPad>=36 && result.menuPad<=84 && result.rules);
+  assert.ok(result.framed, "Each of the nine sections has a full, unclipped viewport");
   assert.equal(result.footerRule,"0px","Footer links have no dividing rule");
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
   assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
@@ -307,14 +318,15 @@ async function finalLayout(page) {
   assert.ok([ig,fb].every(result.squareSocial?square:wide) && reviews.every(square));
   assert.ok(square(map) && Math.abs(phone.w / phone.h - 2) < .02);
   const hoursAspect = hours.w / hours.h;
-  if (result.mobile) assert.ok(Math.abs(hoursAspect-1.15)<.03);
+  if (result.mobile) assert.ok(Math.abs(hoursAspect-(result.shortPortrait ? 1 : 1.15))<.03);
   else if (result.tablet) assert.ok(hoursAspect>=1.8 && hoursAspect<=2.3);
   else assert.ok(square(hours));
-  assert.ok(close(hours.l,phone.l) && close(hours.r,phone.r) && phone.t>hours.b);
+  if (!result.shortPortrait) assert.ok(close(hours.l,phone.l) && close(hours.r,phone.r) && phone.t>hours.b);
   if(result.mobile) {
     assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews[0].t>fb.b && close(ig.l,reviews[0].l) && close(fb.r,reviews[1].r));
     assert.ok(close(reviews[0].t,reviews[1].t) && close(reviews[2].t,reviews[3].t) && reviews[2].t>reviews[1].b);
-    assert.ok(hours.t>map.b && close(map.w,hours.w) && close(map.l,hours.l));
+    if (result.shortPortrait) assert.ok(close(hours.t,map.t) && hours.l>map.r && close(phone.l,map.l) && close(phone.r,hours.r) && phone.t>hours.b);
+    else assert.ok(hours.t>map.b && close(map.w,hours.w) && close(map.l,hours.l));
   } else {
     assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews.every(r=>r.t>ig.b && close(r.t,reviews[0].t)));
     assert.ok(close(map.t,hours.t) && hours.l>map.r && close(map.b,phone.b));

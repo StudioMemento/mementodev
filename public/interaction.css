@@ -1,15 +1,6 @@
-/* Native cursor images keep the hotspot attached to the pointer during scroll and drag. */
-@media (hover:hover) and (pointer:fine) and (forced-colors:none) {
-  :root {
-    --pointer:url("/assets/cursore-punta.svg") 3 3, auto;
-    --action:url("/assets/cursore-azione.svg") 3 3, auto;
-    --drag:url("/assets/cursore-scorri.svg") 3 3, auto;
-  }
-  :where(*) { cursor:var(--pointer); }
-  :where(#pizza-slider,.ribbon-stage[data-enhanced]) { --pointer:var(--drag); }
-  :where(a[href],button:enabled,[role=button],.vr-dialog[open]) { --pointer:var(--action); }
-  .is-dragging :where(a,button) { --pointer:var(--drag); }
-  dialog::backdrop { cursor:var(--action); }
+/* The same native pointer is used on text, links, drags and open dialogs. */
+@media (any-hover:hover) and (any-pointer:fine) {
+  :where(*),dialog::backdrop { cursor:url("/assets/cursore-bianco.svg") 3 2, auto; }
 }
 
 :root { -webkit-tap-highlight-color:transparent; }

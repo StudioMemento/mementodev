@@ -7,7 +7,6 @@
 .legal-text a { --focus-bottom:-.42em; }
 .legal-text a[href^="tel:"] { white-space:nowrap; }
 .legal-text :is(a,.legal-unit) { hyphens:none; }
-.legal-text[data-document=privacy] p { text-wrap:balance; }
 .controller-address { display:grid; grid-template-columns:minmax(0,1fr); font-style:normal; line-height:1.42; margin-bottom:.45em; }
 .legal-facts { display:grid; grid-template-columns:fit-content(42%) minmax(0,1fr); align-items:baseline; gap:.45em 1.3em; margin:0; }
 .legal-facts dt { color:#c6bda9; }
