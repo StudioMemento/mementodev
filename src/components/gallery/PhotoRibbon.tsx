@@ -1,9 +1,9 @@
 import { useCallback, useId, useLayoutEffect, useRef } from "react";
 import { useOnApproach } from "../../hooks/useOnApproach";
 import { useI18n } from "../../i18n";
+import metadata from "../../data/images.json";
 import { closingCopy } from "../../data/closing-copy";
 import { useDialog } from "../DialogContext";
-import { Photo } from "../Photo";
 import type { RibbonController } from "./ribbon";
 
 type GalleryPhoto = { src: string; caption: string };
@@ -42,12 +42,15 @@ export function PhotoRibbon({ photos, title }: Props) {
     <div className="ribbon-stage" ref={stage} tabIndex={0} role="group" aria-label={title} aria-describedby={helpId}
       aria-keyshortcuts="ArrowLeft ArrowRight Home End Space Enter">
       <div className="ribbon-track">
-        {photos.map(({ src, caption }, index) => (
-          <button className="ribbon-card" type="button" key={src} tabIndex={-1} aria-label={caption} onClick={() => centerPanel(index)}>
-            <Photo className="ribbon-image" src={src} alt={caption}
-              sizes="(max-width:620px) and (orientation:portrait) 83vw, max(14vw, min(42vw, 62svh, 680px))" />
-          </button>
-        ))}
+        {photos.map(({ src, caption }, index) => {
+          const { width } = metadata[src as keyof typeof metadata];
+          const thumb = `/assets/ribbons/${src.split("/").pop()}`;
+          return <button className="ribbon-card" type="button" key={src} tabIndex={-1} aria-label={caption} onClick={() => centerPanel(index)}>
+            <img className="ribbon-image" src={thumb} srcSet={`${thumb} 640w, /${src.replace(".webp", "-768.webp")} 768w, /${src} ${width}w`}
+              sizes="(max-width: 620px) and (orientation: portrait) 83vw, clamp(10vw, 40vw, 640px)"
+              width="640" height="480" loading="lazy" decoding="async" draggable={false} alt={caption} />
+          </button>;
+        })}
       </div>
       <span ref={announcement} className="sr-only ribbon-announcement" aria-live="polite" aria-atomic="true" />
     </div>

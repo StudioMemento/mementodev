@@ -50,16 +50,19 @@ async function galleries(page, touch) {
     const frame = i => cards[i].getBoundingClientRect();
     const centered = frame(0), right = frame(1);
     const photo = cards[0].querySelector("img");
+    const width = matchMedia("(max-width:620px) and (orientation:portrait)").matches
+      ? innerWidth * .83 : Math.max(innerWidth * .1, Math.min(innerWidth * .4, 640));
     return { clip: getComputedStyle(node.firstElementChild).clipPath, transforms: cards[0].style.transform, sideHigher: right.height > centered.height,
-      aspect: centered.width / centered.height, sourceAspect: Number(photo.getAttribute("width")) / Number(photo.getAttribute("height")),
+      width: cards[0].offsetWidth, expectedWidth: width, aspect: photo.offsetWidth / photo.offsetHeight,
       seam:right.left-centered.right, gap:parseFloat(getComputedStyle(node.firstElementChild).columnGap),
       narrowerThanStage: centered.width < node.clientWidth, noTilt: centered.top >= right.top };
   });
   assert.ok(projection.sideHigher && projection.noTilt && projection.narrowerThanStage);
   assert.ok(Math.abs(projection.seam-projection.gap)<.15,"The projected center seam uses the gallery's declared gap");
   assert.match(projection.transforms, /matrix3d/);
-  assert.equal(projection.clip, "none", "Panorama preserves the complete top and bottom of each photograph");
-  assert.ok(Math.abs(projection.aspect - projection.sourceAspect) < .01, "Centered photo preserves its aspect ratio");
+  assert.match(projection.clip, /^polygon\(/, "Gallery uses the continuous curved aperture");
+  assert.ok(Math.abs(projection.width - projection.expectedWidth) < 1 && Math.abs(projection.aspect - 4/3) < .01,
+    "Gallery uses the original panel width and 4:3 framing");
   await page.keyboard.press("ArrowLeft");
   assert.equal(await stage.getAttribute("data-active"), String(original.GALLERY_ALBUMS.esterno.length - 1));
   await page.keyboard.press("ArrowRight"); assert.equal(await stage.getAttribute("data-active"), "0");
@@ -250,12 +253,11 @@ async function contactTextFits(page) {
     const ink = range.getBoundingClientRect();
     const time = document.querySelector(".opening-time");
     const style = getComputedStyle(number), hours = getComputedStyle(time);
-    const compactPortrait = matchMedia("(max-width:700px) and (orientation:portrait) and (max-height:740px)").matches;
     const size = parseFloat(style.fontSize), timeSize = parseFloat(hours.fontSize);
     const sideInset = label => parseFloat(getComputedStyle(label.parentElement).paddingInlineStart) / label.closest(".bento-tile").clientWidth;
     return range.getClientRects().length === 1 && ink.left > bounds.left + bounds.width * .07 &&
       Math.abs(ink.left + ink.right - bounds.left - bounds.right) < 2 &&
-      (compactPortrait ? size >= timeSize : size === timeSize) && style.fontWeight === hours.fontWeight && style.fontFamily === hours.fontFamily &&
+      size === timeSize && style.fontWeight === hours.fontWeight && style.fontFamily === hours.fontFamily &&
       Math.abs(parseFloat(style.letterSpacing) / size - parseFloat(hours.letterSpacing) / timeSize) < .001 &&
       Math.abs(sideInset(number) - sideInset(time)) < .001 &&
       getComputedStyle(tile.querySelector(".phone-note")).fontWeight === getComputedStyle(document.querySelector(".hours-tile .hours-note")).fontWeight;
@@ -293,7 +295,7 @@ async function finalLayout(page) {
       const r=rect(el);return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height};
     }));
     return {validTitles:titles.length===7 && titles.every(centered),pairs, mobile:portrait,
-      shortPortrait:portrait && innerHeight<=740, tablet:!portrait && innerWidth<1000, squareSocial:portrait, naturalFlow,
+      tablet:!portrait && innerWidth<1000, squareSocial:portrait, naturalFlow,
       menuPad:parseFloat(getComputedStyle(document.querySelector("#menu")).paddingBottom),
       rules:[...document.querySelectorAll("#customer,#social,#info,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
@@ -317,15 +319,14 @@ async function finalLayout(page) {
   assert.ok([ig,fb].every(result.squareSocial?square:wide) && reviews.every(square));
   assert.ok(square(map) && Math.abs(phone.w / phone.h - 2) < .02);
   const hoursAspect = hours.w / hours.h;
-  if (result.mobile) assert.ok(Math.abs(hoursAspect-(result.shortPortrait ? 1 : 1.15))<.03);
+  if (result.mobile) assert.ok(Math.abs(hoursAspect-1.15)<.03);
   else if (result.tablet) assert.ok(hoursAspect>=1.8 && hoursAspect<=2.3);
   else assert.ok(square(hours));
-  if (!result.shortPortrait) assert.ok(close(hours.l,phone.l) && close(hours.r,phone.r) && phone.t>hours.b);
+  assert.ok(close(hours.l,phone.l) && close(hours.r,phone.r) && phone.t>hours.b);
   if(result.mobile) {
     assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews[0].t>fb.b && close(ig.l,reviews[0].l) && close(fb.r,reviews[1].r));
     assert.ok(close(reviews[0].t,reviews[1].t) && close(reviews[2].t,reviews[3].t) && reviews[2].t>reviews[1].b);
-    if (result.shortPortrait) assert.ok(close(hours.t,map.t) && hours.l>map.r && close(phone.l,map.l) && close(phone.r,hours.r) && phone.t>hours.b);
-    else assert.ok(hours.t>map.b && close(map.w,hours.w) && close(map.l,hours.l));
+    assert.ok(hours.t>map.b && close(map.w,hours.w) && close(map.l,hours.l), "Map, hours and phone form one full-width column");
   } else {
     assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews.every(r=>r.t>ig.b && close(r.t,reviews[0].t)));
     assert.ok(close(map.t,hours.t) && hours.l>map.r && close(map.b,phone.b));
@@ -418,7 +419,7 @@ async function run(layout) {
   page.on("pageerror",e=>errors.push(e.message));page.on("response",r=>{if(r.status()>=400)failed.push(r.url());});
   page.on("request",r=>first.push(r.url()));
   await page.goto(url);await page.evaluate(()=>document.fonts.ready);await tick(page);
-  assert.ok(first.every(link=>!link.includes("/assets/gallery/")), "Gallery bytes loaded on the menu landing");
+  assert.ok(first.every(link=>!link.includes("/assets/gallery/") && !link.includes("/assets/ribbons/")), "Gallery bytes loaded on the menu landing");
   await finalLayout(page);
   if (layout[3]) await galleries(page,layout[2]);
   await contactAndLegal(page,layout[2]);
@@ -441,13 +442,16 @@ try {
     await compact.keyboard.press("Home");
     for(const fraction of [0,.25,.5,.75]) {
       const coverage=await strip.evaluate((el,offset)=>{
-        const pitch=el.querySelector(".ribbon-card").offsetWidth+parseFloat(getComputedStyle(el.firstElementChild).columnGap);
+        const panelWidth=el.querySelector(".ribbon-card").offsetWidth;
+        const gap=parseFloat(getComputedStyle(el.firstElementChild).columnGap);
+        const pitch=panelWidth+gap;
         el.dispatchEvent(new WheelEvent("wheel",{deltaX:pitch*offset,cancelable:true}));
         const r=el.getBoundingClientRect();
-        const gap=parseFloat(getComputedStyle(el.firstElementChild).columnGap);
         const spans=[...el.querySelectorAll(".ribbon-card")].filter(c=>c.style.visibility==="visible")
           .map(c=>c.getBoundingClientRect()).filter(s=>s.right>=r.left && s.left<=r.right).sort((a,b)=>a.left-b.left);
-        const maxGap=gap*2.2+1;
+        // Tangent-plane projection magnifies a seam by up to sec²(angle) at the visible edge.
+        const focal=Math.min(1800,panelWidth*2.15,Math.max(panelWidth*1.12,r.width*.54));
+        const maxGap=gap*(1+(r.width/(2*focal))**2)+1;
         return spans.length>0 && spans[0].left<=r.left+maxGap && spans.at(-1).right>=r.right-maxGap &&
           spans.every((s,i)=>i===0 || s.left-spans[i-1].right<=maxGap);
       },fraction);

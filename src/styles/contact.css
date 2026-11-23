@@ -13,7 +13,11 @@
   scroll-margin-block-start:calc(68px + env(safe-area-inset-top));
 }
 .venue-room {
-  min-height:100vh; min-height:100svh; justify-content:center;
+  --card:clamp(10vw,40vw,640px); --stage-h:calc(var(--card) * 1.04);
+  /* Use the 6.5 stage only to measure the empty space around each album. */
+  --spacing-reference:calc(max(14vw,min(42vw,62svh,680px)) * .88 + 4px);
+  min-height:100vh; min-height:max(100svh,calc(100svh + var(--stage-h) - var(--spacing-reference)));
+  justify-content:center;
   padding-block:calc(clamp(58px,8svh,112px) + env(safe-area-inset-top)) calc(clamp(58px,8svh,112px) + env(safe-area-inset-bottom));
   gap:clamp(14px,2.4svh,32px); scroll-margin-block-start:0;
 }
@@ -35,10 +39,6 @@
   .spread-ink { background:linear-gradient(110deg,#c6ab70,#dac18b 26%,#f4e6bd 43%,#c6ab70 57%,#e4cfa0 76%,#c6ab70); background-clip:text; color:transparent; }
 }
 .photo-ribbon {
-  /* Seven-photo rooms must also cover the viewport at the wrap point on ultrawide displays. */
-  --card:max(14vw,min(42vw,62svh,680px));
-  /* 1080/1699 (tallest photo) × 1.37 (maximum vertical magnification at the visible edge). */
-  --stage-h:calc(var(--card) * .88 + 4px);
   width:100%; position:relative; overflow-anchor:none;
 }
 .ribbon-stage {
@@ -52,9 +52,9 @@
 .photo-ribbon:has(:focus-visible)::after {
   content:""; position:absolute; bottom:0; left:50%; translate:-50% 0; width:30px; height:3px; border-radius:3px; background:var(--vr-highlight); pointer-events:none;
 }
-.ribbon-track { position:absolute; inset:0; display:flex; align-items:center; gap:clamp(8px,1vw,18px); padding-inline:max(0px,calc((100% - var(--card)) / 2)); }
+.ribbon-track { position:absolute; inset:0; display:flex; align-items:center; gap:4px; padding-inline:max(0px,calc((100% - var(--card)) / 2)); }
 .ribbon-card { flex:0 0 var(--card); width:var(--card); text-align:left; }
-.ribbon-image { width:100%; height:auto; pointer-events:none; }
+.ribbon-image { width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; pointer-events:none; }
 .bento-grid { width:var(--vr-content); display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--bento-gap); }
 .visit-bento {
   --visit-side:calc((var(--vr-content) - 2 * var(--bento-gap)) / 2.5);
@@ -156,16 +156,11 @@
   .hours-tile .sign-mark { width:23cqi; }
 }
 @media(max-width:700px) and (orientation:portrait) {
-  .social-bento,.visit-bento { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:auto; }
-  .visit-bento { grid-template-areas:"map map" "hours hours" "phone phone"; }
+  .social-bento { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:auto; }
+  .visit-bento { grid-template: "map" auto "hours" auto "phone" auto / minmax(0,1fr); }
   .visit-bento .hours-tile { aspect-ratio:1.15; }
   .social-tile .tile-bottom { font-size:clamp(13px,8.5cqi,23px); }
   .platform-instagram,.platform-facebook { grid-column:span 1; aspect-ratio:1; }
-}
-/* On short portrait displays the map and hours share a row. The phone retains its full 2:1 card. */
-@media(max-width:700px) and (orientation:portrait) and (max-height:740px) {
-  .visit-bento { grid-template-areas:"map hours" "phone phone"; }
-  .visit-bento .hours-tile { aspect-ratio:1; }
 }
 @container (max-width:180px) {
   .map-tile .tile-bottom { padding:8px; gap:3px; }
@@ -175,7 +170,7 @@
   .venue-pin span { translate:-65% 0; }
 }
 @media(max-width:620px) and (orientation:portrait) {
-  .panorama { --card:83vw; }
+  .venue-room { --card:83vw; --stage-h:calc(var(--card) * .9); --spacing-reference:calc(var(--card) * .88 + 4px); }
 }
 @media(max-height:320px) and (orientation:landscape) {
   .hours-tile,.hours-copy { gap:3px; }

@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_6.5_Vercel";
+const name = "ViaRoma_6.6_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -68,7 +68,7 @@ for (const required of [
   "src/components/gallery/PhotoRibbon.tsx",
   "src/components/LegalReader.tsx",
   "src/components/Takeaway.tsx",
-  ...[480, 960, 1600].map(width => `public/assets/asporto/via-roma-cartone-65-${width}.webp`),
+  ...[480, 960, 1600].map(width => `public/assets/asporto/via-roma-cartone-66-${width}.webp`),
   "src/components/SpreadTitle.tsx",
   "src/components/bento/particles.ts",
   "src/components/bento/edge-field.ts",
@@ -90,6 +90,9 @@ for (const required of [
   "public/assets/satin-specks.svg",
   "public/assets/menu/filetto.svg",
   "public/assets/gallery/esterno-01.webp",
+  "public/assets/fonts/open-sans-light-question.woff",
+  "licenses/Open-Sans-Apache-2.0.txt",
+  "public/assets/ribbons/esterno-01.webp",
   "public/assets/gallery/esterno-01-768.webp",
   "src/components/GuestPhotos.tsx",
   "src/components/FeatureCard.tsx",

@@ -121,7 +121,14 @@
   background:radial-gradient(ellipse 70% 59% at 18% 97%,#090909ed,#090909c2 54%,transparent 100%),
     linear-gradient(0deg,#09090965,transparent 30%);
 }
-#asporto h2 { font-size:clamp(28px,7.6cqi,86px); line-height:1.06; text-wrap:balance; }
+@font-face {
+  font-family:"Via Roma Question"; font-style:normal; font-weight:300; font-display:swap;
+  src:url("/assets/fonts/open-sans-light-question.woff") format("woff"); unicode-range:U+003F;
+}
+#asporto h2 {
+  font-family:"Via Roma Question",Jost,system-ui,sans-serif;
+  font-size:clamp(28px,7.6cqi,86px); line-height:1.06; text-wrap:balance;
+}
 #asporto p { text-wrap:balance; }
 .takeaway-copy p { font-size:clamp(13px,3cqi,31px); line-height:1.22; margin-top:.26em; }
 @media(prefers-reduced-motion:reduce) { .crust-card { transform:none; transition:none; } }

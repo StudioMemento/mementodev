@@ -187,7 +187,7 @@ try {
         next:document.querySelector("#gallery").getBoundingClientRect().top-el.closest("section").getBoundingClientRect().bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
     assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
-    assert.match(dimensions.file,/via-roma-cartone-65-(480|960|1600)\.webp$/);
+    assert.match(dimensions.file,/via-roma-cartone-66-(480|960|1600)\.webp$/);
     assert.ok(dimensions.padding>=119 && Math.abs(dimensions.next)<2, "The takeaway reserves space above and below the moving card");
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
