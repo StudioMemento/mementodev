@@ -2,7 +2,7 @@
   "it": [
     [
       "Cereali contenenti glutine",
-      "Grano, segale, orzo, avena, loro ibridi e derivati."
+      "Grano (anche farro e khorasan), segale, orzo, avena, loro ibridi e derivati."
     ],
     [
       "Crostacei",
@@ -45,8 +45,8 @@
       "Semi di sesamo e prodotti derivati."
     ],
     [
-      "Anidride solforosa e solfiti",
-      "Oltre 10 mg/kg o 10 mg/l di SO₂ totale al consumo."
+      "Solfiti",
+      "Anidride solforosa e solfiti oltre 10 mg/kg o 10 mg/l di SO₂ totale nel prodotto pronto al consumo."
     ],
     [
       "Lupini",
@@ -60,7 +60,7 @@
   "en": [
     [
       "Cereals containing gluten",
-      "Wheat, rye, barley, oats, their hybrids and derivatives."
+      "Wheat (including spelt and khorasan), rye, barley, oats, their hybrids and derivatives."
     ],
     [
       "Crustaceans",
@@ -103,8 +103,8 @@
       "Sesame seeds and derivatives."
     ],
     [
-      "Sulphur dioxide and sulphites",
-      "Above 10 mg/kg or 10 mg/l as total SO₂ in the food as served."
+      "Sulphites",
+      "Sulphur dioxide and sulphites above 10 mg/kg or 10 mg/l as total SO₂ in the ready-to-eat product."
     ],
     [
       "Lupin",
@@ -118,7 +118,7 @@
   "de": [
     [
       "Glutenhaltiges Getreide",
-      "Weizen, Roggen, Gerste, Hafer, ihre Kreuzungen und Erzeugnisse daraus."
+      "Weizen (auch Dinkel und Khorasan), Roggen, Gerste, Hafer, ihre Kreuzungen und Erzeugnisse daraus."
     ],
     [
       "Krebstiere",
@@ -161,8 +161,8 @@
       "Sesamsamen und Erzeugnisse."
     ],
     [
-      "Schwefeldioxid und Sulfite",
-      "Über 10 mg/kg oder 10 mg/l Gesamt-SO₂ im verzehrfertigen Produkt."
+      "Sulfite",
+      "Schwefeldioxid und Sulfite über 10 mg/kg oder 10 mg/l als Gesamt-SO₂ im verzehrfertigen Produkt."
     ],
     [
       "Lupinen",
@@ -176,7 +176,7 @@
   "fr": [
     [
       "Céréales contenant du gluten",
-      "Blé, seigle, orge, avoine, leurs hybrides et produits dérivés."
+      "Blé (dont épeautre et khorasan), seigle, orge, avoine, leurs hybrides et produits dérivés."
     ],
     [
       "Crustacés",
@@ -219,8 +219,8 @@
       "Graines de sésame et dérivés."
     ],
     [
-      "Anhydride sulfureux et sulfites",
-      "Plus de 10 mg/kg ou 10 mg/l de SO₂ total dans le produit servi."
+      "Sulfites",
+      "Anhydride sulfureux et sulfites au-delà de 10 mg/kg ou 10 mg/l de SO₂ total dans le produit prêt à consommer."
     ],
     [
       "Lupins",

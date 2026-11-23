@@ -123,9 +123,10 @@ async function contactAndLegal(page, touch) {
     ["www.instagram.com","www.facebook.com","www.google.com","www.tripadvisor.it","restaurantguru.it","www.sluurpy.it"]);
   assert.equal(await page.locator(".map-tile").getAttribute("href"),"https://maps.google.com/?cid=7212905066552907909");
   assert.equal(await page.locator(".phone-tile").getAttribute("href"),"tel:+390427541232");
-  assert.equal(await page.locator(".wa-tile").getAttribute("href"),"https://wa.me/393802453757");
-  assert.equal(await page.locator(".wa-tile img").getAttribute("src"),"/assets/social/whatsapp.webp?v=46");
-  assert.equal(await page.locator(".phone-tile img").getAttribute("src"),"/assets/social/telefono.webp");
+  assert.equal(await page.locator(".visit-bento a").count(),2);
+  assert.equal(await page.locator(".phone-tile").innerText(),"0427 541 232");
+  assert.equal(await page.locator(".phone-tile img,.phone-tile svg,.phone-tile i").count(),0);
+  assert.match(await page.locator(".footer-vat").innerText(),/01956350936/);
   assert.equal(await page.locator(".studio-credit").getAttribute("href"),"https://mementostudio.it");
   assert.deepEqual(await links.locator(".tile-bottom > span:first-child").allTextContents(),["Instagram","Facebook","Google Reviews","Tripadvisor","Restaurant Guru","Sluurpy"]);
   await center(page.locator("#social"));await Promise.all((await links.locator("img").all()).map(el=>el.evaluate(im=>im.decode())));
@@ -167,6 +168,16 @@ async function contactAndLegal(page, touch) {
       const html=await response.text();
       assert.doesNotMatch(html, /legal-draft|bozza per la revisione/i);
       assert.equal(await text.locator(".legal-draft").count(), 0);
+      if (i > 0) {
+        assert.ok((await text.innerText()).includes("NIGRO SARAH PIZZERIA"));
+        assert.equal(await text.locator('a[href="mailto:NIGROSARAH2@GMAIL.COM"]').count(),1);
+      }
+      if (i === 2) {
+        for (const value of ["33085 Maniago (PN)", "01956350936", "33170 Pordenone", "PN 371993"]) {
+          assert.ok((await text.innerText()).includes(value));
+        }
+        assert.equal(await text.locator('a[href="tel:+390427541232"]').innerText(),"0427 541 232");
+      }
       assert.equal(await text.evaluate((e,html)=>new DOMParser().parseFromString(html,"text/html").querySelector(".legal-text").innerHTML===e.innerHTML,html),true);
       const dims=await dialog.evaluate(d=>{
         const v=d.querySelector(".legal-scroll"),rail=d.querySelector(".vr-scroll-progress");
@@ -212,7 +223,7 @@ async function contactAndLegal(page, touch) {
 async function contactTextFits(page) {
   const clipped=await page.locator(".bento-grid .bento-tile").evaluateAll(tiles=>tiles.flatMap(tile=>{
     const bounds=tile.getBoundingClientRect();
-    return [...tile.querySelectorAll("strong,small,.hours-note,.action-label,.social-tile .tile-bottom > span:first-child")].filter(label=>{
+    return [...tile.querySelectorAll("strong,small,.hours-note,.phone-number,.social-tile .tile-bottom > span:first-child")].filter(label=>{
       const range=document.createRange();range.selectNodeContents(label);
       return [...range.getClientRects()].some(r=>r.left<bounds.left-1 || r.right>bounds.right+1 || r.top<bounds.top-1 || r.bottom>bounds.bottom+1);
     }).map(label=>label.textContent);
@@ -225,14 +236,18 @@ async function contactTextFits(page) {
       && Math.abs((time.right+time.left)-(box.right+box.left))<2 && time.left-box.left>box.width*.055;
   }),"Centered, equal-width hours and closing day in every language");
   assert.deepEqual(clipped,[],"Labels must fit the card");
-  const orderFits = await page.locator(".contact-tile").evaluateAll(tiles => tiles.every(tile => {
-    const ink = e => { const r = document.createRange(); r.selectNodeContents(e); return [...r.getClientRects()]; };
-    const [label] = ink(tile.querySelector(".action-label")), [phone] = ink(tile.querySelector("small"));
-    const [arrow] = tile.querySelector(".tile-arrow").getClientRects();
-    return phone.top > label.top && Math.abs(phone.left-label.left) < 1 &&
-      phone.right <= arrow.left && !tile.querySelector(".contact-purpose");
-  }));
-  assert.ok(orderFits,"The phone number fits on its own line below the action");
+  const phoneFits = await page.locator(".phone-tile").evaluate(tile => {
+    const number = tile.querySelector(".phone-number"), bounds = tile.getBoundingClientRect();
+    const range = document.createRange(); range.selectNodeContents(number);
+    const ink = range.getBoundingClientRect();
+    const style = getComputedStyle(number), hours = getComputedStyle(document.querySelector(".opening-time"));
+    return range.getClientRects().length === 1 && ink.left > bounds.left + bounds.width * .07 &&
+      Math.abs(ink.left + ink.right - bounds.left - bounds.right) < 2 &&
+      style.fontSize === hours.fontSize && style.fontWeight === hours.fontWeight &&
+      style.letterSpacing === hours.letterSpacing &&
+      style.paddingInlineStart === getComputedStyle(document.querySelector(".hours-copy")).paddingInlineStart;
+  });
+  assert.ok(phoneFits,"The centered phone number shares the hours typography and side padding");
 }
 
 async function finalLayout(page) {
@@ -275,19 +290,18 @@ async function finalLayout(page) {
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
   assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
   const [social,visit]=result.areas;
-  assert.equal(social.length,6);assert.equal(visit.length,4);
-  const [ig,fb,...reviews]=social, [map,hours,wa,phone]=visit;
+  assert.equal(social.length,6);assert.equal(visit.length,3);
+  const [ig,fb,...reviews]=social, [map,hours,phone]=visit;
   const close=(a,b)=>Math.abs(a-b)<1.6;
   const square=tile=>close(tile.w,tile.h);
   const wide=tile=>Math.abs(tile.w/tile.h-2)<.12;
   assert.ok([ig,fb].every(result.squareSocial?square:wide) && reviews.every(square));
-  assert.ok([map,wa,phone].every(square));
+  assert.ok(square(map) && Math.abs(phone.w / phone.h - 2) < .02);
   const hoursAspect = hours.w / hours.h;
   if (result.mobile) assert.ok(Math.abs(hoursAspect-1.15)<.03);
   else if (result.tablet) assert.ok(hoursAspect>=1.8 && hoursAspect<=2.3);
   else assert.ok(square(hours));
-  assert.ok(close(wa.t,phone.t) && close(wa.w,phone.w) && phone.l>wa.r);
-  assert.ok(close(hours.l,wa.l) && close(hours.r,phone.r) && wa.t>hours.b);
+  assert.ok(close(hours.l,phone.l) && close(hours.r,phone.r) && phone.t>hours.b);
   if(result.mobile) {
     assert.ok(close(ig.t,fb.t) && fb.l>ig.r && reviews[0].t>fb.b && close(ig.l,reviews[0].l) && close(fb.r,reviews[1].r));
     assert.ok(close(reviews[0].t,reviews[1].t) && close(reviews[2].t,reviews[3].t) && reviews[2].t>reviews[1].b);
@@ -300,9 +314,9 @@ async function finalLayout(page) {
   assert.equal(await page.locator(".hours-note").textContent(),"CHIUSO IL LUNEDÌ");
   assert.equal(await page.locator(".hours-copy p .sr-only").textContent(),"Chiuso il lunedì");
   assert.ok(await page.locator(".hours-tile").evaluate(el=>{
-    const style=getComputedStyle(el), wa=getComputedStyle(document.querySelector(".wa-tile"));
-    return style.backgroundColor===wa.backgroundColor && style.backgroundImage===wa.backgroundImage;
-  }),"Identical substrate under the hours and WhatsApp");
+    const style=getComputedStyle(el), phone=getComputedStyle(document.querySelector(".phone-tile"));
+    return style.backgroundColor===phone.backgroundColor && style.backgroundImage===phone.backgroundImage;
+  }),"The hours and phone cards share the same background");
   assert.equal(await page.locator("#openState,.status-tile").count(),0);
   await contactTextFits(page);
   const footer=page.locator(".visit-footer");

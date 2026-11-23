@@ -5,7 +5,6 @@ import { useCarousel } from "../hooks/useCarousel";
 import { FinaleAtmosphere } from "./FinaleAtmosphere";
 import { Chevron } from "./Icon";
 import { Photo } from "./Photo";
-import { IllustrationCredit } from "./IllustrationCredit";
 import { SpreadLetters } from "./SpreadTitle";
 import { HoloCard } from "./intro/HoloCard";
 import { useIntroVisibility } from "./intro/useIntroVisibility";
@@ -41,7 +40,6 @@ export function PizzaSlider() {
             </figure>;
           })}
         </div>
-        <IllustrationCredit fromPhoto={slides[carousel.index].src === "assets/pizze/via-roma.webp"} />
         <div className="pizza-controls" role="group" aria-label={copy.navigation}>
           <button className="pizza-arrow previous" type="button" aria-controls="forno pizza-copy" aria-label={copy.previous} onClick={() => carousel.move(-1)}><Chevron direction="left" /></button>
           <button className="pizza-arrow next" type="button" aria-controls="forno pizza-copy" aria-label={copy.next} onClick={() => carousel.move(1)}><Chevron direction="right" /></button>
@@ -77,7 +75,6 @@ export function Cornicione() {
           sizes="(max-width: 767px) 80vw, (max-width: 1199px) 23vw, (max-width: 2399px) 20vw, 13vw"
           width="768" height="1152" loading="lazy" decoding="async" draggable={false} alt={`${line1} ${option.name}`} />
         <div className="crust-card-shade" aria-hidden="true" />
-        <IllustrationCredit />
         <div className="crust-card-copy"><h3>{option.name}</h3><p className="crust-price">€ {data.CORNICE[i][2]}</p></div>
       </HoloCard>)}
     </div>

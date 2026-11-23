@@ -1,14 +1,12 @@
 {
-  "name": "viaroma-5-9-1",
-  "version": "5.9.1",
+  "name": "viaroma-6-0",
+  "version": "6.0.0",
   "private": true,
   "type": "module",
   "engines": {
     "node": "^22.13.0 || >=24.0.0"
   },
   "scripts": {
-    "predev": "node scripts/sync-operator.mjs",
-    "prebuild": "node scripts/sync-operator.mjs",
     "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",

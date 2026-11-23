@@ -2,18 +2,10 @@ import { Fragment } from "react";
 import { useI18n } from "../i18n";
 import { closingCopy } from "../data/closing-copy";
 import { legalPath } from "../data/legal-path";
-import operator from "../data/operator.json";
-import { mapUrl } from "../data/venue-links";
+import { mapUrl, phoneHref, phoneNumber } from "../data/venue-links";
 import { useDialog } from "./DialogContext";
 import { BentoGrid, TileArrow } from "./BentoGrid";
 import { SpreadLetters, SpreadTitle } from "./SpreadTitle";
-
-const vatLabels = {
-  it: ["P. IVA", "anteprima"],
-  en: ["VAT no.", "preview"],
-  de: ["USt.-Nr.", "Vorschau"],
-  fr: ["TVA", "aperçu"],
-} as const;
 
 function MapPin({ kind, label }: { kind: "venue" | "square"; label: string }) {
   return <span className={`map-pin ${kind}-pin`}>
@@ -24,10 +16,10 @@ function MapPin({ kind, label }: { kind: "venue" | "square"; label: string }) {
 function Footer() {
   const { ui, copy, language } = useI18n();
   const { open } = useDialog();
-  const [vatLabel, previewLabel] = vatLabels[language];
   return <footer className="visit-footer" role="contentinfo">
     <div className="footer-row">
       <p><span>© 2026</span><span>PIZZERIA VIA ROMA</span></p>
+      <small className="footer-vat">{closingCopy[language].vat} 01956350936</small>
       <a className="studio-credit" href="https://mementostudio.it" target="_blank" rel="noopener noreferrer">
         <span lang="en">Powered by</span>
         <img src="/assets/memento-wordmark.svg?v=56" width="824" height="64" loading="lazy" alt="MEMENTO" />
@@ -43,7 +35,6 @@ function Footer() {
             }}>{label}</a>
           </Fragment>)}
       </nav>
-      <small className="footer-vat">{vatLabel} {operator.vatNumber}{operator.preview && ` · ${previewLabel}`}</small>
     </div>
   </footer>;
 }
@@ -66,23 +57,12 @@ export default function Contacts() {
         <div className="bento-tile hours-tile" role="group" aria-label={t.d_orari}>
           <span className="sign-mark"><img src="/assets/logo.png" width="851" height="851" alt="Pizzeria Via Roma" loading="lazy" decoding="async" /></span>
           <div className="hours-copy">
-            <strong className="opening-time">18:00 - 23:00</strong>
+            <strong className="opening-time visit-digits">18:00 - 23:00</strong>
             <p><span className="sr-only">{ui.closed_day}</span><span className="hours-note spread-line" aria-hidden="true"><SpreadLetters text={ui.closed_day.toLocaleUpperCase(language)} /></span></p>
           </div>
         </div>
-        <a className="bento-tile contact-tile wa-tile" href="https://wa.me/393802453757" target="_blank" rel="noopener noreferrer">
-          <img className="tile-art" src="/assets/social/whatsapp.webp?v=46" width="512" height="512" loading="lazy" decoding="async" alt="" />
-          <span className="tile-bottom">
-            <span className="contact-heading"><span className="action-label">WhatsApp</span>{" "}<small>380 2453 757</small></span>
-            <TileArrow />
-          </span>
-        </a>
-        <a className="bento-tile contact-tile phone-tile" href="tel:+390427541232">
-          <img className="tile-art" src="/assets/social/telefono.webp" width="512" height="512" loading="lazy" decoding="async" alt="" />
-          <span className="tile-bottom">
-            <span className="contact-heading"><span className="action-label">{ui.call}</span>{" "}<small>0427 541232</small></span>
-            <TileArrow />
-          </span>
+        <a className="bento-tile phone-tile" href={phoneHref}>
+          <span className="phone-number visit-digits">{phoneNumber}</span>
         </a>
       </BentoGrid>
     </section>

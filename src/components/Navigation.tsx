@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { languages, useI18n } from "../i18n";
 import { DockIcon } from "./Icon";
+import { phoneHref } from "../data/venue-links";
 import GradualBlur from "./hero/GradualBlur";
 import { usePresentationInteractions } from "./hero/usePresentationInteractions";
 
@@ -155,7 +156,7 @@ export function Dock() {
           <a
             key={x.id}
             aria-label={x.label}
-            href={x.id === "call" ? "tel:+390427541232" : `#${x.id}`}
+            href={x.id === "call" ? phoneHref : `#${x.id}`}
             aria-current={active === x.id ? "location" : undefined}
           >
             <span className="dock-tile">

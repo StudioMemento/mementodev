@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { inflateRawSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const name = "ViaRoma_5.9.1_Vercel";
+const name = "ViaRoma_6.0_Vercel";
 const zip = await readFile(process.env.DEPLOY_ZIP || `../${name}.zip`);
 let end = -1;
 for (let p = zip.length - 22; p >= Math.max(0, zip.length - 65557); p--)
@@ -61,11 +61,7 @@ for (const required of [
   ".nvmrc",
   "README.md",
   "THIRD_PARTY.md",
-  "docs/Allergeni_5.9.1.md",
-  "docs/Audit_5.9.1.md",
-  "src/data/operator.json",
-  "scripts/sync-operator.mjs",
-  "src/components/IllustrationCredit.tsx",
+  "docs/Allergeni_5.9.md",
   "src/main.tsx",
   "src/components/gallery/ribbon.ts",
   "src/hooks/horizontalDrag.ts",
@@ -78,7 +74,7 @@ for (const required of [
   "src/components/bento/edge-field.ts",
   "src/components/bento/effects.ts",
   "src/components/FinaleAtmosphere.tsx",
-  ...["instagram", "facebook", "google", "tripadvisor", "guru", "sluurpy", "whatsapp", "telefono"].map(id => `public/assets/social/${id}.webp`),
+  ...["instagram", "facebook", "google", "tripadvisor", "guru", "sluurpy"].map(id => `public/assets/social/${id}.webp`),
   "src/components/BentoGrid.tsx",
   "tests/intro/catalog-browser.mjs",
   "tests/intro/viewport.mjs",

@@ -105,8 +105,6 @@ try {
     for (const [index, [file, name]] of pizzas.entries()) {
       await waitForIndex(index);
       assert.equal(await oven.locator('.pizza-caption[aria-hidden="false"] h3').textContent(),name);
-      assert.equal(await oven.locator(".image-credit").textContent(),
-        name === "Via Roma" ? "Da una foto del locale" : "Immagine generata con IA");
       const img=stage.locator('[data-forno-index="' + index + '"] img').first();
       const resource=await img.evaluate(async im => { await im.decode(); return {url:new URL(im.currentSrc).pathname, width:im.naturalWidth, height:im.naturalHeight}; });
       assert.ok(["/"+file, "/"+file.replace(/\.webp$/,"-768.webp")].includes(resource.url));
