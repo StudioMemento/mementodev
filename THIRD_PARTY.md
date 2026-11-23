@@ -1,4 +1,4 @@
-# Risorse e licenze — Via Roma 6.6
+# Risorse e licenze — Via Roma 6.7
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.
@@ -26,4 +26,4 @@ Le tre risoluzioni WebP sono in `public/assets/asporto` e `public/assets/foto-os
 Il link della seconda card apre le foto degli ospiti su Google Maps.
 Il wordmark nel footer conserva i tracciati Memento con una spaziatura ottica più compatta.
 
-Per la 6.6 la fotografia della pizza Via Roma del catalogo è stata usata come riferimento per rigenerare la scena nel cartone aperto. Le tre versioni WebP della card 16:9 misurano 480 × 270, 960 × 540 e 1600 × 900 px.
+Per la 6.7 la fotografia della Via Roma del catalogo e la composizione della 6.6 sono i riferimenti per la nuova scena con il cartone da asporto. Il marchio sulla card proviene dal PNG originale fornito dallo studio. La versione WebP del marchio rimuove i soli margini trasparenti e conserva i pixel visibili senza perdita. Le tre versioni WebP della card 16:9 misurano 480 × 270, 960 × 540 e 1600 × 900 px.

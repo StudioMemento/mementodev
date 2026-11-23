@@ -13,13 +13,26 @@
   scroll-margin-block-start:calc(68px + env(safe-area-inset-top));
 }
 .venue-room {
-  --card:clamp(10vw,40vw,640px); --stage-h:calc(var(--card) * 1.04);
-  /* Use the 6.5 stage only to measure the empty space around each album. */
-  --spacing-reference:calc(max(14vw,min(42vw,62svh,680px)) * .88 + 4px);
-  min-height:100vh; min-height:max(100svh,calc(100svh + var(--stage-h) - var(--spacing-reference)));
+  --card:clamp(10vw,40vw,640px);
+  --stage-ratio:1.04;
+  --stage-h:max(var(--card) * var(--stage-ratio),var(--aperture-height,0px));
+  /* The 6.6 room used the smaller of its frame and the 6.5 reference for its outer margins. */
+  --spacing-reference:min(max(14vw,min(42vw,62svh,680px)) * .88 + 4px,clamp(10vw,40vw,640px) * 1.04);
+  min-height:100vh; min-height:calc(100svh + var(--stage-h) - var(--spacing-reference));
   justify-content:center;
   padding-block:calc(clamp(58px,8svh,112px) + env(safe-area-inset-top)) calc(clamp(58px,8svh,112px) + env(safe-area-inset-bottom));
   gap:clamp(14px,2.4svh,32px); scroll-margin-block-start:0;
+}
+@media(min-aspect-ratio:2/1) {
+  .venue-room { --card:clamp(10vw,40vw,max(640px,60svh)); }
+}
+/* Reserve the full cylinder silhouette before the lazy controller mounts.
+   At the viewport edge a 4:3 panel is taller by 1 / cos(view angle). */
+@supports (opacity:cos(0deg)) {
+  .venue-room {
+    /* The minimum stage already fits the narrow-view lens. Only its wide limit can overflow. */
+    --aperture-height:calc(var(--card) * .75 / cos(atan2(50vw,min(1800px,var(--card) * 2.15))) + 2px);
+  }
 }
 .venue-room .spread-title {
   font-size:min(5rem,7.6svh,calc(var(--vr-content) / var(--line-letters) * 1.43));
@@ -42,7 +55,7 @@
   width:100%; position:relative; overflow-anchor:none;
 }
 .ribbon-stage {
-  width:100%; height:var(--stage-h); position:relative; overflow-x:auto; overflow-y:hidden;
+  width:100%; height:var(--stage-h); position:relative; overflow:auto hidden;
   overscroll-behavior-x:contain; scrollbar-width:none;
   -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
   mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
@@ -170,7 +183,7 @@
   .venue-pin span { translate:-65% 0; }
 }
 @media(max-width:620px) and (orientation:portrait) {
-  .venue-room { --card:83vw; --stage-h:calc(var(--card) * .9); --spacing-reference:calc(var(--card) * .88 + 4px); }
+  .venue-room { --card:83vw; --stage-ratio:.9; --spacing-reference:calc(var(--card) * .88 + 4px); }
 }
 @media(max-height:320px) and (orientation:landscape) {
   .hours-tile,.hours-copy { gap:3px; }

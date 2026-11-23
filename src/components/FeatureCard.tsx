@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { HoloCard } from "./intro/HoloCard";
 import { Chevron } from "./Icon";
 
@@ -7,10 +8,11 @@ type FeatureCardProps = {
   heading: string;
   caption?: string;
   imageBase: string;
+  children?: ReactNode;
   link?: { href: string; label: string };
 };
 
-export function FeatureCard({ id, titleId, heading, caption, imageBase, link }: FeatureCardProps) {
+export function FeatureCard({ id, titleId, heading, caption, imageBase, link, children }: FeatureCardProps) {
   return (
     <section className="screen-section takeaway" id={id} aria-labelledby={titleId}>
       <HoloCard>
@@ -19,6 +21,7 @@ export function FeatureCard({ id, titleId, heading, caption, imageBase, link }: 
           sizes="(min-width:2400px) 40vw, (min-width:1200px) 60vw, (min-width:768px) 70vw, 80vw"
           width="1600" height="900" loading="lazy" decoding="async" draggable={false} alt="" />
         <div className="crust-card-shade" aria-hidden="true" />
+        {children}
         <div className="takeaway-copy">
           <h2 id={titleId}>{heading}{link && <Chevron direction="right" />}</h2>
           {caption && <p>{caption}</p>}

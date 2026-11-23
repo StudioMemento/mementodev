@@ -187,7 +187,7 @@ try {
         next:document.querySelector("#gallery").getBoundingClientRect().top-el.closest("section").getBoundingClientRect().bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
     assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
-    assert.match(dimensions.file,/via-roma-cartone-66-(480|960|1600)\.webp$/);
+    assert.match(dimensions.file,/via-roma-cartone-67-(480|960|1600)\.webp$/);
     assert.ok(dimensions.padding>=119 && Math.abs(dimensions.next)<2, "The takeaway reserves space above and below the moving card");
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
@@ -215,7 +215,7 @@ try {
       const zoom = await card.evaluate(el => Number(getComputedStyle(el).getPropertyValue("--card-scale")));
       assert.equal(zoom, 1.1, "The takeaway and crust cards share the same lift");
       await page.waitForFunction(()=>getComputedStyle(document.querySelector("#asporto .crust-card")).transform.startsWith("matrix3d"));
-      assert.equal(await card.locator("img").evaluate(el=>getComputedStyle(el).transform),"none");
+      assert.equal(await card.locator(".crust-photo").evaluate(el=>getComputedStyle(el).transform),"none");
       for (const [x,y] of [[.01,.01],[.99,.01],[.01,.99],[.99,.99]]) {
         const frame = await shell.boundingBox();
         await page.mouse.move(frame.x+frame.width*x, frame.y+frame.height*y);

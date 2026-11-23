@@ -148,7 +148,10 @@ async function checkLegalText(article) {
         Math.abs(value.getBoundingClientRect().left-first)<1 && term.getBoundingClientRect().right <= first) &&
         [...facts.querySelectorAll("a")].every(a=>getComputedStyle(a).textDecorationLine==="none");
     }
-    return { noOverflow, intact, typography, structure:facts ? wellFormed && el.querySelectorAll("h2").length>=1 : el.querySelectorAll("h2").length>=2 };
+    const structure = facts
+      ? wellFormed && el.querySelectorAll("section").length === 1 && el.querySelectorAll("h2,p").length === 0
+      : el.querySelectorAll("h2").length >= 2;
+    return { noOverflow, intact, typography, structure };
   });
   assert.deepEqual(report.typography,[]);
   assert.ok(report.noOverflow && report.intact && report.structure, JSON.stringify(report));

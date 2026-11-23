@@ -107,13 +107,16 @@
   .crust-card h3,.crust-price { font-size:clamp(12px,2vw,16px); }
 }
 .takeaway {
-  position:relative; width:var(--vr-content); container-type:inline-size;
+  --pad:clamp(12px,4.4cqi,64px);
+  position:relative; width:var(--vr-content);
   margin-inline:auto;
   /* The projected corners grow with the card width. Leave clearance on both sides of the tilt. */
   padding-block:max(clamp(60px,8svh,112px),calc(var(--vr-content) * .12 + 28px));
 }
 .takeaway .crust-card-shell { width:100%; aspect-ratio:16/9; }
-.takeaway-copy { --pad:clamp(12px,4.4cqi,64px); position:absolute; inset:auto var(--pad) var(--pad); z-index:2; text-align:left; pointer-events:none; }
+.takeaway-copy,.takeaway-mark { position:absolute; left:var(--pad); z-index:2; pointer-events:none; }
+.takeaway-copy { right:var(--pad); bottom:var(--pad); text-align:left; }
+.takeaway-mark { top:var(--pad); width:min(11.5cqi,160px); height:auto; }
 .takeaway-copy h2 { color:var(--vr-highlight); font-size:clamp(14px,4.7cqi,54px); line-height:1.12; letter-spacing:-.018em; }
 .takeaway .crust-card-shade { inset:34% 0 0; --shade-mid:#09090936; }
 #asporto .crust-card-shade {
@@ -122,14 +125,14 @@
     linear-gradient(0deg,#09090965,transparent 30%);
 }
 @font-face {
-  font-family:"Via Roma Question"; font-style:normal; font-weight:300; font-display:swap;
-  src:url("/assets/fonts/open-sans-light-question.woff") format("woff"); unicode-range:U+003F;
+  font-family:"Open Sans"; font-weight:300; font-display:swap;
+  src:url("/assets/fonts/open-sans-light-question.woff"); unicode-range:U+003F;
 }
+#asporto { text-wrap:balance; }
 #asporto h2 {
-  font-family:"Via Roma Question",Jost,system-ui,sans-serif;
-  font-size:clamp(28px,7.6cqi,86px); line-height:1.06; text-wrap:balance;
+  font-family:"Open Sans",Jost,system-ui,sans-serif;
+  font-size:clamp(28px,7.6cqi,86px); line-height:1.06;
 }
-#asporto p { text-wrap:balance; }
 .takeaway-copy p { font-size:clamp(13px,3cqi,31px); line-height:1.22; margin-top:.26em; }
 @media(prefers-reduced-motion:reduce) { .crust-card { transform:none; transition:none; } }
 

@@ -50,8 +50,10 @@ async function galleries(page, touch) {
     const frame = i => cards[i].getBoundingClientRect();
     const centered = frame(0), right = frame(1);
     const photo = cards[0].querySelector("img");
-    const width = matchMedia("(max-width:620px) and (orientation:portrait)").matches
-      ? innerWidth * .83 : Math.max(innerWidth * .1, Math.min(innerWidth * .4, 640));
+    let width = Math.max(innerWidth * .1, Math.min(innerWidth * .4, 640));
+    if (matchMedia("(max-width:620px) and (orientation:portrait)").matches) width = innerWidth * .83;
+    if (innerWidth >= 1920 && innerWidth / innerHeight >= 2)
+      width = Math.max(640, innerWidth * .1, Math.min(innerWidth * .4, innerHeight * .6));
     return { clip: getComputedStyle(node.firstElementChild).clipPath, transforms: cards[0].style.transform, sideHigher: right.height > centered.height,
       width: cards[0].offsetWidth, expectedWidth: width, aspect: photo.offsetWidth / photo.offsetHeight,
       seam:right.left-centered.right, gap:parseFloat(getComputedStyle(node.firstElementChild).columnGap),
@@ -62,7 +64,7 @@ async function galleries(page, touch) {
   assert.match(projection.transforms, /matrix3d/);
   assert.match(projection.clip, /^polygon\(/, "Gallery uses the continuous curved aperture");
   assert.ok(Math.abs(projection.width - projection.expectedWidth) < 1 && Math.abs(projection.aspect - 4/3) < .01,
-    "Gallery uses the original panel width and 4:3 framing");
+    "Gallery uses the responsive panel width and 4:3 framing");
   await page.keyboard.press("ArrowLeft");
   assert.equal(await stage.getAttribute("data-active"), String(original.GALLERY_ALBUMS.esterno.length - 1));
   await page.keyboard.press("ArrowRight"); assert.equal(await stage.getAttribute("data-active"), "0");
@@ -177,11 +179,14 @@ async function contactAndLegal(page, touch) {
       const html=await response.text();
       assert.doesNotMatch(html, /legal-draft|bozza per la revisione/i);
       assert.equal(await text.locator(".legal-draft").count(), 0);
+      const imageHeading = { it:"Immagini", en:"Images", de:"Bilder", fr:"Images" }[lang];
+      assert.equal(await text.getByRole("heading",{name:imageHeading,exact:true}).count(), i === 1 ? 1 : 0);
       if (i > 0) {
         assert.ok((await text.innerText()).includes("NIGRO SARAH PIZZERIA"));
         assert.equal(await text.locator('a[href="mailto:NIGROSARAH2@GMAIL.COM"]').count(),1);
       }
       if (i === 2) {
+        assert.equal(await text.locator("section").count(), 1);
         for (const value of ["33085 Maniago (PN)", "01956350936", "33170 Pordenone", "PN 371993"]) {
           assert.ok((await text.innerText()).includes(value));
         }
@@ -215,9 +220,9 @@ async function contactAndLegal(page, touch) {
       if (i===1) assert.ok(breaks>=3, "The Privacy reader preserves the authored clause breaks");
       else assert.equal(breaks,0);
       if (touch) {
-        const paragraph = text.locator("p").first();
-        await paragraph.scrollIntoViewIfNeeded();
-        await paragraph.tap({position:{x:2,y:4}});
+        const bodyText = text.locator(i === 2 ? "dt" : "p").first();
+        await bodyText.scrollIntoViewIfNeeded();
+        await bodyText.tap({position:{x:2,y:4}});
       } else if (i===0) {
         await text.locator("h2").first().click();
       } else if (i===1) {
@@ -440,6 +445,16 @@ try {
     const strip=compact.locator("#album-esterno .ribbon-stage");
     await center(strip);await compact.waitForSelector("#album-esterno [data-enhanced]");await strip.focus();
     await compact.keyboard.press("Home");
+    // Both halves of the silhouette must fit inside the stage's overflow clip.
+    const fullCurve = await strip.evaluate(el => {
+      const clip = getComputedStyle(el.firstElementChild).clipPath;
+      const points = Array.from(clip.matchAll(/([\d.+-]+)%\s+([\d.+-]+)%/g), p => [Number(p[1]), Number(p[2])]);
+      const half = points.length / 2;
+      return half >= 3 && points.every(([,y]) => y >= 0 && y <= 100) &&
+        points[0][1] < points[1][1] && points[half - 1][1] < points[half - 2][1] &&
+        points[half][1] > points[half + 1][1] && points.at(-1)[1] > points.at(-2)[1];
+    });
+    assert.ok(fullCurve,`Uncut top and bottom curves at ${width}×${height}`);
     for(const fraction of [0,.25,.5,.75]) {
       const coverage=await strip.evaluate((el,offset)=>{
         const panelWidth=el.querySelector(".ribbon-card").offsetWidth;
