@@ -122,12 +122,33 @@ try {
       assert.ok(resource.width > 0 && resource.width === resource.height);
       const trigger = oven.locator('.pizza-caption[aria-hidden="false"] h3 button');
       assert.equal(await oven.getByRole("button", {name,exact:true}).count(),1);
-      if (index === 0) { await trigger.focus(); await page.keyboard.press("Enter"); }
+      if (index === 0) {
+        if (width >= 500) {
+          await trigger.hover();
+          assert.equal(await trigger.evaluate(el => getComputedStyle(el).textDecorationLine), "none");
+        }
+        await trigger.focus();
+        await page.keyboard.press("Enter");
+      }
       else if (width < 500) await trigger.tap();
       else await trigger.click();
       const dialog=page.locator("dialog[open]");
       await dialog.waitFor();
       assert.equal(await dialog.locator("h2").textContent(),name);
+      if (index === 0) {
+        const sulfites = dialog.locator(".allergen-description").nth(11);
+        assert.equal(await sulfites.innerText(), "Anidride solforosa e solfiti oltre 10 mg/kg o 10 mg/l di SO₂\ntotale nel prodotto pronto al consumo.");
+        assert.ok(await sulfites.evaluate(el => {
+          const text = el.firstChild, split = text.textContent.indexOf("\n");
+          const y = index => {
+            const range = document.createRange();
+            range.setStart(text, index);
+            range.setEnd(text, index + 1);
+            return range.getBoundingClientRect().top;
+          };
+          return y(split + 1) > y(split - 1) + 3;
+        }));
+      }
       const row = [...menuRows.classiche, ...menuRows.audaci, ...menuRows.bianche].find(([title])=>title===name);
       assert.deepEqual(await dialog.locator("li.contains .allergen-code").allTextContents(),row[3].match(/\d+|\*/g) || []);
       if (index === 0) await page.keyboard.press("Escape");
@@ -162,11 +183,11 @@ try {
       return {ratio:card.width/card.height, sameFinish, fullBleed:["top","right","bottom","left"].every(k=>Math.abs(picture[k]-card[k])<2),
         contained:copy.left>=picture.left && copy.right<=picture.right+1 && copy.top>=picture.top && copy.bottom<=picture.bottom+1,
         file:new URL(image.currentSrc).pathname, shape:getComputedStyle(el).transform,
-        gap:document.querySelector("#gallery").getBoundingClientRect().top-card.bottom, overflow:document.documentElement.scrollWidth>innerWidth};
+        gap:document.querySelector("#gallery .spread-title").getBoundingClientRect().top-card.bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
     assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
-    assert.match(dimensions.file,/via-roma-in-cartone-(480|960|1600)\.webp$/);
-    assert.ok(dimensions.gap >= Math.min(280, Math.max(120, height * .23)) - 1);
+    assert.match(dimensions.file,/via-roma-cartone-aperto-(480|960|1600)\.webp$/);
+    assert.ok(Math.abs(dimensions.gap - Math.min(100, Math.max(56, height * .08))) < 2, "One section gap separates takeaway from the first gallery title");
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
     assert.ok(await page.locator(".menu-art-window").evaluateAll(all =>

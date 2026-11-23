@@ -269,8 +269,14 @@ async function finalLayout(page) {
     };
     const pairs=rooms.slice(1).map((room,i) => {
       const prev=rooms[i].querySelector(".photo-ribbon");
-      return [titleGap(room),rect(room.querySelector("h2")).top-rect(prev).bottom];
+      const previousInkEdge=rect(prev).top+(rect(prev).height + prev.querySelector(".ribbon-card").offsetWidth*.75)/2;
+      return [titleGap(room),rect(room.querySelector("h2")).top-previousInkEdge];
     });
+    const sectionGaps = [
+      ["#gallery .venue-room:last-child .photo-ribbon", "#customer .crust-card-shell"],
+      ["#customer .crust-card-shell", "#social-title"],
+      [".social-bento", "#visit-title"],
+    ].map(([before,after])=>rect(document.querySelector(after)).top-rect(document.querySelector(before)).bottom);
     const tiles=document.querySelectorAll(".bento-grid a");
     const outer=[...document.querySelectorAll("#customer .crust-card-shell,.bento-grid,.footer-row")];
     const bento=[...document.querySelectorAll(".bento-grid")].map(grid=>[...grid.children].map(el=>{
@@ -281,13 +287,14 @@ async function finalLayout(page) {
       rules:[...document.querySelectorAll("#customer,#social,#info,.visit-footer,.footer-row")].every(el=>{const c=getComputedStyle(el);return c.borderTopWidth==="0px" && c.borderBottomWidth==="0px";}),
       footerRule:getComputedStyle(document.querySelector(".footer-row nav")).borderTopWidth,
       firstRowLabel:document.querySelector("#visit-title").getAttribute("aria-label"), areas:bento,
-      blockSizes:[...document.querySelectorAll("#social,#info")].every(el=>rect(el).height+1>=innerHeight),
+      sectionGaps, expectedSpacing:Math.max(56,Math.min(100,innerHeight*.08)),
       validEdges:outer.every(atGutters)&&[...document.querySelectorAll(".ribbon-stage")].every(el=>ok(rect(el).left,0)&&ok(rect(el).right,innerWidth)),
       shortSides:[...tiles].every(el=>{const r=rect(el);return Math.min(r.width,r.height)>=44;}),
       overflow:document.documentElement.scrollWidth>innerWidth};
   });
-  assert.ok(result.validTitles && result.validEdges && result.blockSizes && result.shortSides && !result.overflow, JSON.stringify(result));
-  assert.equal(result.menuPad >= 36 && result.menuPad <= 84 && result.firstGap >= 122,true); assert.ok(result.rules,"The finale sections have no separators");
+  assert.ok(result.validTitles && result.validEdges && result.shortSides && !result.overflow, JSON.stringify(result));
+  assert.equal(result.menuPad >= 36 && result.menuPad <= 84 && Math.abs(result.firstGap - result.expectedSpacing) < 2,true); assert.ok(result.rules,"The finale sections have no separators");
+  assert.ok(result.sectionGaps.every(gap=>Math.abs(gap-result.expectedSpacing)<2), JSON.stringify(result.sectionGaps));
   assert.equal(result.footerRule,"0px","Footer links have no dividing rule");
   result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
   assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
@@ -386,8 +393,11 @@ async function particles() {
   await page.clock.resume();
   const logo=page.locator(".hours-tile");
   await center(logo);await logo.hover();await logo.locator("canvas").waitFor();
-  await page.waitForTimeout(650);assert.equal(await logo.locator(".sign-mark").evaluate(e=>getComputedStyle(e,"::after").opacity),"1");
-  await page.mouse.move(1,1);await page.waitForTimeout(700);assert.equal(await logo.locator(".sign-mark").evaluate(e=>getComputedStyle(e,"::after").opacity),"0");
+  const logoOpacity = value => page.waitForFunction(target =>
+    getComputedStyle(document.querySelector(".hours-tile .sign-mark"), "::after").opacity === target, value);
+  await logoOpacity("1");
+  await page.mouse.move(1,1);
+  await logoOpacity("0");
   await page.close();
 }
 

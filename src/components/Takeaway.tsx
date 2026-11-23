@@ -12,5 +12,5 @@ export function Takeaway() {
   const { language } = useI18n();
   const [heading, caption] = copy[language];
   return <FeatureCard id="asporto" titleId="takeaway-title" heading={heading} caption={caption}
-    imageBase="/assets/asporto/via-roma-in-cartone" />;
+    imageBase="/assets/asporto/via-roma-cartone-aperto" />;
 }

@@ -63,9 +63,9 @@ function measureOven() {
   const problems = [];
   for (const caption of oven.querySelectorAll(".pizza-caption")) {
     const heading = caption.querySelector("h3");
-    const name = ink(heading);
     const text = document.createRange();
-    text.selectNodeContents(heading);
+    text.selectNodeContents(heading.querySelector("button"));
+    const name = text.getBoundingClientRect();
     const ingredients = [...caption.querySelectorAll("li")];
     const aligned = [heading, ...ingredients].every(el => Math.abs(captionX-box(el).left) < 1);
     const ordered = ingredients.every((li,i) => !i || ink(li).top > ink(ingredients[i-1]).bottom-4);

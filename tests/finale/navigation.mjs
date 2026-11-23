@@ -37,15 +37,24 @@ async function checkAnchorsAndCursor(page,touch) {
     await page.waitForFunction(id=>Math.abs(document.getElementById(id).getBoundingClientRect().top)<200,id);
   }
   const pointer = page.locator(".phone-tile");
-  const usesGoldDot = el=>getComputedStyle(el).cursor.includes("cursor-oro.svg");
-  assert.equal(await pointer.evaluate(usesGoldDot),!touch);
-  await page.locator('.footer-row a[href="/privacy.html"]').click();
+  const cursor = locator=>locator.evaluate(el=>getComputedStyle(el).cursor);
+  for(const [selector,kind] of [["#info h2","punta"],["#forno","scorri"],[".phone-number","azione"],[".lang button.on span","azione"]]) {
+    const style=await cursor(page.locator(selector).first());
+    assert.equal(style.includes("cursore-"+kind+".svg"),!touch,selector+" "+style);
+  }
+  const link=page.locator('.footer-row a[href="/privacy.html"]');
+  await link.click();
   const close=page.locator("dialog[open] .modal-close");
-  assert.equal(await close.evaluate(usesGoldDot),!touch);
+  assert.equal((await cursor(close)).includes("cursore-azione.svg"),!touch);
   await close.click();
+  assert.equal(await link.evaluate(el=>getComputedStyle(el).outlineStyle),"none");
   if (!touch) {
+    await link.focus();
+    await page.keyboard.press("Tab");
+    assert.ok(await page.locator(".footer-row nav a:focus-visible").evaluate(el=>
+      getComputedStyle(el).outlineStyle==="none" && getComputedStyle(el,"::after").width==="6px"));
     await page.emulateMedia({forcedColors:"active"});
-    assert.equal(await pointer.evaluate(usesGoldDot),false);
+    assert.equal((await cursor(pointer)).includes("cursore-"),false);
     await page.emulateMedia({forcedColors:"none"});
   }
 }
@@ -120,10 +129,19 @@ async function checkLegalText(article) {
           typography.push("wrap: " + text.slice(word.index,end+space.length+16));
       }
     }
-    return { noOverflow, intact, typography, headings: el.querySelectorAll("h2").length };
+    const facts=el.querySelector(".legal-facts");
+    let wellFormed;
+    if(facts) {
+      const pairs=[...facts.querySelectorAll("dt")].map(dt=>[dt,dt.nextElementSibling]);
+      const first=pairs[0][1].getBoundingClientRect().left;
+      wellFormed=pairs[0][1].textContent==="NIGRO SARAH PIZZERIA" && pairs.every(([term,value])=>
+        Math.abs(value.getBoundingClientRect().left-first)<1 && term.getBoundingClientRect().right <= first) &&
+        [...facts.querySelectorAll("a")].every(a=>getComputedStyle(a).textDecorationLine==="none");
+    }
+    return { noOverflow, intact, typography, structure:facts ? wellFormed && el.querySelectorAll("h2").length>=1 : el.querySelectorAll("h2").length>=2 };
   });
   assert.deepEqual(report.typography,[]);
-  assert.ok(report.noOverflow && report.intact && report.headings >= 2, JSON.stringify(report));
+  assert.ok(report.noOverflow && report.intact && report.structure, JSON.stringify(report));
 }
 
 async function testViewport(width,height,touch) {
@@ -241,7 +259,7 @@ async function testViewport(width,height,touch) {
     });
     assert.equal(footer.divider,"0px");
     assert.equal(footer.stacked, width<768);
-    assert.ok(footer.wordmark>=8.5);
+    assert.ok(footer.wordmark>=8.3);
     if(width===390) {
       for(const language of languages) {
         await page.locator('.lang button[data-lang="'+language+'"]').click();

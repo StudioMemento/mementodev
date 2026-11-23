@@ -1,0 +1,29 @@
+/* Native cursor images keep the hotspot attached to the pointer during scroll and drag. */
+@media (hover:hover) and (pointer:fine) and (forced-colors:none) {
+  :root {
+    --pointer:url("/assets/cursore-punta.svg") 3 3, auto;
+    --action:url("/assets/cursore-azione.svg") 3 3, auto;
+    --drag:url("/assets/cursore-scorri.svg") 3 3, auto;
+  }
+  :where(*) { cursor:var(--pointer); }
+  :where(#pizza-slider,.ribbon-stage[data-enhanced]) { --pointer:var(--drag); }
+  :where(a[href],button:enabled,[role=button],.vr-dialog[open]) { --pointer:var(--action); }
+  .is-dragging :where(a,button) { --pointer:var(--drag); }
+  dialog::backdrop { cursor:var(--action); }
+}
+
+:root { -webkit-tap-highlight-color:transparent; }
+:where(a[href],button,.modal-header) { position:relative; }
+:focus { outline:none; }
+
+/* Use a small mark over the focused control while leaving its hit area and selection intact. */
+:where(a[href],button):not(:where(.lang button,.bento-tile,.ribbon-card)):focus-visible::after,
+.lang button:focus-visible::before,
+.bento-tile:focus-visible :is(.tile-bottom,.visit-copy)::after,
+#forno:focus-visible::after,
+.legal-panel:has(.legal-scroll:focus-visible) .modal-header::after {
+  content:""; position:absolute; z-index:4; pointer-events:none; left:50%; bottom:var(--focus-bottom,2px); translate:-50% 0;
+  width:6px; height:6px; border-radius:50%; background:var(--focus-ink,#ffe2a1); box-shadow:0 0 0 1px #262017;
+  forced-color-adjust:none;
+}
+@media (forced-colors:active) { :root { --focus-ink:Highlight; } }
