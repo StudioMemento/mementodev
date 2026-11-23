@@ -3,7 +3,6 @@ import { wrap } from "../../hooks/useDrag";
 
 export type RibbonController = { focusCard(index: number): void; refresh(): void; destroy(): void };
 
-const perspective = 1800;
 const angularSpeed = 3.2 * Math.PI / 180;
 const momentum = 0.5;
 const scrollEase = 0.3;
@@ -46,7 +45,7 @@ export function mountRibbon(stage: HTMLElement, announcement: HTMLElement): Ribb
       if (!within) continue;
       // Project the four corners of a tangent panel on the inside of a cylinder.
       const sin = Math.sin(angle), cos = Math.cos(angle);
-      card.style.transform = `matrix3d(${focal * cos * side},0,0,${-sin * side},0,1,0,0,0,0,1,0,${focal * sin * depth},0,0,${cos * depth})`;
+      card.style.transform = `matrix3d(${focal * cos * side},0,0,${-sin * side},0,${depth},0,0,0,0,1,0,${focal * sin * depth},0,0,${cos * depth})`;
       card.style.opacity = String(1 - Math.min(1, Math.abs(2 * focal * Math.tan(angle) / width)) ** 1.6 * .45);
     }
     const index = nearest(position);
@@ -64,25 +63,14 @@ export function mountRibbon(stage: HTMLElement, announcement: HTMLElement): Ribb
     cardWidth = Math.max(1, layoutWidth(cards[0]));
     const gap = parseFloat(getComputedStyle(track).columnGap);
     pitch = cardWidth + gap;
-    focal = Math.min(perspective, cardWidth * 2.15, Math.max(cardWidth * 1.12, width * .54));
-    // Keep the seven-photo rooms continuous even on shallow ultrawide screens.
+    // At either viewport edge the vertical magnification stays below hypot(1, .5/.54).
+    focal = Math.max(cardWidth * 1.12, width * .54);
     halfAngle = Math.atan(cardWidth / (2 * focal));
     // Place the next panel's near edge one CSS gap from the centered panel.
     stepAngle = halfAngle + Math.atan((cardWidth / 2 + gap) / focal);
-    driftRate = angularSpeed / stepAngle;
+    // Preserve the established drift speed as the lens widens on ultrawide screens.
+    driftRate = angularSpeed * Math.min(1800, cardWidth * 2.15, focal) / (focal * stepAngle);
     viewAngle = Math.atan(width / (2 * focal)) + halfAngle;
-    // Trim the straight chords to one continuous, symmetrical aperture.
-    const outline: string[] = [];
-    const height = Math.max(1, stage.clientHeight);
-    for (const edge of [-1, 1]) {
-      for (let i = 0; i <= 32; i++) {
-        const fraction = edge < 0 ? i / 32 : 1 - i / 32;
-        const x = (fraction - .5) * width / focal;
-        const halfHeight = cardWidth * .375 * Math.hypot(1, x) / height * 100;
-        outline.push(`${fraction * 100}% ${50 + edge * halfHeight}%`);
-      }
-    }
-    track.style.clipPath = `polygon(${outline.join(",")})`;
     render();
   }
 
@@ -164,7 +152,7 @@ export function mountRibbon(stage: HTMLElement, announcement: HTMLElement): Ribb
   return { focusCard, refresh, destroy() {
     listeners.abort(); resize.disconnect(); observer.disconnect(); cancelAnimationFrame(frame);
     delete stage.dataset.enhanced; delete stage.dataset.active;
-    stage.classList.remove("is-dragging"); track.style.removeProperty("clip-path");
+    stage.classList.remove("is-dragging");
     activeCard?.classList.remove("is-current");
     for (const card of cards) {
       for (const key of ["transform", "visibility", "opacity"]) card.style.removeProperty(key);

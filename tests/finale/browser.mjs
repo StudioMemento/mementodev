@@ -49,13 +49,17 @@ async function galleries(page, touch) {
     const cards = [...node.querySelectorAll(".ribbon-card")];
     const frame = i => cards[i].getBoundingClientRect();
     const centered = frame(0), right = frame(1);
-    return { clip: node.firstElementChild.style.clipPath, transforms: cards[0].style.transform, sideHigher: right.height > centered.height,
+    const photo = cards[0].querySelector("img");
+    return { clip: getComputedStyle(node.firstElementChild).clipPath, transforms: cards[0].style.transform, sideHigher: right.height > centered.height,
+      aspect: centered.width / centered.height, sourceAspect: Number(photo.getAttribute("width")) / Number(photo.getAttribute("height")),
       seam:right.left-centered.right, gap:parseFloat(getComputedStyle(node.firstElementChild).columnGap),
       narrowerThanStage: centered.width < node.clientWidth, noTilt: centered.top >= right.top };
   });
   assert.ok(projection.sideHigher && projection.noTilt && projection.narrowerThanStage);
   assert.ok(Math.abs(projection.seam-projection.gap)<.15,"The projected center seam uses the gallery's declared gap");
-  assert.match(projection.transforms, /matrix3d/); assert.match(projection.clip, /polygon/);
+  assert.match(projection.transforms, /matrix3d/);
+  assert.equal(projection.clip, "none", "Panorama preserves the complete top and bottom of each photograph");
+  assert.ok(Math.abs(projection.aspect - projection.sourceAspect) < .01, "Centered photo preserves its aspect ratio");
   await page.keyboard.press("ArrowLeft");
   assert.equal(await stage.getAttribute("data-active"), String(original.GALLERY_ALBUMS.esterno.length - 1));
   await page.keyboard.press("ArrowRight"); assert.equal(await stage.getAttribute("data-active"), "0");
@@ -268,24 +272,18 @@ async function finalLayout(page) {
     const atGutters = el => { const r=rect(el); return ok(r.left,content.left) && ok(r.right,content.right); };
     const titles = [...document.querySelectorAll(".spread-title")];
     const rooms = [...document.querySelectorAll(".venue-room")];
-    const titleGap = room => {
-      const title=rect(room.querySelector("h2")), ribbon=rect(room.querySelector(".photo-ribbon"));
-      // At the middle of the curved stage, the 4:3 center image has this top edge.
-      const photoWidth=room.querySelector(".ribbon-card").offsetWidth;
-      return ribbon.top+(ribbon.height-.75*photoWidth)/2-title.bottom;
-    };
+    const titleGap = room => rect(room.querySelector(".photo-ribbon")).top - rect(room.querySelector("h2")).bottom;
     const pairs=rooms.slice(1).map((room,i) => {
       const prev=rooms[i].querySelector(".photo-ribbon");
-      const previousInkEdge=rect(prev).top+(rect(prev).height + prev.querySelector(".ribbon-card").offsetWidth*.75)/2;
-      return [titleGap(room),rect(room.querySelector("h2")).top-previousInkEdge];
+      return [titleGap(room),rect(room.querySelector("h2")).top-rect(prev).bottom];
     });
     const sections=[...document.querySelectorAll(".screen-section")];
     const naturalFlow=sections.length===9 && sections.every((section,i) => {
       const box=rect(section);
       const first=rect(section.firstElementChild), last=rect(section.lastElementChild);
       const before=first.top-box.top, after=box.bottom-last.bottom;
-      return before>=23.5 && before<=48.5 && ok(before,after)
-        && (!i || ok(rect(sections[i-1]).bottom,box.top));
+      const roomFits = !section.matches(".venue-room") || box.height >= innerHeight - 1;
+      return before >= 51 && after >= 51 && roomFits && (!i || ok(rect(sections[i-1]).bottom,box.top));
     });
     const centered=el=>{const r=rect(el); return r.width<=content.width+2 && ok(r.left+r.right,innerWidth);};
     const portrait=matchMedia("(max-width:700px) and (orientation:portrait)").matches;
@@ -306,9 +304,9 @@ async function finalLayout(page) {
   });
   assert.ok(result.validTitles && result.validEdges && result.shortSides && !result.overflow, JSON.stringify(result));
   assert.ok(result.menuPad>=36 && result.menuPad<=84 && result.rules);
-  assert.ok(result.naturalFlow, "The nine closing sections follow their content with bounded space between them");
+  assert.ok(result.naturalFlow, "Each gallery gets a viewport and adjacent closing sections have breathing room");
   assert.equal(result.footerRule,"0px","Footer links have no dividing rule");
-  result.pairs.forEach(([next,prev])=>assert.ok(next>=0 && prev>next,`Title distances: own photo ${next}, preceding stage ${prev}`));
+  result.pairs.forEach(([next,prev])=>assert.ok(next>=12 && next<=34 && prev>=Math.max(108,next*3),`Title distances: own photo ${next}, preceding stage ${prev}`));
   assert.equal(result.firstRowLabel.toUpperCase(),"TI ASPETTIAMO!");
   const [social,visit]=result.areas;
   assert.equal(social.length,6);assert.equal(visit.length,3);
@@ -420,7 +418,7 @@ async function run(layout) {
   page.on("pageerror",e=>errors.push(e.message));page.on("response",r=>{if(r.status()>=400)failed.push(r.url());});
   page.on("request",r=>first.push(r.url()));
   await page.goto(url);await page.evaluate(()=>document.fonts.ready);await tick(page);
-  assert.ok(first.every(link=>!link.includes("/assets/ribbons/")), "Gallery bytes loaded on the menu landing");
+  assert.ok(first.every(link=>!link.includes("/assets/gallery/")), "Gallery bytes loaded on the menu landing");
   await finalLayout(page);
   if (layout[3]) await galleries(page,layout[2]);
   await contactAndLegal(page,layout[2]);
@@ -445,8 +443,13 @@ try {
       const coverage=await strip.evaluate((el,offset)=>{
         const pitch=el.querySelector(".ribbon-card").offsetWidth+parseFloat(getComputedStyle(el.firstElementChild).columnGap);
         el.dispatchEvent(new WheelEvent("wheel",{deltaX:pitch*offset,cancelable:true}));
-        const r=el.getBoundingClientRect(), spans=[...el.querySelectorAll(".ribbon-card")].filter(c=>c.style.visibility==="visible").map(c=>c.getBoundingClientRect());
-        return [.02,.07,.93,.98].every(f=>spans.some(s=>s.left-5 <=r.width*f && s.right+5>=r.width*f));
+        const r=el.getBoundingClientRect();
+        const gap=parseFloat(getComputedStyle(el.firstElementChild).columnGap);
+        const spans=[...el.querySelectorAll(".ribbon-card")].filter(c=>c.style.visibility==="visible")
+          .map(c=>c.getBoundingClientRect()).filter(s=>s.right>=r.left && s.left<=r.right).sort((a,b)=>a.left-b.left);
+        const maxGap=gap*2.2+1;
+        return spans.length>0 && spans[0].left<=r.left+maxGap && spans.at(-1).right>=r.right-maxGap &&
+          spans.every((s,i)=>i===0 || s.left-spans[i-1].right<=maxGap);
       },fraction);
       assert.ok(coverage,`Panorama coverage at ${width}×${height}, offset ${fraction}`);
     }

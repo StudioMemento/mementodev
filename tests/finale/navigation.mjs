@@ -50,7 +50,7 @@ async function checkAnchorsAndCursor(page,touch) {
       await image.decode();
       return [image.naturalWidth,image.naturalHeight];
     });
-    assert.deepEqual(size,[16,18], "Desktop cursor dimensions");
+    assert.deepEqual(size,[13,15], "Desktop cursor dimensions");
   }
   const link=page.locator('.footer-row a[href="/privacy.html"]');
   await link.click();

@@ -187,8 +187,8 @@ try {
         next:document.querySelector("#gallery").getBoundingClientRect().top-el.closest("section").getBoundingClientRect().bottom, overflow:document.documentElement.scrollWidth>innerWidth};
     });
     assert.ok(!dimensions.overflow && dimensions.contained && dimensions.fullBleed && dimensions.sameFinish, JSON.stringify(dimensions));
-    assert.match(dimensions.file,/via-roma-cartone-(480|960|1600)\.webp$/);
-    assert.ok(dimensions.padding>=47 && dimensions.padding<=97 && Math.abs(dimensions.next)<2, "The takeaway follows the 16:9 card with bounded spacing before the gallery");
+    assert.match(dimensions.file,/via-roma-cartone-65-(480|960|1600)\.webp$/);
+    assert.ok(dimensions.padding>=119 && Math.abs(dimensions.next)<2, "The takeaway reserves space above and below the moving card");
     assert.ok(Math.abs(dimensions.ratio - 16/9) < .02, JSON.stringify(dimensions));
     assert.equal(dimensions.shape,"none");
     assert.ok(await page.locator(".menu-art-window").evaluateAll(all =>
@@ -216,6 +216,16 @@ try {
       assert.equal(zoom, 1.1, "The takeaway and crust cards share the same lift");
       await page.waitForFunction(()=>getComputedStyle(document.querySelector("#asporto .crust-card")).transform.startsWith("matrix3d"));
       assert.equal(await card.locator("img").evaluate(el=>getComputedStyle(el).transform),"none");
+      for (const [x,y] of [[.01,.01],[.99,.01],[.01,.99],[.99,.99]]) {
+        const frame = await shell.boundingBox();
+        await page.mouse.move(frame.x+frame.width*x, frame.y+frame.height*y);
+        await page.waitForTimeout(240);
+        const clearance = await card.evaluate(el => {
+          const face=el.getBoundingClientRect(), zone=el.closest("section").getBoundingClientRect();
+          return Math.min(face.top-zone.top, zone.bottom-face.bottom);
+        });
+        assert.ok(clearance>=24, `Tilt touches the section boundary at ${x},${y} (${clearance}px)`);
+      }
     }
     assert.deepEqual(errors,[]);
     await page.close();

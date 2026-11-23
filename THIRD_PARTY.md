@@ -1,8 +1,7 @@
-# Risorse e licenze — Via Roma 6.4
+# Risorse e licenze — Via Roma 6.5
 
 - React / React DOM, Vite e TypeScript: pacchetti npm, versioni fissate da `package-lock.json`, licenze nei pacchetti.
 - Jost: font locale WOFF2, pesi 200/300/400/500. Licenza OFL inclusa in `licenses/Jost-OFL.txt`.
-- Open Sans Regular fornisce il punto interrogativo nel titolo asporto. Il file WOFF locale contiene il solo glifo U+003F. La licenza e l’attribuzione sono in `licenses/Open-Sans-Apache-2.0.txt`.
 - Phosphor Icons: font thin, ridotto ai 13 glifi disponibili nel CSS locale conservandone le forme. Licenza MIT inclusa in `licenses/Phosphor-MIT.txt`.
 - Logo, fotografie del locale, artwork del menù e mappa: materiali già forniti/serviti dal progetto Via Roma. Le 40 fotografie della gallery sono soltanto ridimensionate e ricodificate WebP, senza ritocco del contenuto.
 - Tre immagini dei cornicioni: visual generati su richiesta nelle precedenti iterazioni, riutilizzati con ritaglio CSS. Testi e prezzi sono HTML.
@@ -15,7 +14,7 @@ Le card dei cornicioni, dell’asporto e delle foto su Google Maps condividono i
 
 Il background 3.5–3.8 è un'implementazione originale Canvas 2D, autorizzata dall'utente, ispirata alla reference visiva Blinking Squares. Non include il sorgente React Bits Pro e non richiede la sua licenza o il registro shadcn. Dot Grid e tutto il relativo codice derivato sono stati rimossi. Nessuna nuova dipendenza npm.
 
-Le gallerie e il bento della 4.1 riprendono i preset visivi Panorama, Flat e Magic Bento indicati dal committente. Il codice di proiezione e interazione è implementato nel progetto. Le miniature panoramiche derivano dalle 40 foto del locale. Il wordmark Memento usa i tracciati del file fornito DEV_20_Typo.svg.
+Le gallerie e il bento della 4.1 riprendono i preset visivi Panorama, Flat e Magic Bento indicati dal committente. Il codice di proiezione e interazione è implementato nel progetto. I panorami usano le 40 foto del locale nelle risoluzioni previste dal progetto. Il wordmark Memento usa i tracciati del file fornito DEV_20_Typo.svg.
 
 Le sei immagini in `public/assets/social` raffigurano i marchi delle piattaforme su fondo trasparente. Sono visual generati e ottimizzati in WebP. I marchi appartengono ai rispettivi titolari.
 
@@ -26,4 +25,4 @@ Le tre risoluzioni WebP sono in `public/assets/asporto` e `public/assets/foto-os
 Il link della seconda card apre le foto degli ospiti su Google Maps.
 Il wordmark nel footer conserva i tracciati Memento con una spaziatura ottica più compatta.
 
-Nella 6.4 la foto asporto riprende la composizione della 6.3. Il ritocco generativo riguarda il cartone da asporto. Il banner 16:9 è disponibile in tre risoluzioni WebP da 480, 960 e 1600 px.
+Per la 6.5 è stata generata una nuova immagine della pizza bianca Via Roma nel cartone aperto. Le tre versioni WebP della card 16:9 misurano 480 × 270, 960 × 540 e 1600 × 900 px.

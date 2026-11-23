@@ -20,7 +20,7 @@ export function FeatureCard({ id, titleId, heading, caption, imageBase, link }: 
           width="1600" height="900" loading="lazy" decoding="async" draggable={false} alt="" />
         <div className="crust-card-shade" aria-hidden="true" />
         <div className="takeaway-copy">
-          <h2 id={titleId}>{heading.endsWith("?") ? <>{heading.slice(0, -1)}<span className="takeaway-question">?</span></> : heading}{link && <Chevron direction="right" />}</h2>
+          <h2 id={titleId}>{heading}{link && <Chevron direction="right" />}</h2>
           {caption && <p>{caption}</p>}
         </div>
         {link && <a className="feature-card-link" href={link.href} target="_blank" rel="noopener noreferrer"
