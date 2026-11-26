@@ -1,6 +1,0 @@
-.ribbon-stage[data-enhanced] { overflow:clip; touch-action:pan-y pinch-zoom; }
-.ribbon-stage[data-enhanced] .ribbon-track { padding:0; display:block; }
-.ribbon-stage[data-enhanced] .ribbon-card {
-  position:absolute; top:50%; left:50%; translate:-50% -50%;
-  transform-origin:50% 50%; backface-visibility:hidden; touch-action:pan-y pinch-zoom;
-}

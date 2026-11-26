@@ -1,29 +1,25 @@
 {
-  "name": "viaroma-7-0",
-  "version": "7.0.0",
+  "name": "memento-hub",
+  "version": "24.0.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": "^22.13.0 || >=24.0.0"
-  },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "typecheck": "tsc --noEmit",
-    "build": "vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
+    "build": "vite build && node scripts/routes.mjs",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "npm run typecheck && npm run build && node scripts/check-build.mjs",
-    "test": "node scripts/verify-menu.mjs && node tests/menu/interactions.mjs && node tests/menu/blinking-squares.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:apps": "node scripts/test-apps.mjs",
+    "test:all": "npm test && npm run test:apps"
   },
   "dependencies": {
-    "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "delaunator": "5.1.0",
+    "parse5": "^7.3.0",
+    "three": "0.187.0"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "6.3.0",
-    "typescript": "7.0.2",
-    "vite": "8.3.8"
+    "vite": "8.3.6"
+  },
+  "engines": {
+    "node": "^22.12.0"
   }
 }

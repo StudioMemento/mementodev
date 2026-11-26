@@ -1,12 +1,8 @@
 node_modules/
 dist/
+!apps/studio/dist/
 .ssr/
-test-results/
-.env
-.env.*
-!.env.example
+.sites/
+.codex/
+*.tar.gz
 .vercel/
-.DS_Store
-
-.unlazy/
-qa/
